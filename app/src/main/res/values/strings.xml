@@ -5,4 +5,8 @@
     <string name="app_name" translatable="false">Dockshift</string>
     <!-- Temporary text of the empty start screen, until the real screens arrive -->
     <string name="home_placeholder">Version 2 is under construction</string>
+
+    <!-- Settings: rotating schedule -->
+    <string name="setting_rotation_title">Rotating schedule</string>
+    <string name="setting_rotation_summary">Predict your shifts from the 49-day rotation</string>
 </resources>

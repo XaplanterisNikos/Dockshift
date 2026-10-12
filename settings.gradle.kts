@@ -21,4 +21,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Dockshift"
+// :app    Android app: Compose UI, ViewModels, data sources (DataStore, Room), DI
+// :domain plain Kotlin: models and business rules, no Android dependency allowed
 include(":app")
+include(":domain")
