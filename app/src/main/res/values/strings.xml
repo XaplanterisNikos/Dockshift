@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Default (English) strings. Greek translations live in values-el/strings.xml -->
+<resources>
+    <!-- Brand name: identical in every language -->
+    <string name="app_name" translatable="false">Dockshift</string>
+    <!-- Temporary text of the empty start screen, until the real screens arrive -->
+    <string name="home_placeholder">Version 2 is under construction</string>
+</resources>

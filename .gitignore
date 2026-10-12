@@ -1,0 +1,26 @@
+# Gradle and build output
+.gradle/
+build/
+/captures
+.externalNativeBuild
+.cxx
+
+# Android Studio / IntelliJ: per-machine settings, never shared
+.idea/
+*.iml
+.DS_Store
+local.properties
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log
+
+# Signing: keys and their passwords must never be committed
+*.jks
+*.keystore
+keystore.properties
+
+# Signed release builds are published as GitHub Releases, not committed
+/app/release/
+*.apk
+*.aab

@@ -1,0 +1,26 @@
+# Version catalog: the single place where every dependency and plugin version lives.
+# Build scripts refer to these entries as `libs.<name>` / `libs.plugins.<name>`.
+
+[versions]
+# Android Gradle Plugin 9.x compiles Kotlin itself (built-in Kotlin),
+# so there is no separate `org.jetbrains.kotlin.android` plugin here.
+agp = "9.4.0"
+# Kotlin version; the Compose compiler plugin must always use the same one.
+kotlin = "2.4.21"
+# Compose Bill of Materials: keeps all Compose libraries on matching versions.
+composeBom = "2026.09.00"
+activityCompose = "1.13.0"
+
+[libraries]
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+# The Compose libraries below have no version: the BOM provides it.
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
