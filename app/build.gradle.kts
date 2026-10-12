@@ -10,6 +10,8 @@ plugins {
     // KSP runs Hilt's code generator at compile time
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    // Room 3: exports the database schema (see the room3 block below)
+    alias(libs.plugins.room3)
 }
 
 /**
@@ -40,6 +42,9 @@ android {
         // v1.11 is versionCode 2, so every v2 build must be higher
         versionCode = 3
         versionName = "2.0.0-alpha01"
+
+        // Runs instrumented tests (src/androidTest) on an emulator or device
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -87,6 +92,12 @@ android {
     }
 }
 
+room3 {
+    // One JSON file per database version, committed to git. Room compares them to
+    // validate every future migration, so a schema change can never silently lose data.
+    schemaDirectory("$projectDir/schemas")
+}
+
 dependencies {
     // Models and business rules (plain Kotlin)
     implementation(project(":domain"))
@@ -116,7 +127,19 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 
+    // Database: Room 3 runtime, its code generator, and SQLite bundled with the app
+    // (the same SQLite version on every phone, from Android 10 to the latest)
+    implementation(libs.androidx.room3.runtime)
+    ksp(libs.androidx.room3.compiler)
+    implementation(libs.androidx.sqlite.bundled)
+
     // Local unit tests (JVM, no emulator)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+
+    // Instrumented tests: the real database on an emulator or device
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }

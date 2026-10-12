@@ -17,6 +17,7 @@ their data from the old app with a CSV export/import that keeps the same format.
 - Kotlin, Jetpack Compose, Material 3 (Dynamic Color on Android 12+)
 - MVVM with `StateFlow`, Kotlin Coroutines/Flow
 - Hilt for dependency injection, Preferences DataStore for settings
+- Room 3 with bundled SQLite for shifts and machines, exported schemas for safe migrations
 - Android Gradle Plugin 9 with built-in Kotlin, KSP, Gradle version catalog
 - `minSdk 29` (Android 10), `targetSdk 37`
 
@@ -24,7 +25,7 @@ their data from the old app with a CSV export/import that keeps the same format.
 
 ```
 :app      ui/    Compose screens + ViewModels (state in, events out)
-          data/  DataStore (and Room) implementations of domain interfaces
+          data/  Room and DataStore implementations of domain interfaces
           di/    Hilt modules: which implementation backs which interface
 :domain          plain Kotlin: models, business rules, repository interfaces
 ```
@@ -35,7 +36,16 @@ their data from the old app with a CSV export/import that keeps the same format.
 - Screens never talk to storage: they receive a UI state and send events to their
   ViewModel, which only knows the domain interfaces.
 
-Run all unit tests with `./gradlew test`.
+Run the unit tests with `./gradlew test`, and the database tests on a running
+emulator or device with `./gradlew connectedAndroidTest`.
+
+### Data model
+
+- One shift per calendar day (the date is the key), with its type, optional
+  4-hour overtime, and the machines driven in order (each marked regular or overtime).
+- Machines are user-managed and only ever soft-deleted, so past shifts keep their history.
+- Every database version's schema is committed under `app/schemas/`; schema changes
+  ship with migrations, never with destructive resets.
 
 ## Building
 
