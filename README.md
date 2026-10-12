@@ -15,8 +15,27 @@ their data from the old app with a CSV export/import that keeps the same format.
 ## Tech stack
 
 - Kotlin, Jetpack Compose, Material 3 (Dynamic Color on Android 12+)
-- Android Gradle Plugin 9 with built-in Kotlin, Gradle version catalog
+- MVVM with `StateFlow`, Kotlin Coroutines/Flow
+- Hilt for dependency injection, Preferences DataStore for settings
+- Android Gradle Plugin 9 with built-in Kotlin, KSP, Gradle version catalog
 - `minSdk 29` (Android 10), `targetSdk 37`
+
+## Architecture
+
+```
+:app      ui/    Compose screens + ViewModels (state in, events out)
+          data/  DataStore (and Room) implementations of domain interfaces
+          di/    Hilt modules: which implementation backs which interface
+:domain          plain Kotlin: models, business rules, repository interfaces
+```
+
+- Dependencies point inward: `:app` depends on `:domain`, never the other way.
+- `:domain` is a JVM module, so Android APIs cannot even be imported there; its
+  rules are tested with plain JUnit, no emulator.
+- Screens never talk to storage: they receive a UI state and send events to their
+  ViewModel, which only knows the domain interfaces.
+
+Run all unit tests with `./gradlew test`.
 
 ## Building
 

@@ -2,4 +2,8 @@
 <!-- Greek strings -->
 <resources>
     <string name="home_placeholder">Η έκδοση 2 είναι υπό κατασκευή</string>
+
+    <!-- Ρυθμίσεις: κυλιόμενο πρόγραμμα -->
+    <string name="setting_rotation_title">Κυλιόμενο πρόγραμμα</string>
+    <string name="setting_rotation_summary">Πρόβλεψη βαρδιών από τον κύκλο των 49 ημερών</string>
 </resources>

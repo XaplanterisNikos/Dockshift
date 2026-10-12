@@ -7,6 +7,9 @@ plugins {
     // AGP 9 compiles Kotlin on its own (built-in Kotlin), so no kotlin-android plugin
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    // KSP runs Hilt's code generator at compile time
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 /**
@@ -85,6 +88,9 @@ android {
 }
 
 dependencies {
+    // Models and business rules (plain Kotlin)
+    implementation(project(":domain"))
+
     // Activity that hosts the Compose UI (setContent, enableEdgeToEdge)
     implementation(libs.androidx.activity.compose)
 
@@ -97,4 +103,20 @@ dependencies {
 
     // Preview rendering and inspection tools, debug builds only
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // ViewModel in Compose and lifecycle-aware collection of StateFlow
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    // Settings storage
+    implementation(libs.androidx.datastore.preferences)
+
+    // Dependency injection: runtime, code generator, and hiltViewModel() for Compose
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
+
+    // Local unit tests (JVM, no emulator)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
