@@ -2,6 +2,7 @@ package com.foxnks.dockshift.data.db
 
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
+import com.foxnks.dockshift.data.db.dao.ImportDao
 import com.foxnks.dockshift.data.db.dao.MachineDao
 import com.foxnks.dockshift.data.db.dao.ShiftDao
 import com.foxnks.dockshift.data.db.entity.MachineEntity
@@ -27,6 +28,9 @@ abstract class DockshiftDatabase : RoomDatabase() {
 
     /** The machine list. */
     abstract fun machineDao(): MachineDao
+
+    /** Bulk imports (v1 migration, backups). */
+    abstract fun importDao(): ImportDao
 
     companion object {
         /** File name of the database in the app's private storage. */

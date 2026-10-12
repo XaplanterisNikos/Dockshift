@@ -14,4 +14,10 @@ class AppSettingsTest {
         // A fresh install must not predict any shift until the user opts in
         assertFalse(AppSettings().rotationEnabled)
     }
+
+    @Test
+    fun `first-run import question has not been asked by default`() {
+        // A fresh install must ask about data from the first version
+        assertFalse(AppSettings().legacyImportAsked)
+    }
 }

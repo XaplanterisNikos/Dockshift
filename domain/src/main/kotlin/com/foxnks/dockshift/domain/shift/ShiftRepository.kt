@@ -25,6 +25,9 @@ interface ShiftRepository {
      */
     fun observeShift(date: LocalDate): Flow<Shift?>
 
+    /** How many shifts are stored, updated on every change. */
+    fun observeCount(): Flow<Int>
+
     /**
      * Saves a shift, replacing whatever was stored for the same day
      * (including its list of machines). Machines must already be saved.

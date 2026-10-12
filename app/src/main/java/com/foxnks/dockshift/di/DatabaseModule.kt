@@ -5,6 +5,7 @@ import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.foxnks.dockshift.data.db.DockshiftDatabase
 import com.foxnks.dockshift.data.db.MachineSeedCallback
+import com.foxnks.dockshift.data.db.dao.ImportDao
 import com.foxnks.dockshift.data.db.dao.MachineDao
 import com.foxnks.dockshift.data.db.dao.ShiftDao
 import dagger.Module
@@ -47,4 +48,8 @@ object DatabaseModule {
     /** Machine data access, from the single database. */
     @Provides
     fun provideMachineDao(database: DockshiftDatabase): MachineDao = database.machineDao()
+
+    /** Bulk-import data access, from the single database. */
+    @Provides
+    fun provideImportDao(database: DockshiftDatabase): ImportDao = database.importDao()
 }

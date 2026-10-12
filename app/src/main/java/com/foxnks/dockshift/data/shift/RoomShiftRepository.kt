@@ -28,6 +28,8 @@ class RoomShiftRepository @Inject constructor(
         // A one-day range: the same query, so the same consistent read
         observeShifts(date, date).map { it.firstOrNull() }
 
+    override fun observeCount(): Flow<Int> = dao.observeCount()
+
     override suspend fun save(shift: Shift) {
         dao.replace(shift.toEntity(), shift.toAssignmentEntities())
     }
