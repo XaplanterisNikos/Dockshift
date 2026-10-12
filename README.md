@@ -47,6 +47,21 @@ emulator or device with `./gradlew connectedAndroidTest`.
 - Every database version's schema is committed under `app/schemas/`; schema changes
   ship with migrations, never with destructive resets.
 
+### Moving from the first version
+
+Users of v1 bring their data over once, from its backup file (`DataShift_foxnks/dataShift_foxnks.csv`):
+the app asks on first start, or later from the menu. The system file picker opens straight in
+that folder, so no storage permission is needed. The file is fully checked first: any unreadable
+value is reported with its line and nothing is saved; otherwise a report is shown and everything
+is saved in one transaction, never overwriting days already in the app. All v1-specific code
+lives in `domain/legacy`, apart from the rest of the app.
+
+To check the importer against your own v1 file (it is never committed), run:
+
+```
+DOCKSHIFT_V1_CSV=/path/to/dataShift_foxnks.csv ./gradlew :domain:test --tests "*RealV1FileTest*"
+```
+
 ## Building
 
 1. Open the project in Android Studio and set **Gradle JDK** to JDK 17 or newer.

@@ -9,4 +9,41 @@
     <!-- Settings: rotating schedule -->
     <string name="setting_rotation_title">Rotating schedule</string>
     <string name="setting_rotation_summary">Predict your shifts from the 49-day rotation</string>
+
+    <!-- Import from the first version (v1 migration) -->
+    <string name="legacy_stored_shifts">Stored shifts: %1$d</string>
+    <string name="legacy_import_button">Import from the first version</string>
+    <string name="legacy_question_title">Data from the first version</string>
+    <string name="legacy_question_text">Do you have shifts saved in the first version of the app? You can bring them over now: choose the file dataShift_foxnks.csv.</string>
+    <string name="legacy_question_yes">Yes, import</string>
+    <string name="legacy_question_no">No, start fresh</string>
+    <string name="legacy_working">Please wait…</string>
+    <string name="legacy_report_title">Ready to import</string>
+    <string name="legacy_report_shifts">Shifts: %1$d</string>
+    <string name="legacy_report_range">From %1$s to %2$s</string>
+    <string name="legacy_report_new_machines">New machines to add: %1$s</string>
+    <string name="legacy_report_duplicates">Duplicate days skipped (first kept): %1$d</string>
+    <string name="legacy_report_already_in_app">Days already in the app, left as they are: %1$d</string>
+    <string name="legacy_report_save">Save</string>
+    <string name="legacy_cancel">Cancel</string>
+    <string name="legacy_ok">OK</string>
+    <string name="legacy_problems_title">The file cannot be imported</string>
+    <string name="legacy_problems_more">…and %1$d more</string>
+    <string name="legacy_nothing_to_import">There is nothing new to import from this file.</string>
+    <string name="legacy_read_failed">The file could not be read. Make sure you chose dataShift_foxnks.csv.</string>
+    <string name="legacy_save_failed">Saving failed and nothing was changed. Please try again.</string>
+    <string name="legacy_done">Imported %1$d shifts.</string>
+    <string name="legacy_problem_unterminated_quote">Line %1$d: a quoted text is never closed</string>
+    <string name="legacy_problem_columns">Line %1$d: %2$d columns instead of 10</string>
+    <string name="legacy_problem_not_a_number">Line %1$d: %2$s is not a number: «%3$s»</string>
+    <string name="legacy_problem_invalid_date">Line %1$d: %2$d/%3$d/%4$d is not a real date</string>
+    <string name="legacy_problem_unknown_type">Line %1$d: unknown shift type «%2$s»</string>
+    <string name="legacy_problem_unknown_category">Line %1$d: unknown machine category «%2$s»</string>
+    <string name="legacy_column_day">day</string>
+    <string name="legacy_column_month">month</string>
+    <string name="legacy_column_year">year</string>
+    <string name="legacy_column_containers">container moves</string>
+    <!-- Notes added to the comment of imported shifts -->
+    <string name="legacy_note_container_moves">Container moves: %1$d</string>
+    <string name="legacy_note_machine_non_working_day">Machine: %1$s</string>
 </resources>

@@ -32,3 +32,12 @@ dependencies {
 
     testImplementation(libs.junit)
 }
+
+tasks.test {
+    // Optional real-file test (RealV1FileTest): the path comes from an environment
+    // variable, because real v1 backups hold personal data and are never committed.
+    // Being a task input, changing the variable makes Gradle rerun the tests.
+    systemProperty("dockshift.v1csv", providers.environmentVariable("DOCKSHIFT_V1_CSV").getOrElse(""))
+    // Show the real-file summary printed by that test
+    testLogging.showStandardStreams = true
+}

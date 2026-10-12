@@ -35,6 +35,7 @@ class DataStoreSettingsRepository @Inject constructor(
             val defaults = AppSettings()
             AppSettings(
                 rotationEnabled = preferences[Keys.ROTATION_ENABLED] ?: defaults.rotationEnabled,
+                legacyImportAsked = preferences[Keys.LEGACY_IMPORT_ASKED] ?: defaults.legacyImportAsked,
             )
         }
 
@@ -43,11 +44,16 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { preferences -> preferences[Keys.ROTATION_ENABLED] = enabled }
     }
 
+    override suspend fun setLegacyImportAsked() {
+        dataStore.edit { preferences -> preferences[Keys.LEGACY_IMPORT_ASKED] = true }
+    }
+
     /**
      * Storage keys. Their names are part of the saved file: renaming one would
      * silently reset that setting for every user, so they must never change.
      */
     private object Keys {
         val ROTATION_ENABLED = booleanPreferencesKey("rotation_enabled")
+        val LEGACY_IMPORT_ASKED = booleanPreferencesKey("legacy_import_asked")
     }
 }

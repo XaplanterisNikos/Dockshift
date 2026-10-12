@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.foxnks.dockshift.R
+import com.foxnks.dockshift.ui.legacy.LegacyImportSection
 import com.foxnks.dockshift.ui.theme.DockshiftTheme
 
 /**
@@ -47,6 +48,8 @@ fun HomeRoute(
         uiState = uiState,
         onRotationToggled = viewModel::onRotationToggled,
         modifier = modifier,
+        // Temporary home of the v1 import, until the Settings screen exists
+        footer = { LegacyImportSection() },
     )
 }
 
@@ -59,12 +62,15 @@ fun HomeRoute(
  * @param uiState what to show.
  * @param onRotationToggled called with the new value when the user flips the switch.
  * @param modifier optional modifier from the caller.
+ * @param footer extra content below the settings (a slot, so this screen stays free
+ * of ViewModels and its previews need no Hilt).
  */
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
     onRotationToggled: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    footer: @Composable () -> Unit = {},
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
         // innerPadding keeps the content clear of the system bars (edge-to-edge)
@@ -94,6 +100,9 @@ fun HomeScreen(
                     onCheckedChange = onRotationToggled,
                 )
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            footer()
         }
     }
 }

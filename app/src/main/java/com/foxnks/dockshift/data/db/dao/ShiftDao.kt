@@ -28,6 +28,10 @@ abstract class ShiftDao {
     @Query("SELECT * FROM shifts WHERE date BETWEEN :from AND :to ORDER BY date")
     abstract fun observeBetween(from: String, to: String): Flow<List<ShiftWithMachines>>
 
+    /** Number of stored shifts, updated on every change. */
+    @Query("SELECT COUNT(*) FROM shifts")
+    abstract fun observeCount(): Flow<Int>
+
     /**
      * Replaces the shift of [shift]'s date and its whole machine list.
      *

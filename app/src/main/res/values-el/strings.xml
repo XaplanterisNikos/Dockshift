@@ -6,4 +6,41 @@
     <!-- Ρυθμίσεις: κυλιόμενο πρόγραμμα -->
     <string name="setting_rotation_title">Κυλιόμενο πρόγραμμα</string>
     <string name="setting_rotation_summary">Πρόβλεψη βαρδιών από τον κύκλο των 49 ημερών</string>
+
+    <!-- Εισαγωγή από την πρώτη έκδοση (μετάβαση από v1) -->
+    <string name="legacy_stored_shifts">Αποθηκευμένες βάρδιες: %1$d</string>
+    <string name="legacy_import_button">Εισαγωγή από την πρώτη έκδοση</string>
+    <string name="legacy_question_title">Δεδομένα από την πρώτη έκδοση</string>
+    <string name="legacy_question_text">Έχετε βάρδιες αποθηκευμένες στην πρώτη έκδοση της εφαρμογής; Μπορείτε να τις φέρετε τώρα: επιλέξτε το αρχείο dataShift_foxnks.csv.</string>
+    <string name="legacy_question_yes">Ναι, εισαγωγή</string>
+    <string name="legacy_question_no">Όχι, ξεκινάω από την αρχή</string>
+    <string name="legacy_working">Περιμένετε…</string>
+    <string name="legacy_report_title">Έτοιμο για εισαγωγή</string>
+    <string name="legacy_report_shifts">Βάρδιες: %1$d</string>
+    <string name="legacy_report_range">Από %1$s έως %2$s</string>
+    <string name="legacy_report_new_machines">Νέα μηχανήματα που θα προστεθούν: %1$s</string>
+    <string name="legacy_report_duplicates">Διπλές μέρες που παραλείφθηκαν (κρατήθηκε η πρώτη): %1$d</string>
+    <string name="legacy_report_already_in_app">Μέρες που υπάρχουν ήδη και μένουν ως έχουν: %1$d</string>
+    <string name="legacy_report_save">Αποθήκευση</string>
+    <string name="legacy_cancel">Ακύρωση</string>
+    <string name="legacy_ok">OK</string>
+    <string name="legacy_problems_title">Το αρχείο δεν μπορεί να εισαχθεί</string>
+    <string name="legacy_problems_more">…και άλλα %1$d</string>
+    <string name="legacy_nothing_to_import">Δεν υπάρχει κάτι καινούργιο για εισαγωγή σε αυτό το αρχείο.</string>
+    <string name="legacy_read_failed">Το αρχείο δεν διαβάστηκε. Βεβαιωθείτε ότι επιλέξατε το dataShift_foxnks.csv.</string>
+    <string name="legacy_save_failed">Η αποθήκευση απέτυχε και δεν άλλαξε τίποτα. Δοκιμάστε ξανά.</string>
+    <string name="legacy_done">Εισήχθησαν %1$d βάρδιες.</string>
+    <string name="legacy_problem_unterminated_quote">Γραμμή %1$d: ένα κείμενο σε εισαγωγικά δεν κλείνει ποτέ</string>
+    <string name="legacy_problem_columns">Γραμμή %1$d: %2$d στήλες αντί για 10</string>
+    <string name="legacy_problem_not_a_number">Γραμμή %1$d: το πεδίο «%2$s» δεν είναι αριθμός: «%3$s»</string>
+    <string name="legacy_problem_invalid_date">Γραμμή %1$d: η %2$d/%3$d/%4$d δεν είναι υπαρκτή ημερομηνία</string>
+    <string name="legacy_problem_unknown_type">Γραμμή %1$d: άγνωστος τύπος βάρδιας «%2$s»</string>
+    <string name="legacy_problem_unknown_category">Γραμμή %1$d: άγνωστη κατηγορία μηχανήματος «%2$s»</string>
+    <string name="legacy_column_day">ημέρα</string>
+    <string name="legacy_column_month">μήνας</string>
+    <string name="legacy_column_year">έτος</string>
+    <string name="legacy_column_containers">κινήσεις</string>
+    <!-- Σημειώσεις που προστίθενται στα σχόλια των βαρδιών που εισάγονται -->
+    <string name="legacy_note_container_moves">Κινήσεις: %1$d</string>
+    <string name="legacy_note_machine_non_working_day">Μηχάνημα: %1$s</string>
 </resources>

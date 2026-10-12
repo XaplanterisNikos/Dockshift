@@ -23,4 +23,7 @@ interface SettingsRepository {
      * @param enabled the new value of [AppSettings.rotationEnabled].
      */
     suspend fun setRotationEnabled(enabled: Boolean)
+
+    /** Records that the first-run v1 import question was answered (yes or no). */
+    suspend fun setLegacyImportAsked()
 }

@@ -24,4 +24,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setRotationEnabled(enabled: Boolean) {
         state.update { it.copy(rotationEnabled = enabled) }
     }
+
+    override suspend fun setLegacyImportAsked() {
+        state.update { it.copy(legacyImportAsked = true) }
+    }
 }
