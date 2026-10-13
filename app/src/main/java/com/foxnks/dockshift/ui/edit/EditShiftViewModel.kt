@@ -6,11 +6,17 @@ import com.foxnks.dockshift.domain.machine.Machine
 import com.foxnks.dockshift.domain.machine.MachineCategory
 import com.foxnks.dockshift.domain.machine.MachineForm
 import com.foxnks.dockshift.domain.machine.MachineRepository
+import com.foxnks.dockshift.domain.rotation.ShiftSuggestion
+import com.foxnks.dockshift.domain.settings.SettingsRepository
+import com.foxnks.dockshift.domain.settings.WorkSchedule
 import com.foxnks.dockshift.domain.shift.ShiftDraft
 import com.foxnks.dockshift.domain.shift.ShiftRepository
 import com.foxnks.dockshift.domain.shift.ShiftType
+import com.foxnks.dockshift.domain.shift.WorkDay
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Clock
 import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,6 +40,12 @@ sealed interface EditShiftUiState {
      * ask before replacing it; null when there is nothing to ask.
      * @property confirmDelete true while the "delete this shift?" question is shown.
      * @property finished true once saved or deleted: the screen closes itself.
+     * @property typeChosen false while a new shift has no type yet (nothing could be
+     * suggested): no type chip is selected and saving waits for a choice.
+     * @property workSchedule the operator's schedule: it decides which working types are offered.
+     * @property showAllTypes true to offer every type, also those outside the schedule.
+     * @property outsideSchedule the shift running now, when it is outside the schedule:
+     * the screen says so (and offers every type); null otherwise.
      */
     data class Editing(
         val draft: ShiftDraft,
@@ -41,9 +53,25 @@ sealed interface EditShiftUiState {
         val confirmReplace: LocalDate? = null,
         val confirmDelete: Boolean = false,
         val finished: Boolean = false,
+        val typeChosen: Boolean = true,
+        val workSchedule: WorkSchedule = WorkSchedule.ROTATING,
+        val showAllTypes: Boolean = false,
+        val outsideSchedule: ShiftType? = null,
     ) : EditShiftUiState {
         /** True when editing a stored shift, false when adding a new one. */
         val isExisting: Boolean get() = originalDate != null
+
+        /** True when some types are hidden by the schedule (a "show all" button is offered). */
+        val hasHiddenTypes: Boolean get() = !showAllTypes && ShiftType.entries.any { !workSchedule.allows(it) }
+
+        /**
+         * The type chips to show: the schedule's types (always every non-working type),
+         * or all of them; the selected type is never hidden.
+         */
+        val offeredTypes: List<ShiftType>
+            get() = ShiftType.entries.filter {
+                showAllTypes || workSchedule.allows(it) || (typeChosen && it == draft.type)
+            }
     }
 }
 
@@ -56,11 +84,15 @@ sealed interface EditShiftUiState {
  *
  * @param shifts stored shifts.
  * @param machines the machine list, for the machine picker.
+ * @param settings the work schedule and rotation, for the offered and suggested types.
+ * @param clock the current time, for the suggestion by time of day.
  */
 @HiltViewModel
 class EditShiftViewModel @Inject constructor(
     private val shifts: ShiftRepository,
     private val machines: MachineRepository,
+    private val settings: SettingsRepository,
+    private val clock: Clock,
 ) : ViewModel() {
 
     private val state = MutableStateFlow<EditShiftUiState>(EditShiftUiState.Loading)
@@ -75,7 +107,8 @@ class EditShiftViewModel @Inject constructor(
     private var started = false
 
     /**
-     * Loads the day to edit: its stored shift, or a new empty one.
+     * Loads the day to edit: its stored shift, or a new one with the suggested type
+     * (see [ShiftSuggestion]): the prediction, the shift running now, or nothing.
      * Safe to call again (e.g. after rotation): only the first call does anything.
      *
      * @param date the day from the navigation key.
@@ -85,10 +118,44 @@ class EditShiftViewModel @Inject constructor(
         started = true
         viewModelScope.launch {
             val existing = shifts.observeShift(date).first()
-            state.value = EditShiftUiState.Editing(
-                draft = existing?.let(ShiftDraft::from) ?: ShiftDraft(date),
-                originalDate = existing?.date,
-            )
+            val appSettings = settings.settings.first()
+            val schedule = appSettings.workSchedule
+            state.value = if (existing != null) {
+                EditShiftUiState.Editing(
+                    draft = ShiftDraft.from(existing),
+                    originalDate = existing.date,
+                    workSchedule = schedule,
+                    // A stored shift outside the schedule (e.g. before it changed) stays editable
+                    showAllTypes = !schedule.allows(existing.type),
+                )
+            } else {
+                val now = LocalDateTime.now(clock)
+                // Yesterday's night may still be running: then "now" belongs to yesterday
+                val yesterday = shifts.observeShift(now.toLocalDate().minusDays(1)).first()?.type
+                val currentWorkDay = WorkDay.current(now, yesterday)
+                when (val suggestion = ShiftSuggestion.of(date, now, currentWorkDay, appSettings)) {
+                    is ShiftSuggestion.Suggested -> EditShiftUiState.Editing(
+                        draft = ShiftDraft(date).withType(suggestion.type),
+                        originalDate = null,
+                        workSchedule = schedule,
+                    )
+                    is ShiftSuggestion.OutsideSchedule -> EditShiftUiState.Editing(
+                        draft = ShiftDraft(date),
+                        originalDate = null,
+                        typeChosen = false,
+                        workSchedule = schedule,
+                        // Outside the schedule: say so, and let any type be picked
+                        showAllTypes = true,
+                        outsideSchedule = suggestion.runningNow,
+                    )
+                    ShiftSuggestion.None -> EditShiftUiState.Editing(
+                        draft = ShiftDraft(date),
+                        originalDate = null,
+                        typeChosen = false,
+                        workSchedule = schedule,
+                    )
+                }
+            }
         }
     }
 
@@ -103,7 +170,20 @@ class EditShiftViewModel @Inject constructor(
     fun onDateSelected(date: LocalDate) = edit { it.withDate(date) }
 
     /** @param type the shift type chip tapped. */
-    fun onTypeSelected(type: ShiftType) = edit { it.withType(type) }
+    fun onTypeSelected(type: ShiftType) {
+        state.update { current ->
+            if (current is EditShiftUiState.Editing) {
+                current.copy(draft = current.draft.withType(type), typeChosen = true)
+            } else {
+                current
+            }
+        }
+    }
+
+    /** "Other shift": offer every type, also those outside the work schedule. */
+    fun onShowAllTypes() {
+        state.update { if (it is EditShiftUiState.Editing) it.copy(showAllTypes = true) else it }
+    }
 
     /** @param enabled new position of the overtime switch. */
     fun onOvertimeToggled(enabled: Boolean) = edit { it.withOvertime(enabled) }
@@ -149,6 +229,8 @@ class EditShiftViewModel @Inject constructor(
      */
     fun onSave() {
         val current = state.value as? EditShiftUiState.Editing ?: return
+        // Nothing to save until a type is picked
+        if (!current.typeChosen) return
         viewModelScope.launch {
             val target = current.draft.date
             val movedOntoAnotherShift = target != current.originalDate && shifts.observeShift(target).first() != null

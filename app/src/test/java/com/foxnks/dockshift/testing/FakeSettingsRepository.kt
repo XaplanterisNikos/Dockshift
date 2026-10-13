@@ -1,9 +1,11 @@
 package com.foxnks.dockshift.testing
 
+import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.CalendarView
 import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.settings.ThemeMode
+import com.foxnks.dockshift.domain.settings.WorkSchedule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,8 +25,16 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override val settings: Flow<AppSettings> = state.asStateFlow()
 
-    override suspend fun setRotationEnabled(enabled: Boolean) {
-        state.update { it.copy(rotationEnabled = enabled) }
+    override suspend fun setWorkSchedule(schedule: WorkSchedule) {
+        state.update { it.copy(workSchedule = schedule) }
+    }
+
+    override suspend fun setRotationAnchor(anchor: RotationAnchor?) {
+        state.update { it.copy(rotationAnchor = anchor) }
+    }
+
+    override suspend fun setRotationPromptAnswered() {
+        state.update { it.copy(rotationPromptAnswered = true) }
     }
 
     override suspend fun setLegacyImportAsked() {

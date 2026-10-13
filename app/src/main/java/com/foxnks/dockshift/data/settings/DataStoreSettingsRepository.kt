@@ -6,10 +6,14 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.CalendarView
 import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.settings.ThemeMode
+import com.foxnks.dockshift.domain.settings.WorkSchedule
+import com.foxnks.dockshift.domain.shift.ShiftType
+import java.time.LocalDate
 import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -37,7 +41,10 @@ class DataStoreSettingsRepository @Inject constructor(
             // A key that was never saved is missing: use the domain's default for it
             val defaults = AppSettings()
             AppSettings(
-                rotationEnabled = preferences[Keys.ROTATION_ENABLED] ?: defaults.rotationEnabled,
+                workSchedule = WorkSchedule.entries.firstOrNull { it.name == preferences[Keys.WORK_SCHEDULE] }
+                    ?: defaults.workSchedule,
+                rotationAnchor = anchorOf(preferences[Keys.ROTATION_ANCHOR]),
+                rotationPromptAnswered = preferences[Keys.ROTATION_PROMPT_ANSWERED] ?: defaults.rotationPromptAnswered,
                 legacyImportAsked = preferences[Keys.LEGACY_IMPORT_ASKED] ?: defaults.legacyImportAsked,
                 // Stored by name; an unknown name (e.g. from a newer version) falls back to the default
                 themeMode = ThemeMode.entries.firstOrNull { it.name == preferences[Keys.THEME_MODE] }
@@ -51,9 +58,24 @@ class DataStoreSettingsRepository @Inject constructor(
             )
         }
 
-    override suspend fun setRotationEnabled(enabled: Boolean) {
+    override suspend fun setWorkSchedule(schedule: WorkSchedule) {
         // edit() writes atomically and on a background thread
-        dataStore.edit { preferences -> preferences[Keys.ROTATION_ENABLED] = enabled }
+        dataStore.edit { preferences -> preferences[Keys.WORK_SCHEDULE] = schedule.name }
+    }
+
+    override suspend fun setRotationAnchor(anchor: RotationAnchor?) {
+        dataStore.edit { preferences ->
+            if (anchor == null) {
+                preferences.remove(Keys.ROTATION_ANCHOR)
+            } else {
+                // Stored as "2024-08-10|AFTERNOON": readable, and stable across app versions
+                preferences[Keys.ROTATION_ANCHOR] = "${anchor.cycleStart}$ANCHOR_SEPARATOR${anchor.firstType.name}"
+            }
+        }
+    }
+
+    override suspend fun setRotationPromptAnswered() {
+        dataStore.edit { preferences -> preferences[Keys.ROTATION_PROMPT_ANSWERED] = true }
     }
 
     override suspend fun setLegacyImportAsked() {
@@ -78,6 +100,19 @@ class DataStoreSettingsRepository @Inject constructor(
     }
 
     /**
+     * A stored rotation place back to the value, or null when it was never saved or
+     * cannot be read (then nothing is predicted until the user sets it again).
+     */
+    private fun anchorOf(text: String?): RotationAnchor? {
+        val parts = text?.split(ANCHOR_SEPARATOR) ?: return null
+        if (parts.size != 2) return null
+        val date = runCatching { LocalDate.parse(parts[0]) }.getOrNull() ?: return null
+        val type = ShiftType.entries.firstOrNull { it.name == parts[1] } ?: return null
+        // The anchor itself rejects a type that is not a working shift
+        return runCatching { RotationAnchor(date, type) }.getOrNull()
+    }
+
+    /**
      * A stored [CalendarView] name back to the value, or null when it was never saved
      * or is unknown (e.g. written by a newer version), so the caller uses the default.
      */
@@ -89,12 +124,20 @@ class DataStoreSettingsRepository @Inject constructor(
      * silently reset that setting for every user, so they must never change.
      */
     private object Keys {
-        val ROTATION_ENABLED = booleanPreferencesKey("rotation_enabled")
+        // "rotation_enabled" (an on/off switch until #8) is retired; never reuse that name
+        val WORK_SCHEDULE = stringPreferencesKey("work_schedule")
+        val ROTATION_ANCHOR = stringPreferencesKey("rotation_anchor")
+        val ROTATION_PROMPT_ANSWERED = booleanPreferencesKey("rotation_prompt_answered")
         val LEGACY_IMPORT_ASKED = booleanPreferencesKey("legacy_import_asked")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val CALENDAR_VIEW_PORTRAIT = stringPreferencesKey("calendar_view_portrait")
         val CALENDAR_VIEW_LANDSCAPE = stringPreferencesKey("calendar_view_landscape")
         val SHOW_HOLIDAYS = booleanPreferencesKey("show_holidays")
+    }
+
+    private companion object {
+        /** Between the date and the type of a stored rotation place. */
+        const val ANCHOR_SEPARATOR = "|"
     }
 }

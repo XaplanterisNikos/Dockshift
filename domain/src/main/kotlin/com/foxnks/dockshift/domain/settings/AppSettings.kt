@@ -1,5 +1,7 @@
 package com.foxnks.dockshift.domain.settings
 
+import com.foxnks.dockshift.domain.rotation.RotationAnchor
+
 /**
  * The user's app-wide settings.
  *
@@ -7,10 +9,13 @@ package com.foxnks.dockshift.domain.settings
  * domain and not in the storage code: a fresh install, or a setting that was never
  * saved, always gets exactly these values.
  *
- * @property rotationEnabled whether the rotating schedule ("Κυλιόμενο πρόγραμμα")
- * predicts shifts. Off by default: not every operator works the rotation (some work
- * only mornings, or mornings/afternoons), so the app computes nothing until the
- * user turns it on.
+ * @property workSchedule which shifts the operator works ("Ωράριο"). All three, in the
+ * rotating schedule, by default: it limits nothing, and nothing is predicted until
+ * [rotationAnchor] is set.
+ * @property rotationAnchor the operator's place in the rotating schedule, or null when
+ * not set (then nothing is predicted).
+ * @property rotationPromptAnswered whether the one-time question "your shifts match the
+ * rotating schedule, use it?" was already answered (yes or no).
  * @property legacyImportAsked whether the first-run question "do you have data from
  * the first version?" was already answered, so it is asked only once.
  * @property themeMode light/dark appearance; follows the phone by default.
@@ -25,7 +30,9 @@ package com.foxnks.dockshift.domain.settings
  * to everyone, and they are only shown, never turned into shifts.
  */
 data class AppSettings(
-    val rotationEnabled: Boolean = false,
+    val workSchedule: WorkSchedule = WorkSchedule.ROTATING,
+    val rotationAnchor: RotationAnchor? = null,
+    val rotationPromptAnswered: Boolean = false,
     val legacyImportAsked: Boolean = false,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,

@@ -2,10 +2,6 @@
 <!-- Greek strings -->
 <resources>
 
-    <!-- Ρυθμίσεις: κυλιόμενο πρόγραμμα -->
-    <string name="setting_rotation_title">Κυλιόμενο πρόγραμμα</string>
-    <string name="setting_rotation_summary">Πρόβλεψη βαρδιών από τον κύκλο των 49 ημερών</string>
-
     <!-- Εισαγωγή από την πρώτη έκδοση (μετάβαση από v1) -->
     <string name="legacy_stored_shifts">Αποθηκευμένες βάρδιες: %1$d</string>
     <string name="legacy_import_button">Εισαγωγή από την πρώτη έκδοση</string>
@@ -223,4 +219,32 @@
     <string name="stats_machine_overtime">+%1$d υπερωρία</string>
     <string name="stats_show_all_machines">Όλα τα μηχανήματα (%1$d)</string>
     <string name="stats_show_fewer">Λιγότερα</string>
+
+    <!-- Ωράριο και κυλιόμενο πρόγραμμα -->
+    <string name="setting_work_schedule_title">Ωράριο</string>
+    <string name="work_schedule_rotating">Όλες οι βάρδιες (κυλιόμενο)</string>
+    <string name="work_schedule_morning_only">Μόνο πρωί</string>
+    <string name="work_schedule_afternoon_only">Μόνο απόγευμα</string>
+    <string name="work_schedule_morning_afternoon">Πρωί και απόγευμα</string>
+    <string name="work_schedule_afternoon_night">Απόγευμα και νύχτα</string>
+    <string name="work_schedule_night_only">Μόνο νύχτα</string>
+    <string name="setting_rotation_place_title">Η θέση μου στον κύκλο</string>
+    <string name="setting_rotation_place_unset">Δεν έχει οριστεί: χωρίς προβλέψεις</string>
+    <string name="setting_rotation_place_value">Τετραήμερο ρεπό από %1$s, μετά %2$s</string>
+    <string name="rotation_place_found">Βρέθηκε από τις βάρδιές σου. Έλεγξέ το και πάτα Αποθήκευση.</string>
+    <string name="rotation_place_question_rest">Πότε ξεκίνησε το τελευταίο σου τετραήμερο ρεπό;</string>
+    <string name="rotation_place_pick_date">Επιλογή ημερομηνίας</string>
+    <string name="rotation_place_future">Η ημερομηνία δεν μπορεί να είναι μετά από σήμερα.</string>
+    <string name="rotation_place_question_type">Τι βάρδια ήρθε μετά;</string>
+    <string name="rotation_place_clear">Αφαίρεση</string>
+    <string name="rotation_prompt_title">Κυλιόμενο πρόγραμμα</string>
+    <string name="rotation_prompt_text">Οι βάρδιες σου ταιριάζουν με το κυλιόμενο πρόγραμμα: τετραήμερο ρεπό από %1$s, μετά %2$s.\n\nΝα εμφανίζονται οι επόμενες βάρδιες σου ως χρυσές προβλέψεις; Μπορείς να το αλλάξεις όποτε θέλεις στις Ρυθμίσεις.</string>
+    <string name="rotation_prompt_yes">Ναι</string>
+    <string name="rotation_prompt_no">Όχι τώρα</string>
+    <string name="calendar_record_forecasts">Καταχώρηση προβλέψεων (%1$d)</string>
+    <string name="calendar_record_forecasts_title">Καταχώρηση προβλέψεων;</string>
+    <string name="calendar_record_forecasts_text">Οι %1$d χρυσές μέρες του μήνα θα αποθηκευτούν ως βάρδιες. Μπορείς να αλλάξεις όποια θέλεις μετά.</string>
+    <string name="today_forecast">Πρόβλεψη: %1$s</string>
+    <string name="edit_other_types">Άλλη βάρδια (εκτός ωραρίου)</string>
+    <string name="edit_outside_schedule">Η βάρδια που τρέχει τώρα (%1$s) είναι εκτός του ωραρίου σου στις Ρυθμίσεις. Αν θέλεις να συνεχίσεις, διάλεξε όποια βάρδια θέλεις.</string>
 </resources>

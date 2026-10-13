@@ -72,6 +72,7 @@ fun CalendarRoute(
         onDaySelected = viewModel::onDaySelected,
         onToday = viewModel::onToday,
         onToggleView = viewModel::onToggleView,
+        onRecordForecasts = viewModel::onRecordForecasts,
         onEditDay = onEditDay,
         onSelectTopLevel = onSelectTopLevel,
     )
@@ -91,6 +92,7 @@ fun CalendarRoute(
  * @param onDaySelected a day was tapped in day-details mode.
  * @param onToday the "Today" button was pressed.
  * @param onToggleView the view button was pressed; true when in landscape.
+ * @param onRecordForecasts the month's predicted days should be recorded (already confirmed).
  * @param onEditDay open a day for adding or editing.
  * @param onSelectTopLevel switch screen from the bottom bar.
  */
@@ -102,6 +104,7 @@ fun CalendarScreen(
     onDaySelected: (LocalDate) -> Unit,
     onToday: () -> Unit,
     onToggleView: (Boolean) -> Unit,
+    onRecordForecasts: () -> Unit,
     onEditDay: (LocalDate) -> Unit,
     onSelectTopLevel: (TopLevel) -> Unit,
 ) {
@@ -192,6 +195,7 @@ fun CalendarScreen(
                         uiState = uiState,
                         showDetails = showDetails,
                         onEditDay = onEditDay,
+                        onRecordForecasts = onRecordForecasts,
                         modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
                     )
                 }
@@ -219,6 +223,7 @@ fun CalendarScreen(
                         uiState = uiState,
                         showDetails = showDetails,
                         onEditDay = onEditDay,
+                        onRecordForecasts = onRecordForecasts,
                         modifier = Modifier.padding(16.dp),
                     )
                 }
@@ -294,13 +299,14 @@ private fun CalendarPanel(
     uiState: CalendarUiState,
     showDetails: Boolean,
     onEditDay: (LocalDate) -> Unit,
+    onRecordForecasts: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val visible = uiState.page(uiState.visibleMonth)
     if (showDetails) {
         DayDetailsPanel(day = visible.day(uiState.selectedDate), onEditDay = onEditDay, modifier = modifier)
     } else {
-        MonthSummaryPanel(summary = visible.summary, modifier = modifier)
+        MonthSummaryPanel(summary = visible.summary, modifier = modifier, onRecordForecasts = onRecordForecasts)
     }
 }
 
@@ -322,7 +328,7 @@ private fun previewState(view: CalendarView): CalendarUiState {
 @Composable
 private fun CalendarSummaryPreview() {
     DockshiftTheme(darkTheme = false, dynamicColor = false) {
-        CalendarScreen(previewState(CalendarView.SUMMARY), {}, {}, {}, {}, {}, {})
+        CalendarScreen(previewState(CalendarView.SUMMARY), {}, {}, {}, {}, {}, {}, {})
     }
 }
 
@@ -331,6 +337,6 @@ private fun CalendarSummaryPreview() {
 @Composable
 private fun CalendarDetailsDarkPreview() {
     DockshiftTheme(darkTheme = true, dynamicColor = false) {
-        CalendarScreen(previewState(CalendarView.DAY_DETAILS), {}, {}, {}, {}, {}, {})
+        CalendarScreen(previewState(CalendarView.DAY_DETAILS), {}, {}, {}, {}, {}, {}, {})
     }
 }

@@ -13,11 +13,10 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -29,11 +28,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,15 +51,13 @@ import com.foxnks.dockshift.R
 import com.foxnks.dockshift.domain.machine.Machine
 import com.foxnks.dockshift.domain.machine.MachineCategory
 import com.foxnks.dockshift.domain.shift.MachineAssignment
-import com.foxnks.dockshift.domain.shift.ShiftDraft
 import com.foxnks.dockshift.domain.shift.ShiftType
+import com.foxnks.dockshift.ui.common.DateDialog
 import com.foxnks.dockshift.ui.shift.MachineLine
 import com.foxnks.dockshift.ui.shift.ShiftFormat
 import com.foxnks.dockshift.ui.shift.label
 import com.foxnks.dockshift.ui.theme.DockshiftTheme
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 
 /**
  * Entry point of the add/edit shift screen.
@@ -89,6 +86,7 @@ fun EditShiftRoute(date: LocalDate, onDone: () -> Unit, viewModel: EditShiftView
             onDelete = viewModel::onDeleteRequested,
             onDateSelected = viewModel::onDateSelected,
             onTypeSelected = viewModel::onTypeSelected,
+            onShowAllTypes = viewModel::onShowAllTypes,
             onOvertimeToggled = viewModel::onOvertimeToggled,
             onMachineAdded = viewModel::onMachineAdded,
             onMachineQuickAdded = viewModel::onMachineQuickAdded,
@@ -112,6 +110,7 @@ data class EditShiftActions(
     val onDelete: () -> Unit,
     val onDateSelected: (LocalDate) -> Unit,
     val onTypeSelected: (ShiftType) -> Unit,
+    val onShowAllTypes: () -> Unit,
     val onOvertimeToggled: (Boolean) -> Unit,
     val onMachineAdded: (Machine) -> Unit,
     val onMachineQuickAdded: (MachineCategory, String) -> Unit,
@@ -153,7 +152,8 @@ fun EditShiftScreen(uiState: EditShiftUiState, machines: List<Machine>, actions:
                             Icon(painterResource(R.drawable.ic_delete), stringResource(R.string.edit_delete))
                         }
                     }
-                    TextButton(onClick = actions.onSave, enabled = editing != null) {
+                    // A new shift without a type cannot be saved yet
+                    TextButton(onClick = actions.onSave, enabled = editing?.typeChosen == true) {
                         Text(stringResource(R.string.edit_save))
                     }
                 },
@@ -164,7 +164,7 @@ fun EditShiftScreen(uiState: EditShiftUiState, machines: List<Machine>, actions:
             Box(Modifier.fillMaxSize().padding(innerPadding), Alignment.Center) { CircularProgressIndicator() }
         } else {
             EditForm(
-                draft = editing.draft,
+                editing = editing,
                 machines = machines,
                 actions = actions,
                 modifier = Modifier
@@ -182,7 +182,8 @@ fun EditShiftScreen(uiState: EditShiftUiState, machines: List<Machine>, actions:
 /** The fields of the form. */
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-private fun EditForm(draft: ShiftDraft, machines: List<Machine>, actions: EditShiftActions, modifier: Modifier) {
+private fun EditForm(editing: EditShiftUiState.Editing, machines: List<Machine>, actions: EditShiftActions, modifier: Modifier) {
+    val draft = editing.draft
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showMachinePicker by rememberSaveable { mutableStateOf(false) }
 
@@ -197,6 +198,22 @@ private fun EditForm(draft: ShiftDraft, machines: List<Machine>, actions: EditSh
         )
         HorizontalDivider()
 
+        // The shift running now is not in the schedule: say so before the types
+        editing.outsideSchedule?.let { running ->
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 16.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.edit_outside_schedule, running.label()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(12.dp),
+                )
+            }
+        }
+
         // Type: one chip per type, colored like the type when selected
         SectionTitle(R.string.edit_type)
         val shiftColors = DockshiftTheme.shiftColors
@@ -204,9 +221,11 @@ private fun EditForm(draft: ShiftDraft, machines: List<Machine>, actions: EditSh
             modifier = Modifier.padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            ShiftType.entries.forEach { type ->
+            // Only the schedule's types, unless all were asked for
+            editing.offeredTypes.forEach { type ->
                 FilterChip(
-                    selected = type == draft.type,
+                    // A new shift without a suggestion starts with nothing selected
+                    selected = editing.typeChosen && type == draft.type,
                     onClick = { actions.onTypeSelected(type) },
                     label = { Text(type.label()) },
                     colors = FilterChipDefaults.filterChipColors(
@@ -217,8 +236,14 @@ private fun EditForm(draft: ShiftDraft, machines: List<Machine>, actions: EditSh
             }
         }
 
-        // Overtime and machines exist only on working shifts
-        if (draft.allowsMachines) {
+        if (editing.hasHiddenTypes) {
+            TextButton(onClick = actions.onShowAllTypes, modifier = Modifier.padding(horizontal = 8.dp)) {
+                Text(stringResource(R.string.edit_other_types))
+            }
+        }
+
+        // Overtime and machines exist only on working shifts (and once a type is picked)
+        if (editing.typeChosen && draft.allowsMachines) {
             HorizontalDivider(Modifier.padding(top = 8.dp))
             ListItem(
                 headlineContent = { Text(stringResource(R.string.edit_overtime)) },
@@ -338,28 +363,6 @@ private fun MachineRow(
         IconButton(onClick = { actions.onMachineRemoved(index) }) {
             Icon(painterResource(R.drawable.ic_close), stringResource(R.string.edit_remove_machine))
         }
-    }
-}
-
-/** Material 3 date picker; the picker works in UTC milliseconds, converted here. */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DateDialog(initial: LocalDate, onPicked: (LocalDate) -> Unit, onDismiss: () -> Unit) {
-    val state = rememberDatePickerState(
-        initialSelectedDateMillis = initial.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
-    )
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                state.selectedDateMillis?.let { millis ->
-                    onPicked(Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate())
-                } ?: onDismiss()
-            }) { Text(stringResource(R.string.ok)) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-    ) {
-        DatePicker(state = state)
     }
 }
 

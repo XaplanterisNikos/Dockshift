@@ -4,9 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.holidays.GreekHolidays
+import com.foxnks.dockshift.domain.rotation.RotationAnchor
+import com.foxnks.dockshift.domain.rotation.RotationSchedule
 import com.foxnks.dockshift.domain.settings.SettingsRepository
+import com.foxnks.dockshift.domain.settings.WorkSchedule
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftRepository
+import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.domain.shift.WorkDay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
@@ -29,8 +33,14 @@ import kotlinx.coroutines.flow.stateIn
  * @property date the day.
  * @property shift its stored shift, or null if nothing is recorded.
  * @property holiday its public holiday, or null (also when holidays are turned off).
+ * @property forecast the type the rotating schedule predicts when nothing is stored, or null.
  */
-data class DayEntry(val date: LocalDate, val shift: Shift?, val holiday: GreekHoliday? = null)
+data class DayEntry(
+    val date: LocalDate,
+    val shift: Shift?,
+    val holiday: GreekHoliday? = null,
+    val forecast: ShiftType? = null,
+)
 
 /** What the "Today" screen shows. */
 sealed interface TodayUiState {
@@ -44,6 +54,7 @@ sealed interface TodayUiState {
      * @property current the shift of [currentDate], or null if nothing is recorded.
      * @property upcoming the days after [currentDate].
      * @property currentHoliday the public holiday of [currentDate], or null.
+     * @property currentForecast the predicted type of [currentDate] when nothing is stored, or null.
      */
     data class Ready(
         val currentDate: LocalDate,
@@ -51,6 +62,7 @@ sealed interface TodayUiState {
         val current: Shift?,
         val upcoming: List<DayEntry>,
         val currentHoliday: GreekHoliday? = null,
+        val currentForecast: ShiftType? = null,
     ) : TodayUiState
 }
 
@@ -58,7 +70,7 @@ sealed interface TodayUiState {
  * ViewModel of the "Today" screen: the current shift and the next [UPCOMING_DAYS] days.
  *
  * @param shifts stored shifts.
- * @param settings whether public holidays are marked.
+ * @param settings whether public holidays are marked, and the rotation for predictions.
  * @param clock the current time; injected so tests can fix it.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -74,16 +86,20 @@ class TodayViewModel @Inject constructor(
 
     /** The screen state, always up to date with the stored shifts. */
     val uiState: StateFlow<TodayUiState> =
-        combine(now, settings.settings.map { it.showHolidays }.distinctUntilChanged()) { time, showHolidays ->
-            time to showHolidays
-        }.flatMapLatest { (time, showHolidays) ->
+        combine(
+            now,
+            settings.settings.map { DaySettings(it.showHolidays, it.workSchedule, it.rotationAnchor) }.distinctUntilChanged(),
+        ) { time, daySettings -> time to daySettings }.flatMapLatest { (time, daySettings) ->
             val today = time.toLocalDate()
             // From yesterday (a night may still be running) to a week after today
             val from = today.minusDays(1)
             val to = today.plusDays(UPCOMING_DAYS + 1L)
-            val holidays = if (showHolidays) GreekHolidays.between(from, to) else emptyMap()
+            val holidays = if (daySettings.showHolidays) GreekHolidays.between(from, to) else emptyMap()
+            val forecast = { date: LocalDate ->
+                RotationSchedule.forecastOn(daySettings.workSchedule, daySettings.rotationAnchor, date, today)
+            }
             shifts.observeShifts(from, to)
-                .map { list -> build(time, list.associateBy { it.date }, holidays) }
+                .map { list -> build(time, list.associateBy { it.date }, holidays, forecast) }
         }
         .stateIn(
             scope = viewModelScope,
@@ -105,6 +121,7 @@ class TodayViewModel @Inject constructor(
         time: LocalDateTime,
         byDate: Map<LocalDate, Shift>,
         holidays: Map<LocalDate, GreekHoliday>,
+        forecast: (LocalDate) -> ShiftType?,
     ): TodayUiState.Ready {
         val today = time.toLocalDate()
         val current = WorkDay.current(time, byDate[today.minusDays(1)]?.type)
@@ -114,11 +131,21 @@ class TodayViewModel @Inject constructor(
             current = byDate[current],
             upcoming = (1..UPCOMING_DAYS).map { offset ->
                 val date = current.plusDays(offset.toLong())
-                DayEntry(date, byDate[date], holidays[date])
+                val shift = byDate[date]
+                // A stored shift always wins over the prediction
+                DayEntry(date, shift, holidays[date], if (shift == null) forecast(date) else null)
             },
             currentHoliday = holidays[current],
+            currentForecast = if (byDate[current] == null) forecast(current) else null,
         )
     }
+
+    /** The settings the screen depends on; changing anything else must not re-read it. */
+    private data class DaySettings(
+        val showHolidays: Boolean,
+        val workSchedule: WorkSchedule,
+        val rotationAnchor: RotationAnchor?,
+    )
 
     companion object {
         /** How many days after the current one are listed. */
