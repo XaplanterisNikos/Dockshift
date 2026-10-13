@@ -53,4 +53,16 @@ class MainViewModelTest {
         assertTrue(viewModel.ready.value)
         assertEquals(ThemeMode.DARK, viewModel.appearance.value.themeMode)
     }
+
+    @Test
+    fun `the profile gets a permanent id once`() = runTest {
+        val repository = FakeSettingsRepository()
+        MainViewModel(repository)
+        val id = repository.current.worker.id
+        assertTrue(id.isNotBlank())
+
+        // Next start: the same id stays
+        MainViewModel(repository)
+        assertEquals(id, repository.current.worker.id)
+    }
 }

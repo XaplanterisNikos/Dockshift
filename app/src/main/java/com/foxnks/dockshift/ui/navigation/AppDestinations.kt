@@ -58,6 +58,10 @@ data class EditLeaveKey(val id: Long, val day: String? = null) : NavKey
 @Serializable
 data object BackupKey : NavKey
 
+/** The user's profile. Opened from the menu, or from the first-run question. */
+@Serializable
+data object WorkerKey : NavKey
+
 /** Settings. Opened from the menu. */
 @Serializable
 data object SettingsKey : NavKey

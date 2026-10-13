@@ -2,6 +2,7 @@ package com.foxnks.dockshift.domain.settings
 
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
+import com.foxnks.dockshift.domain.worker.WorkerProfile
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 
@@ -98,6 +99,24 @@ interface SettingsRepository {
      * @param enabled the new value of [AppSettings.backupReminder].
      */
     suspend fun setBackupReminder(enabled: Boolean)
+
+    /**
+     * Persists the user's profile. Its permanent id is never changed here: the stored
+     * one is kept whatever [worker] carries.
+     *
+     * @param worker the new value of [AppSettings.worker].
+     */
+    suspend fun setWorker(worker: WorkerProfile)
+
+    /**
+     * Stores the profile's permanent id, only if none is stored yet (first start).
+     *
+     * @param id a new id (see `WorkerForm.newId`); ignored when one exists.
+     */
+    suspend fun ensureWorkerId(id: String)
+
+    /** Records that the first-run "fill in your profile?" question was answered. */
+    suspend fun setWorkerPromptAsked()
 
     /**
      * Replaces every setting at once, when a backup is restored.

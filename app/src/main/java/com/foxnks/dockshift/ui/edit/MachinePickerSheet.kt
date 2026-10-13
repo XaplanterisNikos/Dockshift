@@ -40,12 +40,16 @@ import com.foxnks.dockshift.domain.machine.MachineForm
  * 182 trucks), and the matching active machines with their location. When the
  * typed number matches nothing, it offers to add that machine on the spot.
  *
+ * Only the user's own categories are offered (see `WorkerProfile.machineCategories`);
+ * "All categories" shows the rest for the odd shift on another machine.
+ *
  * @param machines the active machines.
- * @param initialCategory category selected when the sheet opens.
+ * @param initialCategory category selected when the sheet opens, if it is offered.
  * @param onPick called with the tapped machine; the sheet then closes.
  * @param onQuickAdd called with the category and typed number to add (or
  * reactivate) that machine and pick it; the sheet then closes.
  * @param onDismiss called when the sheet is closed without picking.
+ * @param categories the user's categories, in display order; all of them by default.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,9 +59,12 @@ fun MachinePickerSheet(
     onPick: (Machine) -> Unit,
     onQuickAdd: (MachineCategory, String) -> Unit,
     onDismiss: () -> Unit,
+    categories: List<MachineCategory> = MachineCategory.entries,
 ) {
     // Survive rotation while the sheet is open
-    var category by rememberSaveable { mutableStateOf(initialCategory) }
+    var showAll by rememberSaveable { mutableStateOf(false) }
+    val offered = if (showAll) MachineCategory.entries else categories.ifEmpty { MachineCategory.entries }
+    var category by rememberSaveable { mutableStateOf(if (initialCategory in offered) initialCategory else offered.first()) }
     var query by rememberSaveable { mutableStateOf("") }
     val matching = machines.filter { it.category == category && it.number.contains(query.trim()) }
 
@@ -78,12 +85,16 @@ fun MachinePickerSheet(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                MachineCategory.entries.forEach { item ->
+                offered.forEach { item ->
                     FilterChip(
                         selected = item == category,
                         onClick = { category = item },
                         label = { Text(item.name) },
                     )
+                }
+                // The other categories, for a shift on a machine the user does not usually work
+                if (offered.size < MachineCategory.entries.size) {
+                    TextButton(onClick = { showAll = true }) { Text(stringResource(R.string.picker_all_categories)) }
                 }
             }
             OutlinedTextField(

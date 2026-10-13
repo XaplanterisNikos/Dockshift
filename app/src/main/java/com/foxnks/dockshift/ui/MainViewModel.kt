@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.settings.ThemeMode
+import com.foxnks.dockshift.domain.worker.WorkerForm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * The appearance settings the whole app is drawn with.
@@ -29,7 +31,8 @@ data class Appearance(
 /**
  * Activity-level ViewModel: provides the [Appearance] for the theme, so a change
  * in Settings re-themes the whole app immediately, and tells the splash screen when
- * the saved settings have been read.
+ * the saved settings have been read. On the first start it also gives the user's
+ * profile its permanent id.
  *
  * @param settings source of the saved appearance settings.
  */
@@ -55,4 +58,10 @@ class MainViewModel @Inject constructor(settings: SettingsRepository) : ViewMode
      * so the app never flashes in the wrong theme.
      */
     val ready: StateFlow<Boolean> = loaded.asStateFlow()
+
+    init {
+        // Once per install (the store ignores it when an id exists): the future online
+        // account is tied to this id, and backups carry it to a new phone
+        viewModelScope.launch { settings.ensureWorkerId(WorkerForm.newId()) }
+    }
 }

@@ -72,6 +72,7 @@ fun EditShiftRoute(date: LocalDate, onDone: () -> Unit, viewModel: EditShiftView
     LaunchedEffect(date) { viewModel.start(date) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val machines by viewModel.activeMachines.collectAsStateWithLifecycle()
+    val machineCategories by viewModel.machineCategories.collectAsStateWithLifecycle()
 
     val editing = uiState as? EditShiftUiState.Editing
     // Saved or deleted: leave the screen
@@ -80,6 +81,7 @@ fun EditShiftRoute(date: LocalDate, onDone: () -> Unit, viewModel: EditShiftView
     EditShiftScreen(
         uiState = uiState,
         machines = machines,
+        machineCategories = machineCategories,
         actions = EditShiftActions(
             onBack = onDone,
             onSave = viewModel::onSave,
@@ -128,10 +130,20 @@ data class EditShiftActions(
 /**
  * The form: date, type, overtime, machines (in order, each regular or overtime),
  * comment. Save in the top bar; delete for stored shifts.
+ *
+ * @param uiState what to show.
+ * @param machines the active machines, for the picker.
+ * @param actions what the user can do.
+ * @param machineCategories the user's machine categories, offered first by the picker.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditShiftScreen(uiState: EditShiftUiState, machines: List<Machine>, actions: EditShiftActions) {
+fun EditShiftScreen(
+    uiState: EditShiftUiState,
+    machines: List<Machine>,
+    actions: EditShiftActions,
+    machineCategories: List<MachineCategory> = MachineCategory.entries,
+) {
     val editing = uiState as? EditShiftUiState.Editing
     Scaffold(
         topBar = {
@@ -166,6 +178,7 @@ fun EditShiftScreen(uiState: EditShiftUiState, machines: List<Machine>, actions:
             EditForm(
                 editing = editing,
                 machines = machines,
+                machineCategories = machineCategories,
                 actions = actions,
                 modifier = Modifier
                     .fillMaxSize()
@@ -182,7 +195,13 @@ fun EditShiftScreen(uiState: EditShiftUiState, machines: List<Machine>, actions:
 /** The fields of the form. */
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-private fun EditForm(editing: EditShiftUiState.Editing, machines: List<Machine>, actions: EditShiftActions, modifier: Modifier) {
+private fun EditForm(
+    editing: EditShiftUiState.Editing,
+    machines: List<Machine>,
+    machineCategories: List<MachineCategory>,
+    actions: EditShiftActions,
+    modifier: Modifier,
+) {
     val draft = editing.draft
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showMachinePicker by rememberSaveable { mutableStateOf(false) }
@@ -308,6 +327,7 @@ private fun EditForm(editing: EditShiftUiState.Editing, machines: List<Machine>,
     if (showMachinePicker) {
         MachinePickerSheet(
             machines = machines,
+            categories = machineCategories,
             // Start where the last machine was: overtime is often on the same kind
             initialCategory = draft.machines.lastOrNull()?.machine?.category ?: MachineCategory.RTG,
             onPick = {

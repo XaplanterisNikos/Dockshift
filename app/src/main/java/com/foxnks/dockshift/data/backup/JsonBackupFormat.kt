@@ -14,6 +14,8 @@ import com.foxnks.dockshift.domain.settings.WorkSchedule
 import com.foxnks.dockshift.domain.shift.MachineAssignment
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
+import com.foxnks.dockshift.domain.worker.WorkerProfile
+import com.foxnks.dockshift.domain.worker.WorkerRole
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -129,6 +131,17 @@ private data class SettingsJson(
     val leaveEntitlements: Map<String, Int> = emptyMap(),
     val portClosedHolidays: List<String> = emptyList(),
     val backupReminder: Boolean? = null,
+    val worker: WorkerJson? = null,
+)
+
+/** The user's profile (added after the first backups: optional, like everything here). */
+@Serializable
+private data class WorkerJson(
+    val id: String = "",
+    val name: String = "",
+    val email: String = "",
+    val role: String? = null,
+    val categories: List<String> = emptyList(),
 )
 
 /** Domain → file. */
@@ -161,6 +174,7 @@ private fun BackupContents.toJson() = BackupFileJson(
             leaveEntitlements = leaveEntitlements.mapKeys { it.key.toString() },
             portClosedHolidays = portClosedHolidays.map { it.name },
             backupReminder = backupReminder,
+            worker = with(worker) { WorkerJson(id, name, email, role?.name, categories.map { it.name }) },
         )
     },
 )
@@ -212,5 +226,16 @@ private fun SettingsJson.toDomain(): AppSettings {
         leaveEntitlements = leaveEntitlements.mapNotNull { (year, days) -> year.toIntOrNull()?.let { it to days } }.toMap(),
         portClosedHolidays = portClosedHolidays.mapNotNull { name -> GreekHoliday.entries.firstOrNull { it.name == name } }.toSet(),
         backupReminder = backupReminder ?: defaults.backupReminder,
+        worker = worker?.let { json ->
+            WorkerProfile(
+                id = json.id,
+                name = json.name,
+                email = json.email,
+                role = WorkerRole.entries.firstOrNull { it.name == json.role },
+                categories = json.categories.mapNotNull { name -> MachineCategory.entries.firstOrNull { it.name == name } }.toSet(),
+            )
+        } ?: defaults.worker,
+        // A restored phone has its profile (or can fill it from the menu): not asked again
+        workerPromptAsked = true,
     )
 }

@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
+import com.foxnks.dockshift.domain.machine.MachineCategory
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.CalendarView
@@ -16,6 +17,8 @@ import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.settings.ThemeMode
 import com.foxnks.dockshift.domain.settings.WorkSchedule
 import com.foxnks.dockshift.domain.shift.ShiftType
+import com.foxnks.dockshift.domain.worker.WorkerProfile
+import com.foxnks.dockshift.domain.worker.WorkerRole
 import java.time.LocalDate
 import java.io.IOException
 import javax.inject.Inject
@@ -65,6 +68,17 @@ class DataStoreSettingsRepository @Inject constructor(
                     .toSet(),
                 lastBackup = preferences[Keys.LAST_BACKUP]?.let { runCatching { LocalDate.parse(it) }.getOrNull() },
                 backupReminder = preferences[Keys.BACKUP_REMINDER] ?: defaults.backupReminder,
+                worker = WorkerProfile(
+                    id = preferences[Keys.WORKER_ID].orEmpty(),
+                    name = preferences[Keys.WORKER_NAME].orEmpty(),
+                    email = preferences[Keys.WORKER_EMAIL].orEmpty(),
+                    // Stored by name; unknown names (e.g. from a newer version) are skipped
+                    role = WorkerRole.entries.firstOrNull { it.name == preferences[Keys.WORKER_ROLE] },
+                    categories = preferences[Keys.WORKER_CATEGORIES].orEmpty()
+                        .mapNotNull { name -> MachineCategory.entries.firstOrNull { it.name == name } }
+                        .toSet(),
+                ),
+                workerPromptAsked = preferences[Keys.WORKER_PROMPT_ASKED] ?: defaults.workerPromptAsked,
             )
         }
 
@@ -120,6 +134,21 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { preferences -> preferences[Keys.BACKUP_REMINDER] = enabled }
     }
 
+    override suspend fun setWorker(worker: WorkerProfile) {
+        dataStore.edit { preferences -> preferences.putWorker(worker, keepId = true) }
+    }
+
+    override suspend fun ensureWorkerId(id: String) {
+        // Inside one edit: two quick starts can never store two different ids
+        dataStore.edit { preferences ->
+            if (preferences[Keys.WORKER_ID].isNullOrBlank()) preferences[Keys.WORKER_ID] = id
+        }
+    }
+
+    override suspend fun setWorkerPromptAsked() {
+        dataStore.edit { preferences -> preferences[Keys.WORKER_PROMPT_ASKED] = true }
+    }
+
     override suspend fun restore(settings: AppSettings) {
         // One edit: the file holds either the old settings or the restored ones, never a mix
         dataStore.edit { preferences ->
@@ -138,6 +167,8 @@ class DataStoreSettingsRepository @Inject constructor(
                 preferences[Keys.PORT_CLOSED_HOLIDAYS] = portClosedHolidays.map { it.name }.toSet()
                 lastBackup?.let { preferences[Keys.LAST_BACKUP] = it.toString() }
                 preferences[Keys.BACKUP_REMINDER] = backupReminder
+                preferences.putWorker(worker, keepId = false)
+                preferences[Keys.WORKER_PROMPT_ASKED] = workerPromptAsked
             }
         }
     }
@@ -149,6 +180,25 @@ class DataStoreSettingsRepository @Inject constructor(
         } else {
             this[Keys.ROTATION_ANCHOR] = "${anchor.cycleStart}$ANCHOR_SEPARATOR${anchor.firstType.name}"
         }
+    }
+
+    /**
+     * Stores the profile; an empty text or no role removes its key.
+     *
+     * @param keepId true to leave the stored id untouched (normal saves), false to
+     * store the profile's own id (restoring a backup).
+     */
+    private fun MutablePreferences.putWorker(worker: WorkerProfile, keepId: Boolean) {
+        if (!keepId && worker.id.isNotBlank()) this[Keys.WORKER_ID] = worker.id
+        putOrRemove(Keys.WORKER_NAME, worker.name)
+        putOrRemove(Keys.WORKER_EMAIL, worker.email)
+        putOrRemove(Keys.WORKER_ROLE, worker.role?.name.orEmpty())
+        this[Keys.WORKER_CATEGORIES] = worker.categories.map { it.name }.toSet()
+    }
+
+    /** Stores [value], or removes [key] when it is blank. */
+    private fun MutablePreferences.putOrRemove(key: Preferences.Key<String>, value: String) {
+        if (value.isBlank()) remove(key) else this[key] = value
     }
 
     /** Stores the leave days per year as "2026:22,2027:24": readable and easy to extend. */
@@ -204,6 +254,12 @@ class DataStoreSettingsRepository @Inject constructor(
         val PORT_CLOSED_HOLIDAYS = stringSetPreferencesKey("port_closed_holidays")
         val LAST_BACKUP = stringPreferencesKey("last_backup")
         val BACKUP_REMINDER = booleanPreferencesKey("backup_reminder")
+        val WORKER_ID = stringPreferencesKey("worker_id")
+        val WORKER_NAME = stringPreferencesKey("worker_name")
+        val WORKER_EMAIL = stringPreferencesKey("worker_email")
+        val WORKER_ROLE = stringPreferencesKey("worker_role")
+        val WORKER_CATEGORIES = stringSetPreferencesKey("worker_categories")
+        val WORKER_PROMPT_ASKED = booleanPreferencesKey("worker_prompt_asked")
     }
 
     private companion object {

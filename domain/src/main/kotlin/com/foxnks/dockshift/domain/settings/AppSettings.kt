@@ -2,6 +2,7 @@ package com.foxnks.dockshift.domain.settings
 
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
+import com.foxnks.dockshift.domain.worker.WorkerProfile
 import java.time.LocalDate
 
 /**
@@ -35,6 +36,10 @@ import java.time.LocalDate
  * @property lastBackup the day of the last backup, or null when none was made yet.
  * @property backupReminder whether to remind about a backup every 15 days. On by
  * default: losing a phone must not mean losing years of shifts.
+ * @property worker the user's profile ("Εργαζόμενος"); empty until filled in, apart from
+ * its permanent id.
+ * @property workerPromptAsked whether the first-run "fill in your profile?" question
+ * was answered, so it is asked only once.
  * @property showHolidays whether the Greek public holidays are marked (red day number
  * and name) in the calendar, on "Today" and in the shift list. On by default: useful
  * to everyone, and they are only shown, never turned into shifts.
@@ -53,4 +58,6 @@ data class AppSettings(
     val portClosedHolidays: Set<GreekHoliday> = emptySet(),
     val lastBackup: LocalDate? = null,
     val backupReminder: Boolean = true,
+    val worker: WorkerProfile = WorkerProfile(),
+    val workerPromptAsked: Boolean = false,
 )

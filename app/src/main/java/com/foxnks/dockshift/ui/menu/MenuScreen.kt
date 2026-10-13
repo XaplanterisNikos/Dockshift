@@ -16,12 +16,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import com.foxnks.dockshift.R
+import com.foxnks.dockshift.domain.worker.WorkerProfile
+import com.foxnks.dockshift.domain.worker.WorkerRole
 import com.foxnks.dockshift.ui.navigation.AppBottomBar
 import com.foxnks.dockshift.ui.navigation.BackupKey
 import com.foxnks.dockshift.ui.navigation.LeavesKey
@@ -29,7 +34,9 @@ import com.foxnks.dockshift.ui.navigation.MachinesKey
 import com.foxnks.dockshift.ui.navigation.SettingsKey
 import com.foxnks.dockshift.ui.navigation.StatisticsKey
 import com.foxnks.dockshift.ui.navigation.TopLevel
+import com.foxnks.dockshift.ui.navigation.WorkerKey
 import com.foxnks.dockshift.ui.theme.DockshiftTheme
+import com.foxnks.dockshift.ui.worker.labelRes
 
 /**
  * One row of the menu.
@@ -62,23 +69,29 @@ private val settingsEntry =
     MenuEntry(SettingsKey, R.string.settings_title, R.string.menu_settings_summary, R.drawable.ic_settings)
 
 /**
- * Entry point of the menu. It has no state of its own, so no ViewModel.
+ * Entry point of the menu.
  *
  * @param onOpen open the screen of a menu row.
  * @param onSelectTopLevel switch screen from the bottom bar.
+ * @param viewModel provided by Hilt.
  */
 @Composable
-fun MenuRoute(onOpen: (NavKey) -> Unit, onSelectTopLevel: (TopLevel) -> Unit) {
-    MenuScreen(onOpen = onOpen, onSelectTopLevel = onSelectTopLevel)
+fun MenuRoute(onOpen: (NavKey) -> Unit, onSelectTopLevel: (TopLevel) -> Unit, viewModel: MenuViewModel = hiltViewModel()) {
+    val worker by viewModel.worker.collectAsStateWithLifecycle()
+    MenuScreen(onOpen = onOpen, onSelectTopLevel = onSelectTopLevel, worker = worker)
 }
 
 /**
- * The central menu: what the app does (machines, and later statistics, leave...)
- * on top, Settings at the bottom after a divider.
+ * The central menu: the user's profile at the top, what the app does (machines,
+ * statistics, leave, data) below it, Settings at the bottom after a divider.
+ *
+ * @param onOpen open the screen of a menu row.
+ * @param onSelectTopLevel switch screen from the bottom bar.
+ * @param worker the user's profile, for the top row.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MenuScreen(onOpen: (NavKey) -> Unit, onSelectTopLevel: (TopLevel) -> Unit) {
+fun MenuScreen(onOpen: (NavKey) -> Unit, onSelectTopLevel: (TopLevel) -> Unit, worker: WorkerProfile = WorkerProfile()) {
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.nav_menu)) }) },
         bottomBar = { AppBottomBar(selected = TopLevel.MENU, onSelect = onSelectTopLevel) },
@@ -89,6 +102,8 @@ fun MenuScreen(onOpen: (NavKey) -> Unit, onSelectTopLevel: (TopLevel) -> Unit) {
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState()),
         ) {
+            WorkerRow(worker, onOpen)
+            HorizontalDivider()
             sections.forEach { MenuRow(it, onOpen) }
             HorizontalDivider()
             MenuRow(settingsEntry, onOpen)
@@ -108,11 +123,42 @@ private fun MenuRow(entry: MenuEntry, onOpen: (NavKey) -> Unit) {
     )
 }
 
+/**
+ * The profile row: the user's name and role, or an invitation to fill them in.
+ *
+ * @param worker the profile.
+ * @param onOpen opens the profile screen.
+ */
+@Composable
+private fun WorkerRow(worker: WorkerProfile, onOpen: (NavKey) -> Unit) {
+    val role = worker.role
+    ListItem(
+        headlineContent = { Text(worker.name.ifBlank { stringResource(R.string.worker_title) }) },
+        supportingContent = {
+            Text(
+                if (role != null) {
+                    // e.g. "Χειριστής · RTG, QC"
+                    "${stringResource(role.labelRes())} · ${worker.machineCategories.joinToString(", ") { it.name }}"
+                } else {
+                    stringResource(R.string.menu_worker_summary)
+                },
+            )
+        },
+        leadingContent = { Icon(painterResource(R.drawable.ic_person), contentDescription = null) },
+        trailingContent = { Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null) },
+        modifier = Modifier.clickable { onOpen(WorkerKey) },
+    )
+}
+
 /** Android Studio preview of [MenuScreen]; not part of the running app. */
 @Preview(showBackground = true)
 @Composable
 private fun MenuScreenPreview() {
     DockshiftTheme {
-        MenuScreen(onOpen = {}, onSelectTopLevel = {})
+        MenuScreen(
+            onOpen = {},
+            onSelectTopLevel = {},
+            worker = WorkerProfile(name = "Νίκος", role = WorkerRole.OPERATOR),
+        )
     }
 }

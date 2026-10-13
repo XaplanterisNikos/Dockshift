@@ -340,4 +340,25 @@
         <item quantity="other">%d μέρες από το τελευταίο backup</item>
     </plurals>
     <string name="today_backup_button">Backup</string>
+
+    <!-- Προφίλ εργαζομένου (#28) -->
+    <string name="worker_title">Εργαζόμενος</string>
+    <string name="menu_worker_summary">Το όνομά σου, το email και τα μηχανήματα που δουλεύεις</string>
+    <string name="worker_intro">Τίποτα εδώ δεν είναι υποχρεωτικό. Η θέση και τα μηχανήματά σου ορίζουν ποιες κατηγορίες δείχνει η επιλογή μηχανήματος.</string>
+    <string name="worker_name">Όνομα</string>
+    <string name="worker_name_too_long">Έως %1$d χαρακτήρες</string>
+    <string name="worker_email">Email</string>
+    <string name="worker_email_invalid">Μη έγκυρο email, π.χ. onoma@gmail.com</string>
+    <string name="worker_role">Θέση</string>
+    <string name="worker_role_operator">Χειριστής</string>
+    <string name="worker_role_driver">Οδηγός</string>
+    <string name="worker_role_both">Και τα δύο</string>
+    <string name="worker_categories">Μηχανήματα που δουλεύω</string>
+    <string name="worker_categories_hint">Ξετσέκαρε όσα δεν δουλεύεις ποτέ. Τουλάχιστον ένα.</string>
+    <string name="worker_id">Αναγνωριστικό: %1$s</string>
+    <string name="worker_prompt_title">Ποιος είσαι;</string>
+    <string name="worker_prompt_text">Γράψε το όνομά σου και τα μηχανήματα που δουλεύεις, ώστε η εφαρμογή να δείχνει μόνο ό,τι σε αφορά. Μπορείς να το αλλάξεις όποτε θέλεις από το μενού.</string>
+    <string name="worker_prompt_yes">Συμπλήρωση</string>
+    <string name="worker_prompt_later">Αργότερα</string>
+    <string name="picker_all_categories">Όλες οι κατηγορίες</string>
 </resources>

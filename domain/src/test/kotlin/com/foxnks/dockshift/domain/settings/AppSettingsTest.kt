@@ -52,4 +52,11 @@ class AppSettingsTest {
         assertTrue(AppSettings().backupReminder)
         assertNull(AppSettings().lastBackup)
     }
+
+    @Test
+    fun `the profile is empty and not asked yet by default`() {
+        assertFalse(AppSettings().worker.isFilled)
+        assertEquals("", AppSettings().worker.id)
+        assertFalse(AppSettings().workerPromptAsked)
+    }
 }
