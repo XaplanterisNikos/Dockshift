@@ -251,4 +251,49 @@
     <string name="today_forecast">Prediction: %1$s</string>
     <string name="edit_other_types">Other shift (outside your schedule)</string>
     <string name="edit_outside_schedule">The shift running now (%1$s) is outside your work schedule in Settings. To go on, pick any shift you want.</string>
+
+    <!-- Leave -->
+    <string name="menu_leave">Leave</string>
+    <string name="menu_leave_summary">Days you are entitled to and planned leave</string>
+    <string name="leave_add">Add leave</string>
+    <string name="leave_planned_title">Planned leave</string>
+    <string name="leave_none">No leave planned this year.</string>
+    <string name="leave_port_closed_title">Port closed on</string>
+    <string name="leave_port_closed_summary">The port works on public holidays. Tick the ones on which it is closed: a leave day on them does not count.</string>
+    <string name="leave_entitlement_title">Leave days %1$d</string>
+    <string name="leave_entitlement_unset">Set how many leave days you are entitled to this year (10 to 60).</string>
+    <string name="leave_entitlement_set">Set %1$d days</string>
+    <plurals name="leave_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <string name="leave_taken">Taken</string>
+    <string name="leave_planned">Planned</string>
+    <string name="leave_left">Left</string>
+    <string name="leave_new_title">New leave</string>
+    <string name="leave_edit_title">Edit leave</string>
+    <string name="leave_note">Name (optional)</string>
+    <string name="leave_note_hint">e.g. Summer</string>
+    <string name="leave_from">From</string>
+    <string name="leave_to">To</string>
+    <plurals name="leave_counts">
+        <item quantity="one">Counts %d day</item>
+        <item quantity="other">Counts %d days</item>
+    </plurals>
+    <plurals name="leave_closed_days">
+        <item quantity="one">%d holiday with the port closed does not count</item>
+        <item quantity="other">%d holidays with the port closed do not count</item>
+    </plurals>
+    <string name="leave_left_after">Left in %1$d after this: %2$d</string>
+    <string name="leave_over_by">More than your entitlement by %1$d</string>
+    <string name="leave_problem_end_before_start">The last day is before the first.</string>
+    <string name="leave_problem_overlap">It overlaps with «%1$s» (%2$s).</string>
+    <string name="leave_replace_title">Replace shifts?</string>
+    <plurals name="leave_replace_text">
+        <item quantity="one">%d day of this leave already has a shift. A leave day cannot be worked: the shift will be replaced.</item>
+        <item quantity="other">%d days of this leave already have shifts. A leave day cannot be worked: the shifts will be replaced.</item>
+    </plurals>
+    <string name="leave_delete_title">Delete this leave?</string>
+    <string name="leave_delete_text">Its days go back to your usual schedule.</string>
+    <string name="leave_open">Open the leave</string>
 </resources>

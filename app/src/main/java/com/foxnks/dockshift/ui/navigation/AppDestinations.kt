@@ -41,6 +41,19 @@ data object MachinesKey : NavKey
 @Serializable
 data object StatisticsKey : NavKey
 
+/** Planned leave: entitlement, leaves of a year, closed-port holidays. Opened from the menu. */
+@Serializable
+data object LeavesKey : NavKey
+
+/**
+ * Add or edit a leave.
+ *
+ * @property id the leave to edit, or 0 for a new one.
+ * @property day ISO first day of a new leave, or null for today.
+ */
+@Serializable
+data class EditLeaveKey(val id: Long, val day: String? = null) : NavKey
+
 /** Settings. Opened from the menu. */
 @Serializable
 data object SettingsKey : NavKey

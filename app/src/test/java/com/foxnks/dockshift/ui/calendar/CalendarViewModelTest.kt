@@ -2,6 +2,7 @@ package com.foxnks.dockshift.ui.calendar
 
 import com.foxnks.dockshift.domain.calendar.DayStatus
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
+import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import com.foxnks.dockshift.domain.rotation.RotationSchedule
 import com.foxnks.dockshift.domain.settings.AppSettings
@@ -10,6 +11,7 @@ import com.foxnks.dockshift.domain.settings.WorkSchedule
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.testing.FakeSettingsRepository
+import com.foxnks.dockshift.testing.InMemoryLeaveRepository
 import com.foxnks.dockshift.testing.InMemoryShiftRepository
 import com.foxnks.dockshift.testing.MainDispatcherRule
 import java.time.Clock
@@ -44,7 +46,8 @@ class CalendarViewModelTest {
     private fun viewModel(
         shifts: InMemoryShiftRepository = InMemoryShiftRepository(),
         settings: FakeSettingsRepository = FakeSettingsRepository(),
-    ) = CalendarViewModel(shifts, settings, clockOn(today))
+        leaves: InMemoryLeaveRepository = InMemoryLeaveRepository(),
+    ) = CalendarViewModel(shifts, leaves, settings, clockOn(today))
 
     /** Collects the state like the screen does, so WhileSubscribed runs. */
     private fun TestScope.observe(viewModel: CalendarViewModel) {
@@ -234,5 +237,21 @@ class CalendarViewModelTest {
         observe(viewModel)
 
         assertEquals(0, viewModel.uiState.value.visible!!.summary.forecastDays)
+    }
+
+    @Test
+    fun `planned leave days show as leave, over the prediction`() = runTest {
+        val anchor = RotationAnchor(LocalDate.of(2024, 8, 10), ShiftType.AFTERNOON)
+        val leave = Leave(1, LocalDate.of(2026, 10, 20), LocalDate.of(2026, 10, 24), "Φθινόπωρο")
+        val viewModel = viewModel(
+            settings = FakeSettingsRepository(AppSettings(rotationAnchor = anchor)),
+            leaves = InMemoryLeaveRepository(listOf(leave)),
+        )
+        observe(viewModel)
+
+        val page = viewModel.uiState.value.visible!!
+        assertEquals(DayStatus.OnLeave(leave), page.day(LocalDate.of(2026, 10, 22))?.status)
+        assertTrue(page.day(LocalDate.of(2026, 10, 25))?.status is DayStatus.Forecast)
+        assertEquals(5, page.summary.countByType[ShiftType.ANNUAL_LEAVE])
     }
 }

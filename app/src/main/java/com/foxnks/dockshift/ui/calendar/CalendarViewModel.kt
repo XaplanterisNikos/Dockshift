@@ -7,6 +7,7 @@ import com.foxnks.dockshift.domain.calendar.CalendarMonth
 import com.foxnks.dockshift.domain.calendar.DayStatus
 import com.foxnks.dockshift.domain.calendar.MonthGrid
 import com.foxnks.dockshift.domain.holidays.GreekHolidays
+import com.foxnks.dockshift.domain.leave.LeaveRepository
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import com.foxnks.dockshift.domain.rotation.RotationSchedule
 import com.foxnks.dockshift.domain.settings.AppSettings
@@ -84,6 +85,7 @@ data class CalendarUiState(
  * through [onMonthShown], and only then are that month's shifts read.
  *
  * @param shifts stored shifts.
+ * @param leaves planned leaves.
  * @param settings where the chosen panel ([CalendarView]) of each orientation is kept.
  * @param clock the current time; injected so tests can fix "today".
  */
@@ -91,6 +93,7 @@ data class CalendarUiState(
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
     private val shifts: ShiftRepository,
+    private val leaves: LeaveRepository,
     private val settings: SettingsRepository,
     private val clock: Clock,
 ) : ViewModel() {
@@ -126,8 +129,11 @@ class CalendarViewModel @Inject constructor(
                 val forecast = { date: LocalDate ->
                     RotationSchedule.forecastOn(pageSettings.workSchedule, pageSettings.rotationAnchor, date, now)
                 }
-                shifts.observeShifts(from, to)
-                    .map { list -> month to shown.associateWith { CalendarMonth.of(it, list, holidays, forecast) } }
+                combine(shifts.observeShifts(from, to), leaves.observeBetween(from, to)) { list, leaveList ->
+                    month to shown.associateWith {
+                        CalendarMonth.of(it, list, holidays = holidays, leaves = leaveList, forecast = forecast)
+                    }
+                }
             }
 
     /** The screen state, always up to date with the stored shifts and settings. */

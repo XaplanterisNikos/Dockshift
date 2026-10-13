@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.foxnks.dockshift.R
 import com.foxnks.dockshift.domain.calendar.CalendarDay
+import com.foxnks.dockshift.domain.calendar.DayStatus
 import com.foxnks.dockshift.domain.settings.CalendarView
 import com.foxnks.dockshift.ui.navigation.AppBottomBar
 import com.foxnks.dockshift.ui.navigation.TopLevel
@@ -54,12 +55,14 @@ import kotlinx.coroutines.launch
  * Entry point of the calendar.
  *
  * @param onEditDay open the shift of a day for adding or editing.
+ * @param onOpenLeave open a planned leave (its id) for changing or deleting.
  * @param onSelectTopLevel switch screen from the bottom bar.
  * @param viewModel provided by Hilt, one per screen entry.
  */
 @Composable
 fun CalendarRoute(
     onEditDay: (LocalDate) -> Unit,
+    onOpenLeave: (Long) -> Unit,
     onSelectTopLevel: (TopLevel) -> Unit,
     viewModel: CalendarViewModel = hiltViewModel(),
 ) {
@@ -75,6 +78,7 @@ fun CalendarRoute(
         onRecordForecasts = viewModel::onRecordForecasts,
         onEditDay = onEditDay,
         onSelectTopLevel = onSelectTopLevel,
+        onOpenLeave = onOpenLeave,
     )
 }
 
@@ -95,6 +99,7 @@ fun CalendarRoute(
  * @param onRecordForecasts the month's predicted days should be recorded (already confirmed).
  * @param onEditDay open a day for adding or editing.
  * @param onSelectTopLevel switch screen from the bottom bar.
+ * @param onOpenLeave open a planned leave (its id): a leave day opens its leave, not the shift form.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,6 +112,7 @@ fun CalendarScreen(
     onRecordForecasts: () -> Unit,
     onEditDay: (LocalDate) -> Unit,
     onSelectTopLevel: (TopLevel) -> Unit,
+    onOpenLeave: (Long) -> Unit = {},
 ) {
     val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val showDetails = uiState.view(landscape) == CalendarView.DAY_DETAILS
@@ -135,6 +141,8 @@ fun CalendarScreen(
                 scrollTo(YearMonth.from(day.date))
             }
             showDetails -> onDaySelected(day.date)
+            // A leave day cannot be worked: it opens its leave
+            day.status is DayStatus.OnLeave -> onOpenLeave((day.status as DayStatus.OnLeave).leave.id)
             else -> onEditDay(day.date)
         }
     }
@@ -197,6 +205,7 @@ fun CalendarScreen(
                         onEditDay = onEditDay,
                         onRecordForecasts = onRecordForecasts,
                         modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
+                        onOpenLeave = onOpenLeave,
                     )
                 }
             }
@@ -225,6 +234,7 @@ fun CalendarScreen(
                         onEditDay = onEditDay,
                         onRecordForecasts = onRecordForecasts,
                         modifier = Modifier.padding(16.dp),
+                        onOpenLeave = onOpenLeave,
                     )
                 }
             }
@@ -301,10 +311,11 @@ private fun CalendarPanel(
     onEditDay: (LocalDate) -> Unit,
     onRecordForecasts: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenLeave: (Long) -> Unit = {},
 ) {
     val visible = uiState.page(uiState.visibleMonth)
     if (showDetails) {
-        DayDetailsPanel(day = visible.day(uiState.selectedDate), onEditDay = onEditDay, modifier = modifier)
+        DayDetailsPanel(day = visible.day(uiState.selectedDate), onEditDay = onEditDay, modifier = modifier, onOpenLeave = onOpenLeave)
     } else {
         MonthSummaryPanel(summary = visible.summary, modifier = modifier, onRecordForecasts = onRecordForecasts)
     }

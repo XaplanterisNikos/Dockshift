@@ -1,6 +1,7 @@
 package com.foxnks.dockshift.domain.calendar
 
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
+import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
 import java.time.LocalDate
@@ -22,6 +23,14 @@ sealed interface DayStatus {
      * @property shift the stored shift, with its machines and comment.
      */
     data class Recorded(val shift: Shift) : DayStatus
+
+    /**
+     * A day of a planned annual leave (nothing stored for it). Shown like annual leave;
+     * tapping it opens the leave, since a leave day cannot be worked.
+     *
+     * @property leave the leave the day belongs to.
+     */
+    data class OnLeave(val leave: Leave) : DayStatus
 
     /**
      * Nothing stored, but the rotating schedule predicts this type.
@@ -56,7 +65,8 @@ data class CalendarDay(
  * Totals of one month, shown under (or next to) the calendar.
  * Only the days of the month itself count, never the faded neighbour days.
  *
- * @property countByType recorded days per type, in [ShiftType] order, types with 0 days left out.
+ * @property countByType recorded days per type, in [ShiftType] order, types with 0 days left out;
+ * planned leave days count as annual leave.
  * @property workShifts recorded working shifts (morning, afternoon, night).
  * @property workedHours hours of those shifts, overtime included.
  * @property overtimeShifts working shifts with overtime.
@@ -88,7 +98,10 @@ data class MonthSummary(
         fun of(days: List<CalendarDay>): MonthSummary {
             val inMonth = days.filter { it.inMonth }
             val recorded = inMonth.mapNotNull { (it.status as? DayStatus.Recorded)?.shift }
-            val counts = recorded.groupingBy { it.type }.eachCount()
+            val counts = recorded.groupingBy { it.type }.eachCount().toMutableMap()
+            // Planned leave days are annual leave days too
+            val leaveDays = inMonth.count { it.status is DayStatus.OnLeave }
+            if (leaveDays > 0) counts.merge(ShiftType.ANNUAL_LEAVE, leaveDays, Int::plus)
             return MonthSummary(
                 // Ordered like the enum, so the summary always lists types in the same order
                 countByType = ShiftType.entries.filter { it in counts }.associateWith { counts.getValue(it) },
@@ -125,14 +138,16 @@ data class CalendarMonth(
         /**
          * Builds the page of [month].
          *
-         * A stored shift always wins over a prediction: what the user entered is
-         * what happened (or was agreed), the rotation only fills the gaps.
+         * A stored shift always wins, then a planned leave, then a prediction: what the
+         * user entered is what happened (or was agreed), leave is known in advance, and
+         * the rotation only fills the gaps.
          *
          * @param month the month of the page.
          * @param shifts stored shifts; any that are not on the page are ignored, so a
          * wider list (e.g. three months at once) can be passed as it is.
          * @param holidays public holidays by date (see `GreekHolidays.between`); a wider
          * map can be passed as it is. Empty when the user turned holidays off.
+         * @param leaves planned leaves; any outside the page are ignored.
          * @param forecast the predicted type of a day, or null. Nothing predicts yet;
          * the rotating schedule (#8) will plug in here.
          */
@@ -140,17 +155,20 @@ data class CalendarMonth(
             month: YearMonth,
             shifts: Collection<Shift>,
             holidays: Map<LocalDate, GreekHoliday> = emptyMap(),
+            leaves: List<Leave> = emptyList(),
             forecast: (LocalDate) -> ShiftType? = { null },
         ): CalendarMonth {
             val byDate = shifts.associateBy { it.date }
             val days = MonthGrid.dates(month).map { date ->
                 val stored = byDate[date]
-                val predicted = if (stored == null) forecast(date) else null
+                val leave = if (stored == null) leaves.firstOrNull { date in it } else null
+                val predicted = if (stored == null && leave == null) forecast(date) else null
                 CalendarDay(
                     date = date,
                     inMonth = YearMonth.from(date) == month,
                     status = when {
                         stored != null -> DayStatus.Recorded(stored)
+                        leave != null -> DayStatus.OnLeave(leave)
                         predicted != null -> DayStatus.Forecast(predicted)
                         else -> DayStatus.Empty
                     },

@@ -45,6 +45,21 @@ object DatabaseMigrations {
         }
     }
 
+    /**
+     * Version 2 → 3: a new `leaves` table for planned annual leave.
+     *
+     * Only adds a table, so no existing data is touched. The SQL is the one Room
+     * generates for `LeaveEntity` (see `app/schemas/.../3.json`).
+     */
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override suspend fun migrate(connection: SQLiteConnection) {
+            connection.prepare(
+                "CREATE TABLE IF NOT EXISTS `leaves` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`startDate` TEXT NOT NULL, `endDate` TEXT NOT NULL, `note` TEXT)",
+            ).use { it.step() }
+        }
+    }
+
     /** All migrations, for the database builder. */
-    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2)
+    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
 }

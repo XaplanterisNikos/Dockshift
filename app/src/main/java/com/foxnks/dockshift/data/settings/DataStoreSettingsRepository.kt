@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.CalendarView
@@ -55,6 +57,11 @@ class DataStoreSettingsRepository @Inject constructor(
                 calendarViewLandscape = calendarView(preferences[Keys.CALENDAR_VIEW_LANDSCAPE])
                     ?: defaults.calendarViewLandscape,
                 showHolidays = preferences[Keys.SHOW_HOLIDAYS] ?: defaults.showHolidays,
+                leaveEntitlements = entitlementsOf(preferences[Keys.LEAVE_ENTITLEMENTS]),
+                // Stored by name; unknown names (e.g. from a newer version) are skipped
+                portClosedHolidays = preferences[Keys.PORT_CLOSED_HOLIDAYS].orEmpty()
+                    .mapNotNull { name -> GreekHoliday.entries.firstOrNull { it.name == name } }
+                    .toSet(),
             )
         }
 
@@ -99,6 +106,27 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { preferences -> preferences[Keys.SHOW_HOLIDAYS] = enabled }
     }
 
+    override suspend fun setLeaveEntitlement(year: Int, days: Int) {
+        dataStore.edit { preferences ->
+            val all = entitlementsOf(preferences[Keys.LEAVE_ENTITLEMENTS]) + (year to days)
+            // Stored as "2026:22,2027:24": readable and easy to extend
+            preferences[Keys.LEAVE_ENTITLEMENTS] = all.entries.sortedBy { it.key }.joinToString(",") { "${it.key}:${it.value}" }
+        }
+    }
+
+    override suspend fun setPortClosedHolidays(holidays: Set<GreekHoliday>) {
+        dataStore.edit { preferences -> preferences[Keys.PORT_CLOSED_HOLIDAYS] = holidays.map { it.name }.toSet() }
+    }
+
+    /** "2026:22,2027:24" back to a map; unreadable parts are skipped. */
+    private fun entitlementsOf(text: String?): Map<Int, Int> =
+        text.orEmpty().split(",").mapNotNull { part ->
+            val (year, days) = part.split(":").takeIf { it.size == 2 } ?: return@mapNotNull null
+            val y = year.toIntOrNull() ?: return@mapNotNull null
+            val d = days.toIntOrNull() ?: return@mapNotNull null
+            y to d
+        }.toMap()
+
     /**
      * A stored rotation place back to the value, or null when it was never saved or
      * cannot be read (then nothing is predicted until the user sets it again).
@@ -134,6 +162,8 @@ class DataStoreSettingsRepository @Inject constructor(
         val CALENDAR_VIEW_PORTRAIT = stringPreferencesKey("calendar_view_portrait")
         val CALENDAR_VIEW_LANDSCAPE = stringPreferencesKey("calendar_view_landscape")
         val SHOW_HOLIDAYS = booleanPreferencesKey("show_holidays")
+        val LEAVE_ENTITLEMENTS = stringPreferencesKey("leave_entitlements")
+        val PORT_CLOSED_HOLIDAYS = stringSetPreferencesKey("port_closed_holidays")
     }
 
     private companion object {

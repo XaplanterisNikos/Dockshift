@@ -34,6 +34,7 @@ import com.foxnks.dockshift.domain.calendar.CalendarDay
 import com.foxnks.dockshift.domain.calendar.DayStatus
 import com.foxnks.dockshift.domain.calendar.MonthSummary
 import com.foxnks.dockshift.domain.shift.ShiftType
+import com.foxnks.dockshift.ui.leave.leaveDates
 import com.foxnks.dockshift.ui.shift.MachineLine
 import com.foxnks.dockshift.ui.shift.ShiftChip
 import com.foxnks.dockshift.ui.shift.ShiftFormat
@@ -130,12 +131,14 @@ fun MonthSummaryPanel(summary: MonthSummary, modifier: Modifier = Modifier, onRe
  * @param day the selected day, or null while its month is being read.
  * @param onEditDay opens the day for adding or editing.
  * @param modifier optional modifier from the caller.
+ * @param onOpenLeave opens a planned leave (its id) for changing or deleting.
  */
 @Composable
 fun DayDetailsPanel(
     day: CalendarDay?,
     onEditDay: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenLeave: (Long) -> Unit = {},
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (day != null) {
@@ -154,6 +157,17 @@ fun DayDetailsPanel(
                     shift.machines.forEach { MachineLine(it) }
                     shift.comments?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
                     FilledTonalButton(onClick = { onEditDay(day.date) }) { Text(stringResource(R.string.calendar_edit)) }
+                }
+                // A leave day cannot be worked: the button opens the leave, not the shift form
+                is DayStatus.OnLeave -> {
+                    ShiftChip(ShiftType.ANNUAL_LEAVE)
+                    status.leave.note?.let { Text(it, style = MaterialTheme.typography.titleSmall) }
+                    Text(
+                        text = leaveDates(status.leave),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    FilledTonalButton(onClick = { onOpenLeave(status.leave.id) }) { Text(stringResource(R.string.leave_open)) }
                 }
                 is DayStatus.Forecast -> {
                     ForecastLabel(stringResource(R.string.calendar_forecast))

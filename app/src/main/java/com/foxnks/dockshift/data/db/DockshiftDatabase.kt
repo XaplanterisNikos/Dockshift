@@ -3,8 +3,10 @@ package com.foxnks.dockshift.data.db
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import com.foxnks.dockshift.data.db.dao.ImportDao
+import com.foxnks.dockshift.data.db.dao.LeaveDao
 import com.foxnks.dockshift.data.db.dao.MachineDao
 import com.foxnks.dockshift.data.db.dao.ShiftDao
+import com.foxnks.dockshift.data.db.entity.LeaveEntity
 import com.foxnks.dockshift.data.db.entity.MachineEntity
 import com.foxnks.dockshift.data.db.entity.ShiftEntity
 import com.foxnks.dockshift.data.db.entity.ShiftMachineEntity
@@ -19,10 +21,11 @@ import com.foxnks.dockshift.data.db.entity.ShiftMachineEntity
  * Versions:
  * 1. machines, shifts, shift_machines.
  * 2. machines.location ([DatabaseMigrations.MIGRATION_1_2]).
+ * 3. leaves ([DatabaseMigrations.MIGRATION_2_3]).
  */
 @Database(
-    entities = [MachineEntity::class, ShiftEntity::class, ShiftMachineEntity::class],
-    version = 2,
+    entities = [MachineEntity::class, ShiftEntity::class, ShiftMachineEntity::class, LeaveEntity::class],
+    version = 3,
     exportSchema = true,
 )
 abstract class DockshiftDatabase : RoomDatabase() {
@@ -32,6 +35,9 @@ abstract class DockshiftDatabase : RoomDatabase() {
 
     /** The machine list. */
     abstract fun machineDao(): MachineDao
+
+    /** Planned leaves. */
+    abstract fun leaveDao(): LeaveDao
 
     /** Bulk imports (v1 migration, backups). */
     abstract fun importDao(): ImportDao

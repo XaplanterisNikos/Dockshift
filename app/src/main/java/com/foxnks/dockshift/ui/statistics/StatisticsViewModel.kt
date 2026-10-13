@@ -3,8 +3,11 @@ package com.foxnks.dockshift.ui.statistics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.foxnks.dockshift.domain.holidays.GreekHolidays
+import com.foxnks.dockshift.domain.leave.LeaveRepository
 import com.foxnks.dockshift.domain.settings.SettingsRepository
+import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftRepository
+import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.domain.statistics.ShiftStatistics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
@@ -48,6 +51,7 @@ sealed interface StatisticsUiState {
  * the totals of shifts, overtime and machines. Recomputed whenever a shift changes.
  *
  * @param shifts stored shifts.
+ * @param leaves planned leaves: their days count as annual leave.
  * @param settings whether public holidays are on.
  * @param clock the current time, for the default year.
  */
@@ -55,6 +59,7 @@ sealed interface StatisticsUiState {
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
     private val shifts: ShiftRepository,
+    private val leaves: LeaveRepository,
     settings: SettingsRepository,
     clock: Clock,
 ) : ViewModel() {
@@ -87,12 +92,17 @@ class StatisticsViewModel @Inject constructor(
             val from = months.first().atDay(1)
             val to = months.last().atEndOfMonth()
             val holidays = if (period.showHolidays) GreekHolidays.between(from, to).keys else emptySet()
-            shifts.observeShifts(from, to).map { list ->
+            combine(shifts.observeShifts(from, to), leaves.observeBetween(from, to)) { list, leaveList ->
+                // A planned leave day without a stored shift is a day of annual leave
+                val stored = list.map { it.date }.toSet()
+                val leaveDays = leaveList.flatMap { it.days }
+                    .filter { it in from..to && it !in stored }
+                    .map { Shift(it, ShiftType.ANNUAL_LEAVE) }
                 StatisticsUiState.Ready(
                     years = period.years,
                     year = period.year,
                     month = period.month,
-                    statistics = ShiftStatistics.of(list, months, holidays),
+                    statistics = ShiftStatistics.of(list + leaveDays, months, holidays),
                     showHolidays = period.showHolidays,
                 )
             }
