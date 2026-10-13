@@ -24,6 +24,10 @@ coroutines = "1.11.0"
 room3 = "3.0.3"
 # androidx.sqlite: provides the bundled SQLite driver used by Room
 sqlite = "2.7.1"
+# Navigation 3: Compose-first navigation with a back stack we own
+navigation3 = "1.2.0"
+# Saves the navigation back stack (screen keys are @Serializable)
+kotlinxSerialization = "1.11.0"
 junit = "4.13.2"
 # Instrumented (on-device) tests
 androidxTestRunner = "1.7.0"
@@ -57,6 +61,12 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 
+# Navigation: back stack + display, and one ViewModel store per screen entry
+androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
+androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
+androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "lifecycle" }
+kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
+
 # Database
 androidx-room3-runtime = { group = "androidx.room3", name = "room3-runtime", version.ref = "room3" }
 androidx-room3-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "room3" }
@@ -74,5 +84,7 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+# Generates serializers for @Serializable classes (navigation keys); same version as Kotlin
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 # Room 3 Gradle plugin: exports the database schema for migrations
 room3 = { id = "androidx.room3", version.ref = "room3" }

@@ -1,0 +1,173 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "25511302f640e817d47e267b668e601f",
+    "entities": [
+      {
+        "tableName": "machines",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `category` TEXT NOT NULL, `number` TEXT NOT NULL, `active` INTEGER NOT NULL, `location` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "number",
+            "columnName": "number",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "location",
+            "columnName": "location",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_machines_category_number",
+            "unique": true,
+            "columnNames": [
+              "category",
+              "number"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_machines_category_number` ON `${TABLE_NAME}` (`category`, `number`)"
+          }
+        ]
+      },
+      {
+        "tableName": "shifts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` TEXT NOT NULL, `type` TEXT NOT NULL, `overtime` INTEGER NOT NULL, `comments` TEXT, PRIMARY KEY(`date`))",
+        "fields": [
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "overtime",
+            "columnName": "overtime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "comments",
+            "columnName": "comments",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "date"
+          ]
+        }
+      },
+      {
+        "tableName": "shift_machines",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`shiftDate` TEXT NOT NULL, `position` INTEGER NOT NULL, `machineId` INTEGER NOT NULL, `duringOvertime` INTEGER NOT NULL, PRIMARY KEY(`shiftDate`, `position`), FOREIGN KEY(`shiftDate`) REFERENCES `shifts`(`date`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`machineId`) REFERENCES `machines`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "shiftDate",
+            "columnName": "shiftDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "machineId",
+            "columnName": "machineId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "duringOvertime",
+            "columnName": "duringOvertime",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "shiftDate",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_shift_machines_machineId",
+            "unique": false,
+            "columnNames": [
+              "machineId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_shift_machines_machineId` ON `${TABLE_NAME}` (`machineId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "shifts",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "shiftDate"
+            ],
+            "referencedColumns": [
+              "date"
+            ]
+          },
+          {
+            "table": "machines",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "machineId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '25511302f640e817d47e267b668e601f')"
+    ]
+  }
+}

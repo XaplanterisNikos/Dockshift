@@ -3,8 +3,6 @@
 <resources>
     <!-- Brand name: identical in every language -->
     <string name="app_name" translatable="false">Dockshift</string>
-    <!-- Temporary text of the empty start screen, until the real screens arrive -->
-    <string name="home_placeholder">Version 2 is under construction</string>
 
     <!-- Settings: rotating schedule -->
     <string name="setting_rotation_title">Rotating schedule</string>
@@ -58,7 +56,6 @@
     <string name="shift_type_training">Training</string>
     <string name="shift_type_strike">Strike</string>
     <string name="shift_type_parental_leave">Parental leave</string>
-    <string name="home_shift_colors">Shift colors</string>
 
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
@@ -73,4 +70,52 @@
     <string name="setting_theme_dark">Dark</string>
     <string name="setting_dynamic_color_title">Colors from wallpaper</string>
     <string name="setting_dynamic_color_summary">App colors follow your wallpaper. Shift colors stay the same.</string>
+
+    <!-- Screens: today, shift list, add/edit, delete all -->
+    <string name="nav_today">Today</string>
+    <string name="nav_shifts">Shifts</string>
+    <string name="add_shift">Add shift</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="overtime">Overtime</string>
+    <string name="overtime_short">+4h</string>
+    <string name="overtime_badge">With overtime (+4 hours)</string>
+    <string name="today_upcoming">Next days</string>
+    <string name="today_empty">No shift recorded for this day.</string>
+    <string name="today_night_from_yesterday">Night shift from yesterday, until 07:00</string>
+    <string name="day_not_recorded">Not recorded</string>
+    <string name="list_title">Shifts</string>
+    <string name="list_all_months">All</string>
+    <string name="list_empty">No shifts in this period.</string>
+    <string name="edit_title_new">New shift</string>
+    <string name="edit_title_edit">Edit shift</string>
+    <string name="edit_date">Date</string>
+    <string name="edit_change">Change</string>
+    <string name="edit_type">Type</string>
+    <string name="edit_overtime">Overtime (+4 hours)</string>
+    <string name="edit_machines">Machines, in order</string>
+    <string name="edit_no_machines">No machine added yet.</string>
+    <string name="edit_add_machine">Add machine</string>
+    <string name="edit_move_up">Move up</string>
+    <string name="edit_move_down">Move down</string>
+    <string name="edit_remove_machine">Remove machine</string>
+    <string name="edit_comments">Comments</string>
+    <string name="edit_save">Save</string>
+    <string name="edit_delete">Delete</string>
+    <string name="edit_delete_title">Delete this shift?</string>
+    <string name="edit_delete_text">The shift of %1$s will be deleted.</string>
+    <string name="edit_replace_title">Replace shift?</string>
+    <string name="edit_replace_text">%1$s already has a shift. Replace it with this one?</string>
+    <string name="edit_replace">Replace</string>
+    <string name="picker_title">Choose machine</string>
+    <string name="picker_search">Fleet number</string>
+    <string name="picker_empty">No machine found.</string>
+    <string name="settings_delete_all">Delete all shifts</string>
+    <string name="settings_delete_all_summary">Machines and settings are kept</string>
+    <string name="delete_all_title">Delete all shifts?</string>
+    <string name="delete_all_text">All %1$d stored shifts will be deleted.</string>
+    <string name="delete_all_continue">Continue</string>
+    <string name="delete_all_confirm_title">Are you sure?</string>
+    <string name="delete_all_confirm_text">This cannot be undone.</string>
+    <string name="delete_all_button">Delete all</string>
 </resources>

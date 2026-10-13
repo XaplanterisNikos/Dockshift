@@ -12,6 +12,8 @@ plugins {
     alias(libs.plugins.hilt)
     // Room 3: exports the database schema (see the room3 block below)
     alias(libs.plugins.room3)
+    // Serializers for the navigation keys, so the back stack survives process death
+    alias(libs.plugins.kotlin.serialization)
 }
 
 /**
@@ -118,6 +120,12 @@ dependencies {
     // ViewModel in Compose and lifecycle-aware collection of StateFlow
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+
+    // Navigation between screens, with a separate ViewModel per screen entry
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.kotlinx.serialization.core)
 
     // Settings storage
     implementation(libs.androidx.datastore.preferences)

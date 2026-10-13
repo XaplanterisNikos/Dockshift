@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Greek strings -->
 <resources>
-    <string name="home_placeholder">Η έκδοση 2 είναι υπό κατασκευή</string>
 
     <!-- Ρυθμίσεις: κυλιόμενο πρόγραμμα -->
     <string name="setting_rotation_title">Κυλιόμενο πρόγραμμα</string>
@@ -55,7 +54,6 @@
     <string name="shift_type_training">Εκπαίδευση</string>
     <string name="shift_type_strike">Απεργία</string>
     <string name="shift_type_parental_leave">Γονική άδεια</string>
-    <string name="home_shift_colors">Χρώματα βαρδιών</string>
 
     <!-- Οθόνη ρυθμίσεων -->
     <string name="settings_title">Ρυθμίσεις</string>
@@ -70,4 +68,52 @@
     <string name="setting_theme_dark">Σκούρο</string>
     <string name="setting_dynamic_color_title">Χρώματα από την ταπετσαρία</string>
     <string name="setting_dynamic_color_summary">Τα χρώματα της εφαρμογής ακολουθούν την ταπετσαρία. Τα χρώματα των βαρδιών μένουν ίδια.</string>
+
+    <!-- Οθόνες: σήμερα, λίστα βαρδιών, προσθήκη/επεξεργασία, διαγραφή όλων -->
+    <string name="nav_today">Σήμερα</string>
+    <string name="nav_shifts">Βάρδιες</string>
+    <string name="add_shift">Προσθήκη βάρδιας</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Ακύρωση</string>
+    <string name="overtime">Υπερωρία</string>
+    <string name="overtime_short">+4 ώρες</string>
+    <string name="overtime_badge">Με υπερωρία (+4 ώρες)</string>
+    <string name="today_upcoming">Επόμενες μέρες</string>
+    <string name="today_empty">Δεν έχει καταχωρηθεί βάρδια για αυτή τη μέρα.</string>
+    <string name="today_night_from_yesterday">Νυχτερινή βάρδια από χθες, μέχρι τις 07:00</string>
+    <string name="day_not_recorded">Χωρίς καταχώρηση</string>
+    <string name="list_title">Βάρδιες</string>
+    <string name="list_all_months">Όλοι</string>
+    <string name="list_empty">Δεν υπάρχουν βάρδιες σε αυτό το διάστημα.</string>
+    <string name="edit_title_new">Νέα βάρδια</string>
+    <string name="edit_title_edit">Επεξεργασία βάρδιας</string>
+    <string name="edit_date">Ημερομηνία</string>
+    <string name="edit_change">Αλλαγή</string>
+    <string name="edit_type">Τύπος</string>
+    <string name="edit_overtime">Υπερωρία (+4 ώρες)</string>
+    <string name="edit_machines">Μηχανήματα, με τη σειρά</string>
+    <string name="edit_no_machines">Δεν έχει προστεθεί μηχάνημα.</string>
+    <string name="edit_add_machine">Προσθήκη μηχανήματος</string>
+    <string name="edit_move_up">Μετακίνηση πάνω</string>
+    <string name="edit_move_down">Μετακίνηση κάτω</string>
+    <string name="edit_remove_machine">Αφαίρεση μηχανήματος</string>
+    <string name="edit_comments">Σχόλια</string>
+    <string name="edit_save">Αποθήκευση</string>
+    <string name="edit_delete">Διαγραφή</string>
+    <string name="edit_delete_title">Διαγραφή βάρδιας;</string>
+    <string name="edit_delete_text">Η βάρδια της %1$s θα διαγραφεί.</string>
+    <string name="edit_replace_title">Αντικατάσταση βάρδιας;</string>
+    <string name="edit_replace_text">Η %1$s έχει ήδη βάρδια. Να αντικατασταθεί με αυτή;</string>
+    <string name="edit_replace">Αντικατάσταση</string>
+    <string name="picker_title">Επιλογή μηχανήματος</string>
+    <string name="picker_search">Νούμερο μηχανήματος</string>
+    <string name="picker_empty">Δεν βρέθηκε μηχάνημα.</string>
+    <string name="settings_delete_all">Διαγραφή όλων των βαρδιών</string>
+    <string name="settings_delete_all_summary">Τα μηχανήματα και οι ρυθμίσεις μένουν</string>
+    <string name="delete_all_title">Διαγραφή όλων των βαρδιών;</string>
+    <string name="delete_all_text">Θα διαγραφούν και οι %1$d αποθηκευμένες βάρδιες.</string>
+    <string name="delete_all_continue">Συνέχεια</string>
+    <string name="delete_all_confirm_title">Είστε σίγουροι;</string>
+    <string name="delete_all_confirm_text">Αυτό δεν αναιρείται.</string>
+    <string name="delete_all_button">Διαγραφή όλων</string>
 </resources>

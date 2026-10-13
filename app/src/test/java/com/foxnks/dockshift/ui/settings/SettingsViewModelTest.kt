@@ -2,7 +2,11 @@ package com.foxnks.dockshift.ui.settings
 
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.ThemeMode
+import com.foxnks.dockshift.domain.shift.Shift
+import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.testing.FakeSettingsRepository
+import com.foxnks.dockshift.testing.InMemoryShiftRepository
+import java.time.LocalDate
 import com.foxnks.dockshift.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -28,12 +32,12 @@ class SettingsViewModelTest {
 
     @Test
     fun `state is Loading before anyone observes it`() {
-        assertEquals(SettingsUiState.Loading, SettingsViewModel(FakeSettingsRepository()).uiState.value)
+        assertEquals(SettingsUiState.Loading, SettingsViewModel(FakeSettingsRepository(), InMemoryShiftRepository()).uiState.value)
     }
 
     @Test
     fun `fresh install shows the defaults`() = runTest {
-        val viewModel = SettingsViewModel(FakeSettingsRepository())
+        val viewModel = SettingsViewModel(FakeSettingsRepository(), InMemoryShiftRepository())
         observe(viewModel)
 
         assertEquals(
@@ -45,7 +49,7 @@ class SettingsViewModelTest {
     @Test
     fun `shows saved values`() = runTest {
         val saved = AppSettings(themeMode = ThemeMode.DARK, dynamicColor = false, rotationEnabled = true)
-        val viewModel = SettingsViewModel(FakeSettingsRepository(saved))
+        val viewModel = SettingsViewModel(FakeSettingsRepository(saved), InMemoryShiftRepository())
         observe(viewModel)
 
         assertEquals(
@@ -57,7 +61,7 @@ class SettingsViewModelTest {
     @Test
     fun `every change is saved immediately`() = runTest {
         val repository = FakeSettingsRepository()
-        val viewModel = SettingsViewModel(repository)
+        val viewModel = SettingsViewModel(repository, InMemoryShiftRepository())
         observe(viewModel)
 
         viewModel.onThemeModeSelected(ThemeMode.LIGHT)
@@ -73,5 +77,20 @@ class SettingsViewModelTest {
             SettingsUiState.Ready(themeMode = ThemeMode.LIGHT, dynamicColor = false, rotationEnabled = true),
             viewModel.uiState.value,
         )
+    }
+
+    @Test
+    fun `delete all removes every shift and the count follows`() = runTest {
+        val shifts = InMemoryShiftRepository(
+            listOf(Shift(LocalDate.of(2026, 10, 13), ShiftType.MORNING), Shift(LocalDate.of(2026, 10, 14), ShiftType.DAY_OFF)),
+        )
+        val viewModel = SettingsViewModel(FakeSettingsRepository(), shifts)
+        observe(viewModel)
+        assertEquals(2, (viewModel.uiState.value as SettingsUiState.Ready).storedShifts)
+
+        viewModel.onDeleteAllShifts()
+
+        assertTrue(shifts.stored.isEmpty())
+        assertEquals(0, (viewModel.uiState.value as SettingsUiState.Ready).storedShifts)
     }
 }

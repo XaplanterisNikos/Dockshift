@@ -3,6 +3,7 @@ package com.foxnks.dockshift.di
 import android.content.Context
 import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import com.foxnks.dockshift.data.db.DatabaseMigrations
 import com.foxnks.dockshift.data.db.DockshiftDatabase
 import com.foxnks.dockshift.data.db.MachineSeedCallback
 import com.foxnks.dockshift.data.db.dao.ImportDao
@@ -39,6 +40,8 @@ object DatabaseModule {
             .setQueryCoroutineContext(Dispatchers.IO)
             // Fills the machine list when the database file is first created
             .addCallback(MachineSeedCallback())
+            // Upgrades older database files step by step, keeping all data
+            .addMigrations(*DatabaseMigrations.ALL)
             .build()
 
     /** Shift data access, from the single database. */

@@ -15,6 +15,7 @@ import androidx.room3.PrimaryKey
  * @property category the category name, e.g. "RTG".
  * @property number the fleet number, e.g. "12".
  * @property active false once soft-deleted.
+ * @property location where it works or is parked (added in database version 2), or null.
  */
 @Entity(
     tableName = "machines",
@@ -26,4 +27,5 @@ data class MachineEntity(
     val category: String,
     val number: String,
     val active: Boolean = true,
+    val location: String? = null,
 )

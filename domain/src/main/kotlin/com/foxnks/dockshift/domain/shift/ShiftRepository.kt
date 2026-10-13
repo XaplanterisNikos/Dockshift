@@ -28,6 +28,9 @@ interface ShiftRepository {
     /** How many shifts are stored, updated on every change. */
     fun observeCount(): Flow<Int>
 
+    /** Every year that has at least one shift, newest first (for list filters). */
+    fun observeYears(): Flow<List<Int>>
+
     /**
      * Saves a shift, replacing whatever was stored for the same day
      * (including its list of machines). Machines must already be saved.

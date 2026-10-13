@@ -42,6 +42,7 @@ class FakeLegacyImportRepository(private val shiftCount: MutableStateFlow<Int>) 
  */
 class FakeShiftRepository(private val count: MutableStateFlow<Int>) : ShiftRepository {
     override fun observeCount(): Flow<Int> = count
+    override fun observeYears(): Flow<List<Int>> = error("not used")
     override fun observeShifts(from: LocalDate, to: LocalDate): Flow<List<Shift>> = error("not used")
     override fun observeShift(date: LocalDate): Flow<Shift?> = error("not used")
     override suspend fun save(shift: Shift): Unit = error("not used")
