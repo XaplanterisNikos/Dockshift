@@ -3,22 +3,24 @@ package com.foxnks.dockshift.ui.theme
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.platform.LocalContext
 
 /**
- * Root Material 3 theme of Dockshift.
+ * Root theme of Dockshift: Material 3 plus the fixed shift colors.
  *
- * Minimal version for the project skeleton: Dynamic Color on Android 12+ and the
- * Material 3 baseline colors as fallback. The app's own palette, typography and
- * shift colors come with the design-system issue.
+ * - App colors: from the wallpaper on Android 12+ when [dynamicColor] is on,
+ *   otherwise Dockshift's own harbour-blue schemes ([DockshiftLightColors]).
+ * - Shift colors: always the fixed [ShiftPalette], light or dark variant.
+ * - Typography: Material 3 defaults on the phone's system font, which supports Greek
+ *   fully and follows the user's font-size setting.
  *
- * @param darkTheme whether to use the dark color scheme; follows the system setting by default.
- * @param dynamicColor whether to take colors from the user's wallpaper when the device supports it.
+ * @param darkTheme whether to use dark colors; follows the system by default.
+ * @param dynamicColor whether to take app colors from the wallpaper where supported.
  * @param content the UI that this theme applies to.
  */
 @Composable
@@ -33,13 +35,24 @@ fun DockshiftTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        // Android 10-11 fallback: Material 3 baseline colors
-        darkTheme -> darkColorScheme()
-        else -> lightColorScheme()
+        darkTheme -> DockshiftDarkColors
+        else -> DockshiftLightColors
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content,
-    )
+    CompositionLocalProvider(LocalShiftColors provides ShiftColors(darkTheme)) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            content = content,
+        )
+    }
+}
+
+/** Dockshift's own theme values, next to `MaterialTheme`'s. */
+object DockshiftTheme {
+
+    /** Shift colors of the current light/dark mode. */
+    val shiftColors: ShiftColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalShiftColors.current
 }

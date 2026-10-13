@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Monochrome layer for themed icons (Android 13+): the system recolors it, only its shape matters.
+    Original Dockshift artwork: a ship-to-shore crane lowering a container onto a
+    stack. 108dp adaptive-icon layer; all shapes stay inside the 66dp safe zone.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M29.2,71.6 L78.8,71.6 L78.8,73.6 L29.2,73.6 Z M37.2,43.6 L40,43.6 L40,71.6 L37.2,71.6 Z M50,43.6 L52.8,43.6 L52.8,71.6 L50,71.6 Z M35.6,54 L54.8,54 L54.8,56.4 L35.6,56.4 Z M37.2,63.6 L52.8,63.6 L52.8,65.2 L37.2,65.2 Z M40,56.4 L41.6,56.4 L52.8,63.6 L51.2,63.6 Z M50,56.4 L51.6,56.4 L40.4,63.6 L38.8,63.6 Z M30.8,41.2 L80.4,41.2 L80.4,44 L30.8,44 Z M40.4,41.2 L45.2,28.4 L46.8,28.4 L51.6,41.2 L49.2,41.2 L46,32.4 L42.8,41.2 Z M46.8,28.4 L48,28.4 L79.6,41.2 L77.2,41.2 Z M45.2,28.4 L44,28.4 L31.6,41.2 L34,41.2 Z M63.6,44 L70.8,44 L70.8,46.4 L63.6,46.4 Z M65.2,46.4 L66.16,46.4 L66.16,53.6 L65.2,53.6 Z M68.4,46.4 L69.36,46.4 L69.36,53.6 L68.4,53.6 Z M61.6,53.6 L73.6,53.6 L73.6,59.2 L61.6,59.2 Z M55.6,65.2 L66.8,65.2 L66.8,71.6 L55.6,71.6 Z M67.6,65.2 L78.8,65.2 L78.8,71.6 L67.6,71.6 Z M58.8,60 L67.6,60 L67.6,64.8 L58.8,64.8 Z" />
+</vector>

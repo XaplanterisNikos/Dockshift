@@ -46,4 +46,31 @@
     <!-- Notes added to the comment of imported shifts -->
     <string name="legacy_note_container_moves">Container moves: %1$d</string>
     <string name="legacy_note_machine_non_working_day">Machine: %1$s</string>
+
+    <!-- Shift types -->
+    <string name="shift_type_morning">Morning</string>
+    <string name="shift_type_afternoon">Afternoon</string>
+    <string name="shift_type_night">Night</string>
+    <string name="shift_type_day_off">Day off</string>
+    <string name="shift_type_annual_leave">Annual leave</string>
+    <string name="shift_type_sick_leave">Sick leave</string>
+    <string name="shift_type_public_holiday">Public holiday</string>
+    <string name="shift_type_training">Training</string>
+    <string name="shift_type_strike">Strike</string>
+    <string name="shift_type_parental_leave">Parental leave</string>
+    <string name="home_shift_colors">Shift colors</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_open">Open settings</string>
+    <string name="navigate_back">Back</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_section_schedule">Schedule</string>
+    <string name="settings_section_data">Data</string>
+    <string name="setting_theme_title">Theme</string>
+    <string name="setting_theme_system">Same as the phone</string>
+    <string name="setting_theme_light">Light</string>
+    <string name="setting_theme_dark">Dark</string>
+    <string name="setting_dynamic_color_title">Colors from wallpaper</string>
+    <string name="setting_dynamic_color_summary">App colors follow your wallpaper. Shift colors stay the same.</string>
 </resources>

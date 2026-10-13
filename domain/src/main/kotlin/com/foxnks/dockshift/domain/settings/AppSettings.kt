@@ -13,8 +13,13 @@ package com.foxnks.dockshift.domain.settings
  * user turns it on.
  * @property legacyImportAsked whether the first-run question "do you have data from
  * the first version?" was already answered, so it is asked only once.
+ * @property themeMode light/dark appearance; follows the phone by default.
+ * @property dynamicColor whether app colors come from the wallpaper (Android 12+).
+ * On by default; shift colors are fixed and never follow the wallpaper.
  */
 data class AppSettings(
     val rotationEnabled: Boolean = false,
     val legacyImportAsked: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val dynamicColor: Boolean = true,
 )

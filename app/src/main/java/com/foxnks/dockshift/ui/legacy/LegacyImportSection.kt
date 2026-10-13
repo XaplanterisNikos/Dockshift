@@ -1,20 +1,19 @@
 package com.foxnks.dockshift.ui.legacy
 
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,31 +33,29 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 /**
- * The v1 import, temporarily on the home screen: the stored-shift count, an
- * "Import from the first version" button, and every dialog of the flow.
- * It moves to Settings when the real screens arrive.
+ * Opens the system file picker for the v1 backup; its result goes to [viewModel].
  *
- * @param viewModel provided by Hilt.
+ * @return a function that opens the picker.
  */
 @Composable
-fun LegacyImportSection(viewModel: LegacyImportViewModel = hiltViewModel()) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // The system file picker; its result comes back to the ViewModel
+private fun rememberLegacyPicker(viewModel: LegacyImportViewModel): () -> Unit {
     val picker = rememberLauncherForActivityResult(OpenLegacyBackup()) { uri ->
         viewModel.onFileChosen(uri?.toString())
     }
-    val openPicker = { picker.launch(OpenLegacyBackup.MIME_TYPES) }
+    return { picker.launch(OpenLegacyBackup.MIME_TYPES) }
+}
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = stringResource(R.string.legacy_stored_shifts, state.storedShifts),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        OutlinedButton(onClick = openPicker, modifier = Modifier.padding(top = 8.dp)) {
-            Text(stringResource(R.string.legacy_import_button))
-        }
-    }
+/**
+ * On the home screen: the first-run question "do you have data from the first
+ * version?" (only on a fresh install, only once) and the dialogs of the import.
+ * Draws nothing when there is nothing to ask or show.
+ *
+ * @param viewModel provided by Hilt; activity-scoped, so it is the same one Settings uses.
+ */
+@Composable
+fun LegacyFirstRunPrompt(viewModel: LegacyImportViewModel = hiltViewModel()) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val openPicker = rememberLegacyPicker(viewModel)
 
     // First-run question, only while nothing else is shown
     if (state.askOnStart && state.step == LegacyImportStep.Idle) {
@@ -71,11 +68,27 @@ fun LegacyImportSection(viewModel: LegacyImportViewModel = hiltViewModel()) {
         )
     }
 
-    StepDialog(
-        step = state.step,
-        onConfirm = viewModel::onConfirmImport,
-        onDismiss = viewModel::onDismiss,
+    StepDialog(step = state.step, onConfirm = viewModel::onConfirmImport, onDismiss = viewModel::onDismiss)
+}
+
+/**
+ * In Settings → Data: "Import from the first version", with the number of stored
+ * shifts underneath, and the dialogs of the import.
+ *
+ * @param viewModel provided by Hilt.
+ */
+@Composable
+fun LegacyImportSettingsItem(viewModel: LegacyImportViewModel = hiltViewModel()) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val openPicker = rememberLegacyPicker(viewModel)
+
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.legacy_import_button)) },
+        supportingContent = { Text(stringResource(R.string.legacy_stored_shifts, state.storedShifts)) },
+        modifier = Modifier.clickable(onClick = openPicker),
     )
+
+    StepDialog(step = state.step, onConfirm = viewModel::onConfirmImport, onDismiss = viewModel::onDismiss)
 }
 
 /** "Do you have data from the first version?" Both answers close it for good. */

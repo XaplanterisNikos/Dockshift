@@ -2,6 +2,7 @@ package com.foxnks.dockshift.testing
 
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.SettingsRepository
+import com.foxnks.dockshift.domain.settings.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,5 +28,13 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setLegacyImportAsked() {
         state.update { it.copy(legacyImportAsked = true) }
+    }
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        state.update { it.copy(themeMode = mode) }
+    }
+
+    override suspend fun setDynamicColor(enabled: Boolean) {
+        state.update { it.copy(dynamicColor = enabled) }
     }
 }

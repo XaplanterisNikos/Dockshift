@@ -26,4 +26,18 @@ interface SettingsRepository {
 
     /** Records that the first-run v1 import question was answered (yes or no). */
     suspend fun setLegacyImportAsked()
+
+    /**
+     * Persists the light/dark choice.
+     *
+     * @param mode the new value of [AppSettings.themeMode].
+     */
+    suspend fun setThemeMode(mode: ThemeMode)
+
+    /**
+     * Turns wallpaper-based app colors on or off and persists the choice.
+     *
+     * @param enabled the new value of [AppSettings.dynamicColor].
+     */
+    suspend fun setDynamicColor(enabled: Boolean)
 }
