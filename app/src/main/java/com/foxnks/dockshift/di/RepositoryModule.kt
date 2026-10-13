@@ -1,8 +1,10 @@
 package com.foxnks.dockshift.di
 
+import com.foxnks.dockshift.data.leave.RoomLeaveRepository
 import com.foxnks.dockshift.data.machine.RoomMachineRepository
 import com.foxnks.dockshift.data.settings.DataStoreSettingsRepository
 import com.foxnks.dockshift.data.shift.RoomShiftRepository
+import com.foxnks.dockshift.domain.leave.LeaveRepository
 import com.foxnks.dockshift.domain.machine.MachineRepository
 import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.shift.ShiftRepository
@@ -32,6 +34,11 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindShiftRepository(impl: RoomShiftRepository): ShiftRepository
+
+    /** Whoever asks for [LeaveRepository] gets the Room-backed instance. */
+    @Binds
+    @Singleton
+    abstract fun bindLeaveRepository(impl: RoomLeaveRepository): LeaveRepository
 
     /** Whoever asks for [MachineRepository] gets the Room-backed instance. */
     @Binds

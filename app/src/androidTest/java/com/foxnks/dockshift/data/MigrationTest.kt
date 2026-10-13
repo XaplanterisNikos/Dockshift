@@ -8,8 +8,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.foxnks.dockshift.data.db.DatabaseMigrations
 import com.foxnks.dockshift.data.db.DockshiftDatabase
+import com.foxnks.dockshift.data.leave.RoomLeaveRepository
 import com.foxnks.dockshift.data.machine.RoomMachineRepository
 import com.foxnks.dockshift.data.shift.RoomShiftRepository
+import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.shift.ShiftType
 import java.time.LocalDate
 import kotlinx.coroutines.flow.first
@@ -22,8 +24,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Upgrades a real version-1 database file to the current version, exactly as it
- * happens on a phone that installs a new app version over an old one.
+ * Upgrades a real version-1 database file to the current version (through every
+ * migration in between), exactly as it happens on a phone that installs a new app
+ * version over an old one.
  *
  * The version-1 file is written by hand with the SQL of
  * `app/schemas/.../1.json`, so this test keeps working however the code changes.
@@ -114,6 +117,29 @@ class MigrationTest {
         try {
             val machines = RoomMachineRepository(database.machineDao()).observeAll().first()
             assertNull(machines.single { it.number == "99" }.location)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun upgradedDatabaseCanStoreLeaves() = runTest {
+        createVersion1()
+
+        val database = Room.databaseBuilder<DockshiftDatabase>(context, name)
+            .setDriver(BundledSQLiteDriver())
+            .addMigrations(*DatabaseMigrations.ALL)
+            .build()
+        try {
+            // Version 1 → 2 → 3: the new leaves table exists, starts empty and works
+            val leaves = RoomLeaveRepository(database.leaveDao())
+            assertEquals(emptyList<Leave>(), leaves.observeAll().first())
+
+            val saved = leaves.save(Leave(0, LocalDate.of(2026, 12, 21), LocalDate.of(2026, 12, 26), "Χριστούγεννα"))
+
+            assertEquals(listOf(saved), leaves.observeAll().first())
+            // The shifts of version 1 are still there
+            assertEquals(ShiftType.NIGHT, RoomShiftRepository(database.shiftDao()).observeShift(LocalDate.of(2025, 1, 6)).first()?.type)
         } finally {
             database.close()
         }

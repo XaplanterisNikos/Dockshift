@@ -38,6 +38,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.foxnks.dockshift.R
+import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.ui.navigation.AppBottomBar
@@ -55,19 +56,21 @@ import java.time.LocalDate
  * Entry point of the "Today" screen.
  *
  * @param onEditDay open the shift of a day for adding or editing.
+ * @param onOpenLeave open a planned leave (its id) for changing or deleting.
  * @param onSelectTopLevel switch screen from the bottom bar.
  * @param viewModel provided by Hilt, one per screen entry.
  */
 @Composable
 fun TodayRoute(
     onEditDay: (LocalDate) -> Unit,
+    onOpenLeave: (Long) -> Unit,
     onSelectTopLevel: (TopLevel) -> Unit,
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
     // Back from the background (maybe after midnight or 07:00): recompute "today"
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    TodayScreen(uiState, onEditDay, onSelectTopLevel)
+    TodayScreen(uiState, onEditDay, onSelectTopLevel, onOpenLeave)
 }
 
 /**
@@ -81,14 +84,19 @@ fun TodayScreen(
     uiState: TodayUiState,
     onEditDay: (LocalDate) -> Unit,
     onSelectTopLevel: (TopLevel) -> Unit,
+    onOpenLeave: (Long) -> Unit = {},
 ) {
+    /** A leave day cannot be worked: it opens its leave instead of the shift form. */
+    fun openDay(date: LocalDate, leave: Leave?) {
+        if (leave != null) onOpenLeave(leave.id) else onEditDay(date)
+    }
     Scaffold(
         // Settings live in the menu (bottom bar), so the top bar has no actions
         topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) },
         bottomBar = { AppBottomBar(selected = TopLevel.TODAY, onSelect = onSelectTopLevel) },
         floatingActionButton = {
             if (uiState is TodayUiState.Ready) {
-                FloatingActionButton(onClick = { onEditDay(uiState.currentDate) }) {
+                FloatingActionButton(onClick = { openDay(uiState.currentDate, uiState.currentLeave) }) {
                     Icon(painterResource(R.drawable.ic_add), stringResource(R.string.add_shift))
                 }
             }
@@ -110,7 +118,7 @@ fun TodayScreen(
                 item {
                     CurrentShiftCard(
                         state = uiState,
-                        onEdit = { onEditDay(uiState.currentDate) },
+                        onEdit = { openDay(uiState.currentDate, uiState.currentLeave) },
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
@@ -132,8 +140,8 @@ fun TodayScreen(
                             items(uiState.upcoming, key = { it.date.toString() }) { day ->
                                 MiniDayCard(
                                     date = day.date,
-                                    shift = day.shift,
-                                    onClick = { onEditDay(day.date) },
+                                    shift = day.shift ?: day.leave?.let { leaveShift(day.date, it) },
+                                    onClick = { openDay(day.date, day.leave) },
                                     modifier = Modifier.width(76.dp),
                                     holiday = day.holiday,
                                     forecast = day.forecast,
@@ -146,8 +154,8 @@ fun TodayScreen(
                     items(uiState.upcoming, key = { it.date.toString() }) { day ->
                         DayCard(
                             date = day.date,
-                            shift = day.shift,
-                            onClick = { onEditDay(day.date) },
+                            shift = day.shift ?: day.leave?.let { leaveShift(day.date, it) },
+                            onClick = { openDay(day.date, day.leave) },
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                             holiday = day.holiday,
                             forecast = day.forecast,
@@ -177,8 +185,15 @@ private fun CurrentShiftCard(state: TodayUiState.Ready, onEdit: () -> Unit, modi
             }
             val shift = state.current
             val forecast = state.currentForecast
+            val leave = state.currentLeave
             when {
                 shift != null -> ShiftDetails(shift)
+                // On leave: the type, the leave's name, and a button that opens the leave
+                leave != null -> {
+                    ShiftChip(ShiftType.ANNUAL_LEAVE)
+                    leave.note?.let { Text(it, style = MaterialTheme.typography.titleSmall) }
+                    FilledTonalButton(onClick = onEdit) { Text(stringResource(R.string.leave_open)) }
+                }
                 // Not recorded, but the rotating schedule predicts it: show it in gold
                 forecast != null -> {
                     ForecastLine(forecast)
@@ -217,3 +232,9 @@ private fun ForecastLine(type: ShiftType) {
         )
     }
 }
+
+/**
+ * A leave day drawn as an annual leave shift (its note as the comment), so the day
+ * cards show it like any other day. Display only: it is never saved.
+ */
+private fun leaveShift(date: LocalDate, leave: Leave): Shift = Shift(date, ShiftType.ANNUAL_LEAVE, comments = leave.note)

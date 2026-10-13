@@ -247,4 +247,49 @@
     <string name="today_forecast">Πρόβλεψη: %1$s</string>
     <string name="edit_other_types">Άλλη βάρδια (εκτός ωραρίου)</string>
     <string name="edit_outside_schedule">Η βάρδια που τρέχει τώρα (%1$s) είναι εκτός του ωραρίου σου στις Ρυθμίσεις. Αν θέλεις να συνεχίσεις, διάλεξε όποια βάρδια θέλεις.</string>
+
+    <!-- Άδειες -->
+    <string name="menu_leave">Άδειες</string>
+    <string name="menu_leave_summary">Δικαιούμενες μέρες και προγραμματισμένες άδειες</string>
+    <string name="leave_add">Προσθήκη άδειας</string>
+    <string name="leave_planned_title">Προγραμματισμένες άδειες</string>
+    <string name="leave_none">Δεν υπάρχει άδεια για αυτή τη χρονιά.</string>
+    <string name="leave_port_closed_title">Το λιμάνι είναι κλειστό</string>
+    <string name="leave_port_closed_summary">Το λιμάνι δουλεύει τις αργίες. Τσέκαρε όσες είναι κλειστό: μέρα άδειας σε αυτές δεν μετράει.</string>
+    <string name="leave_entitlement_title">Μέρες άδειας %1$d</string>
+    <string name="leave_entitlement_unset">Όρισε πόσες μέρες άδειας δικαιούσαι φέτος (10 έως 60).</string>
+    <string name="leave_entitlement_set">Ορισμός %1$d ημερών</string>
+    <plurals name="leave_days">
+        <item quantity="one">%d μέρα</item>
+        <item quantity="other">%d μέρες</item>
+    </plurals>
+    <string name="leave_taken">Πήρες</string>
+    <string name="leave_planned">Προγραμματισμένες</string>
+    <string name="leave_left">Υπόλοιπο</string>
+    <string name="leave_new_title">Νέα άδεια</string>
+    <string name="leave_edit_title">Επεξεργασία άδειας</string>
+    <string name="leave_note">Όνομα (προαιρετικό)</string>
+    <string name="leave_note_hint">π.χ. Καλοκαιρινή</string>
+    <string name="leave_from">Από</string>
+    <string name="leave_to">Έως</string>
+    <plurals name="leave_counts">
+        <item quantity="one">Μετράει %d μέρα</item>
+        <item quantity="other">Μετράει %d μέρες</item>
+    </plurals>
+    <plurals name="leave_closed_days">
+        <item quantity="one">%d αργία με κλειστό λιμάνι δεν μετράει</item>
+        <item quantity="other">%d αργίες με κλειστό λιμάνι δεν μετράνε</item>
+    </plurals>
+    <string name="leave_left_after">Υπόλοιπο %1$d μετά από αυτή: %2$d</string>
+    <string name="leave_over_by">Ξεπερνά τις δικαιούμενες μέρες κατά %1$d</string>
+    <string name="leave_problem_end_before_start">Η τελευταία μέρα είναι πριν από την πρώτη.</string>
+    <string name="leave_problem_overlap">Πέφτει πάνω στην άδεια «%1$s» (%2$s).</string>
+    <string name="leave_replace_title">Αντικατάσταση βαρδιών;</string>
+    <plurals name="leave_replace_text">
+        <item quantity="one">%d μέρα της άδειας έχει ήδη βάρδια. Μέρα άδειας δεν δουλεύεται: η βάρδια θα αντικατασταθεί.</item>
+        <item quantity="other">%d μέρες της άδειας έχουν ήδη βάρδιες. Μέρα άδειας δεν δουλεύεται: οι βάρδιες θα αντικατασταθούν.</item>
+    </plurals>
+    <string name="leave_delete_title">Διαγραφή άδειας;</string>
+    <string name="leave_delete_text">Οι μέρες της γυρίζουν στο κανονικό σου πρόγραμμα.</string>
+    <string name="leave_open">Άνοιγμα άδειας</string>
 </resources>

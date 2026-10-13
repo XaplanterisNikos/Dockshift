@@ -1,5 +1,6 @@
 package com.foxnks.dockshift.ui.statistics
 
+import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.machine.Machine
 import com.foxnks.dockshift.domain.machine.MachineCategory
 import com.foxnks.dockshift.domain.settings.AppSettings
@@ -7,6 +8,7 @@ import com.foxnks.dockshift.domain.shift.MachineAssignment
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.testing.FakeSettingsRepository
+import com.foxnks.dockshift.testing.InMemoryLeaveRepository
 import com.foxnks.dockshift.testing.InMemoryShiftRepository
 import com.foxnks.dockshift.testing.MainDispatcherRule
 import java.time.Clock
@@ -55,7 +57,7 @@ class StatisticsViewModelTest {
 
     @Test
     fun `opens on the whole current year`() = runTest {
-        val viewModel = StatisticsViewModel(shifts, FakeSettingsRepository(), clock)
+        val viewModel = StatisticsViewModel(shifts, InMemoryLeaveRepository(), FakeSettingsRepository(), clock)
         observe(viewModel)
 
         assertEquals(listOf(2026, 2025), viewModel.ready.years)
@@ -69,7 +71,7 @@ class StatisticsViewModelTest {
 
     @Test
     fun `a month narrows the totals`() = runTest {
-        val viewModel = StatisticsViewModel(shifts, FakeSettingsRepository(), clock)
+        val viewModel = StatisticsViewModel(shifts, InMemoryLeaveRepository(), FakeSettingsRepository(), clock)
         observe(viewModel)
 
         viewModel.onMonthSelected(10)
@@ -81,7 +83,7 @@ class StatisticsViewModelTest {
 
     @Test
     fun `another year resets the month`() = runTest {
-        val viewModel = StatisticsViewModel(shifts, FakeSettingsRepository(), clock)
+        val viewModel = StatisticsViewModel(shifts, InMemoryLeaveRepository(), FakeSettingsRepository(), clock)
         observe(viewModel)
         viewModel.onMonthSelected(10)
 
@@ -93,7 +95,7 @@ class StatisticsViewModelTest {
 
     @Test
     fun `working on a public holiday is counted when holidays are on`() = runTest {
-        val viewModel = StatisticsViewModel(shifts, FakeSettingsRepository(), clock)
+        val viewModel = StatisticsViewModel(shifts, InMemoryLeaveRepository(), FakeSettingsRepository(), clock)
         observe(viewModel)
 
         assertTrue(viewModel.ready.showHolidays)
@@ -102,7 +104,7 @@ class StatisticsViewModelTest {
 
     @Test
     fun `holidays are not counted when they are turned off`() = runTest {
-        val viewModel = StatisticsViewModel(shifts, FakeSettingsRepository(AppSettings(showHolidays = false)), clock)
+        val viewModel = StatisticsViewModel(shifts, InMemoryLeaveRepository(), FakeSettingsRepository(AppSettings(showHolidays = false)), clock)
         observe(viewModel)
 
         assertEquals(0, viewModel.ready.statistics.holidaysWorked)
@@ -110,12 +112,23 @@ class StatisticsViewModelTest {
 
     @Test
     fun `a new shift updates the totals at once`() = runTest {
-        val viewModel = StatisticsViewModel(shifts, FakeSettingsRepository(), clock)
+        val viewModel = StatisticsViewModel(shifts, InMemoryLeaveRepository(), FakeSettingsRepository(), clock)
         observe(viewModel)
 
         shifts.save(Shift(LocalDate.of(2026, 10, 30), ShiftType.NIGHT, overtime = true))
 
         assertEquals(4, viewModel.ready.statistics.workShifts)
         assertEquals(2, viewModel.ready.statistics.overtimeShifts)
+    }
+
+    @Test
+    fun `planned leave days count as annual leave`() = runTest {
+        val leaves = InMemoryLeaveRepository(listOf(Leave(1, LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 6))))
+        val viewModel = StatisticsViewModel(shifts, leaves, FakeSettingsRepository(), clock)
+        observe(viewModel)
+
+        assertEquals(5, viewModel.ready.statistics.countByType[ShiftType.ANNUAL_LEAVE])
+        // Leave is not work
+        assertEquals(3, viewModel.ready.statistics.workShifts)
     }
 }

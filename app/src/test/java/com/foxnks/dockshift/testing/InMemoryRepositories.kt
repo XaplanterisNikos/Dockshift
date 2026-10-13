@@ -1,5 +1,7 @@
 package com.foxnks.dockshift.testing
 
+import com.foxnks.dockshift.domain.leave.Leave
+import com.foxnks.dockshift.domain.leave.LeaveRepository
 import com.foxnks.dockshift.domain.machine.Machine
 import com.foxnks.dockshift.domain.machine.MachineCategory
 import com.foxnks.dockshift.domain.machine.MachineRepository
@@ -87,4 +89,33 @@ class InMemoryMachineRepository(
         machines.update { list -> list.filter { it.id != id } }
         return true
     }
+}
+
+/**
+ * [LeaveRepository] in memory, behaving like the database: generated ids, sorted
+ * results, and every observer updated on every change.
+ *
+ * @param initial leaves stored from the start (with their ids).
+ */
+class InMemoryLeaveRepository(initial: List<Leave> = emptyList()) : LeaveRepository {
+
+    private val leaves = MutableStateFlow(initial)
+
+    /** Everything stored, sorted by start, for assertions. */
+    val stored: List<Leave> get() = leaves.value.sortedBy { it.start }
+
+    override fun observeAll(): Flow<List<Leave>> = leaves.map { it.sortedBy { leave -> leave.start } }
+
+    override fun observeBetween(from: LocalDate, to: LocalDate): Flow<List<Leave>> =
+        leaves.map { all -> all.filter { it.start <= to && it.end >= from }.sortedBy { it.start } }
+
+    override fun observe(id: Long): Flow<Leave?> = leaves.map { all -> all.firstOrNull { it.id == id } }
+
+    override suspend fun save(leave: Leave): Leave {
+        val saved = if (leave.id == 0L) leave.copy(id = (leaves.value.maxOfOrNull { it.id } ?: 0L) + 1) else leave
+        leaves.update { list -> list.filter { it.id != saved.id } + saved }
+        return saved
+    }
+
+    override suspend fun delete(id: Long) = leaves.update { list -> list.filter { it.id != id } }
 }

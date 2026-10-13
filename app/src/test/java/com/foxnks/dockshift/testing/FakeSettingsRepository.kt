@@ -1,5 +1,6 @@
 package com.foxnks.dockshift.testing
 
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.CalendarView
@@ -55,5 +56,13 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setShowHolidays(enabled: Boolean) {
         state.update { it.copy(showHolidays = enabled) }
+    }
+
+    override suspend fun setLeaveEntitlement(year: Int, days: Int) {
+        state.update { it.copy(leaveEntitlements = it.leaveEntitlements + (year to days)) }
+    }
+
+    override suspend fun setPortClosedHolidays(holidays: Set<GreekHoliday>) {
+        state.update { it.copy(portClosedHolidays = holidays) }
     }
 }

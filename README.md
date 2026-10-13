@@ -74,9 +74,15 @@ emulator or device with `./gradlew connectedAndroidTest`.
 - **Public holidays**: the 13 official holidays of Greece, computed for any year (Orthodox
   Easter with Meeus' algorithm), shown in the calendar, on Today and in the lists.
 - **Menu**: the last tab of the bottom bar. The app's sections on top (Machines,
-  Statistics; leave and vessels join as they are built), Settings below them.
+  Statistics, Leave; vessels join when built), Settings below them.
 - **Statistics**: per year or month: working shifts and hours, overtime, shifts on
   holidays, days per type, month-by-month bars, and the machines driven.
+- **Leave**: the days you are entitled to each year (10–60), and leave planned ahead as
+  date ranges with a name ("Summer", "Christmas"). Shows taken, planned and left. The
+  port works on public holidays; the ones it is closed on (ticked by the user) do not
+  count. Leave days show as annual leave everywhere, win over predictions and cannot be
+  worked (a stored shift on them is replaced, after asking). Stored in the `leaves`
+  table (database version 3).
 - **Machines**: per category, searchable by number or location, with how many shifts used
   each one. Add a machine, change its number or location (past shifts follow, since they
   refer to the machine, not its number), deactivate it, or delete it for good if no shift

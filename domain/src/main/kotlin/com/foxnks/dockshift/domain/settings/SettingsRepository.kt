@@ -1,5 +1,6 @@
 package com.foxnks.dockshift.domain.settings
 
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import kotlinx.coroutines.flow.Flow
 
@@ -67,4 +68,19 @@ interface SettingsRepository {
      * @param enabled the new value of [AppSettings.showHolidays].
      */
     suspend fun setShowHolidays(enabled: Boolean)
+
+    /**
+     * Persists the annual leave entitlement of one year.
+     *
+     * @param year the year.
+     * @param days the days, within `LeaveRules.ENTITLEMENT_RANGE`.
+     */
+    suspend fun setLeaveEntitlement(year: Int, days: Int)
+
+    /**
+     * Persists the holidays on which the port is closed.
+     *
+     * @param holidays the new value of [AppSettings.portClosedHolidays].
+     */
+    suspend fun setPortClosedHolidays(holidays: Set<GreekHoliday>)
 }

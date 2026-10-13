@@ -3,10 +3,12 @@ package com.foxnks.dockshift.ui.today
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
+import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import com.foxnks.dockshift.domain.rotation.RotationSchedule
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.testing.FakeSettingsRepository
+import com.foxnks.dockshift.testing.InMemoryLeaveRepository
 import com.foxnks.dockshift.testing.InMemoryShiftRepository
 import com.foxnks.dockshift.testing.MainDispatcherRule
 import java.time.Clock
@@ -47,7 +49,7 @@ class TodayViewModelTest {
         val shifts = InMemoryShiftRepository(
             listOf(Shift(tuesday, ShiftType.MORNING), Shift(tuesday.plusDays(2), ShiftType.DAY_OFF)),
         )
-        val viewModel = TodayViewModel(shifts, FakeSettingsRepository(), clockAt(tuesday.atTime(10, 0)))
+        val viewModel = TodayViewModel(shifts, InMemoryLeaveRepository(), FakeSettingsRepository(), clockAt(tuesday.atTime(10, 0)))
         observe(viewModel)
 
         val state = viewModel.uiState.value as TodayUiState.Ready
@@ -63,7 +65,7 @@ class TodayViewModelTest {
     @Test
     fun `at 02 00 after a night shift, yesterday is still current`() = runTest {
         val shifts = InMemoryShiftRepository(listOf(Shift(tuesday, ShiftType.NIGHT)))
-        val viewModel = TodayViewModel(shifts, FakeSettingsRepository(), clockAt(tuesday.plusDays(1).atTime(2, 0)))
+        val viewModel = TodayViewModel(shifts, InMemoryLeaveRepository(), FakeSettingsRepository(), clockAt(tuesday.plusDays(1).atTime(2, 0)))
         observe(viewModel)
 
         val state = viewModel.uiState.value as TodayUiState.Ready
@@ -74,7 +76,7 @@ class TodayViewModelTest {
 
     @Test
     fun `a day without a shift shows nothing recorded`() = runTest {
-        val viewModel = TodayViewModel(InMemoryShiftRepository(), FakeSettingsRepository(), clockAt(tuesday.atTime(10, 0)))
+        val viewModel = TodayViewModel(InMemoryShiftRepository(), InMemoryLeaveRepository(), FakeSettingsRepository(), clockAt(tuesday.atTime(10, 0)))
         observe(viewModel)
 
         assertNull((viewModel.uiState.value as TodayUiState.Ready).current)
@@ -83,7 +85,7 @@ class TodayViewModelTest {
     @Test
     fun `a shift saved elsewhere appears at once`() = runTest {
         val shifts = InMemoryShiftRepository()
-        val viewModel = TodayViewModel(shifts, FakeSettingsRepository(), clockAt(tuesday.atTime(10, 0)))
+        val viewModel = TodayViewModel(shifts, InMemoryLeaveRepository(), FakeSettingsRepository(), clockAt(tuesday.atTime(10, 0)))
         observe(viewModel)
 
         shifts.save(Shift(tuesday, ShiftType.AFTERNOON))
@@ -94,7 +96,7 @@ class TodayViewModelTest {
     @Test
     fun `public holidays are marked on today and the next days`() = runTest {
         // 28 October 2026 is a Wednesday: "today" on Tuesday 27th, the holiday is the first next day
-        val viewModel = TodayViewModel(InMemoryShiftRepository(), FakeSettingsRepository(), clockAt(LocalDate.of(2026, 10, 27).atTime(10, 0)))
+        val viewModel = TodayViewModel(InMemoryShiftRepository(), InMemoryLeaveRepository(), FakeSettingsRepository(), clockAt(LocalDate.of(2026, 10, 27).atTime(10, 0)))
         observe(viewModel)
 
         val state = viewModel.uiState.value as TodayUiState.Ready
@@ -105,7 +107,7 @@ class TodayViewModelTest {
     @Test
     fun `no holiday marks when they are turned off`() = runTest {
         val settings = FakeSettingsRepository(AppSettings(showHolidays = false))
-        val viewModel = TodayViewModel(InMemoryShiftRepository(), settings, clockAt(LocalDate.of(2026, 10, 28).atTime(10, 0)))
+        val viewModel = TodayViewModel(InMemoryShiftRepository(), InMemoryLeaveRepository(), settings, clockAt(LocalDate.of(2026, 10, 28).atTime(10, 0)))
         observe(viewModel)
 
         assertNull((viewModel.uiState.value as TodayUiState.Ready).currentHoliday)
@@ -115,7 +117,7 @@ class TodayViewModelTest {
     fun `with a rotation place, empty days show the prediction`() = runTest {
         val anchor = RotationAnchor(LocalDate.of(2024, 8, 10), ShiftType.AFTERNOON)
         val shifts = InMemoryShiftRepository(listOf(Shift(tuesday.plusDays(1), ShiftType.ANNUAL_LEAVE)))
-        val viewModel = TodayViewModel(shifts, FakeSettingsRepository(AppSettings(rotationAnchor = anchor)), clockAt(tuesday.atTime(10, 0)))
+        val viewModel = TodayViewModel(shifts, InMemoryLeaveRepository(), FakeSettingsRepository(AppSettings(rotationAnchor = anchor)), clockAt(tuesday.atTime(10, 0)))
         observe(viewModel)
 
         val state = viewModel.uiState.value as TodayUiState.Ready
@@ -123,5 +125,25 @@ class TodayViewModelTest {
         // A stored day has no prediction
         assertNull(state.upcoming[0].forecast)
         assertEquals(RotationSchedule.typeOn(anchor, tuesday.plusDays(2)), state.upcoming[1].forecast)
+    }
+
+    @Test
+    fun `a planned leave shows on today and the next days, over the prediction`() = runTest {
+        val anchor = RotationAnchor(LocalDate.of(2024, 8, 10), ShiftType.AFTERNOON)
+        val leave = Leave(1, tuesday, tuesday.plusDays(2), "Φθινόπωρο")
+        val viewModel = TodayViewModel(
+            InMemoryShiftRepository(),
+            InMemoryLeaveRepository(listOf(leave)),
+            FakeSettingsRepository(AppSettings(rotationAnchor = anchor)),
+            clockAt(tuesday.atTime(10, 0)),
+        )
+        observe(viewModel)
+
+        val state = viewModel.uiState.value as TodayUiState.Ready
+        assertEquals(leave, state.currentLeave)
+        assertNull(state.currentForecast)
+        assertEquals(leave, state.upcoming[1].leave)
+        assertNull(state.upcoming[2].leave)
+        assertEquals(RotationSchedule.typeOn(anchor, tuesday.plusDays(3)), state.upcoming[2].forecast)
     }
 }

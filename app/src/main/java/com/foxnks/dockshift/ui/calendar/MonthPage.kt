@@ -166,6 +166,7 @@ fun DayCell(
     // Fill and text color by what the day is
     val (container, content) = when (status) {
         is DayStatus.Recorded -> shiftColors.container(status.shift.type) to shiftColors.onContainer(status.shift.type)
+        is DayStatus.OnLeave -> shiftColors.container(ShiftType.ANNUAL_LEAVE) to shiftColors.onContainer(ShiftType.ANNUAL_LEAVE)
         is DayStatus.Forecast -> shiftColors.forecastContainer to shiftColors.forecast
         DayStatus.Empty -> MaterialTheme.colorScheme.surfaceContainerHigh to MaterialTheme.colorScheme.onSurface
     }
@@ -215,6 +216,12 @@ fun DayCell(
                     )
                 }
             }
+            // A planned leave looks like annual leave
+            is DayStatus.OnLeave -> CellText(
+                text = ShiftType.ANNUAL_LEAVE.abbreviation(),
+                color = content,
+                modifier = Modifier.align(Alignment.Center),
+            )
             is DayStatus.Forecast -> {
                 // The magic wand's sparkles: what makes a prediction look like one
                 Icon(
@@ -289,6 +296,10 @@ private fun cellDescription(day: CalendarDay, isToday: Boolean): String {
         is DayStatus.Recorded -> {
             parts += status.shift.type.label()
             if (status.shift.overtime) parts += stringResource(R.string.calendar_cell_overtime)
+        }
+        is DayStatus.OnLeave -> {
+            parts += ShiftType.ANNUAL_LEAVE.label()
+            status.leave.note?.let { parts += it }
         }
         is DayStatus.Forecast -> parts += stringResource(R.string.calendar_cell_forecast, status.type.label())
         DayStatus.Empty -> parts += stringResource(R.string.day_not_recorded)

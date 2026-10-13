@@ -1,5 +1,6 @@
 package com.foxnks.dockshift.domain.settings
 
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
 
 /**
@@ -25,6 +26,11 @@ import com.foxnks.dockshift.domain.rotation.RotationAnchor
  * the month summary by default (a phone held upright has room below the grid).
  * @property calendarViewLandscape what the calendar shows beside the month in
  * landscape: the selected day's details by default (room on the side).
+ * @property leaveEntitlements the annual leave days the user is entitled to, by year
+ * (22, 24… depending on years of service); empty until set.
+ * @property portClosedHolidays the public holidays on which the port is closed: a leave
+ * day on one of them does not count. Empty by default (the port works on holidays),
+ * the user picks them.
  * @property showHolidays whether the Greek public holidays are marked (red day number
  * and name) in the calendar, on "Today" and in the shift list. On by default: useful
  * to everyone, and they are only shown, never turned into shifts.
@@ -39,4 +45,6 @@ data class AppSettings(
     val calendarViewPortrait: CalendarView = CalendarView.SUMMARY,
     val calendarViewLandscape: CalendarView = CalendarView.DAY_DETAILS,
     val showHolidays: Boolean = true,
+    val leaveEntitlements: Map<Int, Int> = emptyMap(),
+    val portClosedHolidays: Set<GreekHoliday> = emptySet(),
 )

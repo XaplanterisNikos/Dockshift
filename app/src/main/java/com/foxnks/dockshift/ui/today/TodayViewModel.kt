@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.holidays.GreekHolidays
+import com.foxnks.dockshift.domain.leave.Leave
+import com.foxnks.dockshift.domain.leave.LeaveRepository
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import com.foxnks.dockshift.domain.rotation.RotationSchedule
 import com.foxnks.dockshift.domain.settings.SettingsRepository
@@ -34,12 +36,14 @@ import kotlinx.coroutines.flow.stateIn
  * @property shift its stored shift, or null if nothing is recorded.
  * @property holiday its public holiday, or null (also when holidays are turned off).
  * @property forecast the type the rotating schedule predicts when nothing is stored, or null.
+ * @property leave the planned leave the day belongs to, when nothing is stored, or null.
  */
 data class DayEntry(
     val date: LocalDate,
     val shift: Shift?,
     val holiday: GreekHoliday? = null,
     val forecast: ShiftType? = null,
+    val leave: Leave? = null,
 )
 
 /** What the "Today" screen shows. */
@@ -55,6 +59,7 @@ sealed interface TodayUiState {
      * @property upcoming the days after [currentDate].
      * @property currentHoliday the public holiday of [currentDate], or null.
      * @property currentForecast the predicted type of [currentDate] when nothing is stored, or null.
+     * @property currentLeave the planned leave of [currentDate] when nothing is stored, or null.
      */
     data class Ready(
         val currentDate: LocalDate,
@@ -63,6 +68,7 @@ sealed interface TodayUiState {
         val upcoming: List<DayEntry>,
         val currentHoliday: GreekHoliday? = null,
         val currentForecast: ShiftType? = null,
+        val currentLeave: Leave? = null,
     ) : TodayUiState
 }
 
@@ -70,6 +76,7 @@ sealed interface TodayUiState {
  * ViewModel of the "Today" screen: the current shift and the next [UPCOMING_DAYS] days.
  *
  * @param shifts stored shifts.
+ * @param leaves planned leaves.
  * @param settings whether public holidays are marked, and the rotation for predictions.
  * @param clock the current time; injected so tests can fix it.
  */
@@ -77,6 +84,7 @@ sealed interface TodayUiState {
 @HiltViewModel
 class TodayViewModel @Inject constructor(
     private val shifts: ShiftRepository,
+    private val leaves: LeaveRepository,
     settings: SettingsRepository,
     private val clock: Clock,
 ) : ViewModel() {
@@ -98,8 +106,9 @@ class TodayViewModel @Inject constructor(
             val forecast = { date: LocalDate ->
                 RotationSchedule.forecastOn(daySettings.workSchedule, daySettings.rotationAnchor, date, today)
             }
-            shifts.observeShifts(from, to)
-                .map { list -> build(time, list.associateBy { it.date }, holidays, forecast) }
+            combine(shifts.observeShifts(from, to), leaves.observeBetween(from, to)) { list, leaveList ->
+                build(time, list.associateBy { it.date }, holidays, forecast, leaveList)
+            }
         }
         .stateIn(
             scope = viewModelScope,
@@ -122,7 +131,11 @@ class TodayViewModel @Inject constructor(
         byDate: Map<LocalDate, Shift>,
         holidays: Map<LocalDate, GreekHoliday>,
         forecast: (LocalDate) -> ShiftType?,
+        leaveList: List<Leave>,
     ): TodayUiState.Ready {
+        /** The leave of a day without a stored shift: a stored shift always wins. */
+        fun leaveOn(date: LocalDate): Leave? = if (byDate[date] == null) leaveList.firstOrNull { date in it } else null
+
         val today = time.toLocalDate()
         val current = WorkDay.current(time, byDate[today.minusDays(1)]?.type)
         return TodayUiState.Ready(
@@ -132,11 +145,13 @@ class TodayViewModel @Inject constructor(
             upcoming = (1..UPCOMING_DAYS).map { offset ->
                 val date = current.plusDays(offset.toLong())
                 val shift = byDate[date]
-                // A stored shift always wins over the prediction
-                DayEntry(date, shift, holidays[date], if (shift == null) forecast(date) else null)
+                val leave = leaveOn(date)
+                // A stored shift wins over leave, and leave over the prediction
+                DayEntry(date, shift, holidays[date], if (shift == null && leave == null) forecast(date) else null, leave)
             },
             currentHoliday = holidays[current],
-            currentForecast = if (byDate[current] == null) forecast(current) else null,
+            currentForecast = if (byDate[current] == null && leaveOn(current) == null) forecast(current) else null,
+            currentLeave = leaveOn(current),
         )
     }
 

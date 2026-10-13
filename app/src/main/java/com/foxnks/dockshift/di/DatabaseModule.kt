@@ -7,6 +7,7 @@ import com.foxnks.dockshift.data.db.DatabaseMigrations
 import com.foxnks.dockshift.data.db.DockshiftDatabase
 import com.foxnks.dockshift.data.db.MachineSeedCallback
 import com.foxnks.dockshift.data.db.dao.ImportDao
+import com.foxnks.dockshift.data.db.dao.LeaveDao
 import com.foxnks.dockshift.data.db.dao.MachineDao
 import com.foxnks.dockshift.data.db.dao.ShiftDao
 import dagger.Module
@@ -51,6 +52,10 @@ object DatabaseModule {
     /** Machine data access, from the single database. */
     @Provides
     fun provideMachineDao(database: DockshiftDatabase): MachineDao = database.machineDao()
+
+    /** Leave data access, from the single database. */
+    @Provides
+    fun provideLeaveDao(database: DockshiftDatabase): LeaveDao = database.leaveDao()
 
     /** Bulk-import data access, from the single database. */
     @Provides
