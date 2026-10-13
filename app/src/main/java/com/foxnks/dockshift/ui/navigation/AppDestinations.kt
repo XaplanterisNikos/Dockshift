@@ -25,6 +25,10 @@ data object ShiftListKey : NavKey
 @Serializable
 data class EditShiftKey(val date: String) : NavKey
 
+/** The month calendar: every day in its shift color, swiped month by month. */
+@Serializable
+data object CalendarKey : NavKey
+
 /** The central menu: the app's other sections, and Settings. */
 @Serializable
 data object MenuKey : NavKey

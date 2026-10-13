@@ -55,6 +55,18 @@
     <string name="shift_type_strike">Απεργία</string>
     <string name="shift_type_parental_leave">Γονική άδεια</string>
 
+    <!-- Σύντομα ονόματα τύπων βάρδιας για τα κελιά του ημερολογίου (1-2 γράμματα) -->
+    <string name="shift_abbr_morning">Π</string>
+    <string name="shift_abbr_afternoon">Α</string>
+    <string name="shift_abbr_night">Ν</string>
+    <string name="shift_abbr_day_off">Ρ</string>
+    <string name="shift_abbr_annual_leave">ΑΔ</string>
+    <string name="shift_abbr_sick_leave">ΑΝ</string>
+    <string name="shift_abbr_public_holiday">ΑΡ</string>
+    <string name="shift_abbr_training">ΕΚ</string>
+    <string name="shift_abbr_strike">ΑΠ</string>
+    <string name="shift_abbr_parental_leave">ΓΑ</string>
+
     <!-- Οθόνη ρυθμίσεων -->
     <string name="settings_title">Ρυθμίσεις</string>
     <string name="navigate_back">Πίσω</string>
@@ -150,4 +162,29 @@
     <string name="machines_error_duplicate">Το %1$s υπάρχει ήδη.</string>
     <string name="machines_error_duplicate_inactive">Το %1$s υπάρχει ήδη (ανενεργό). Ενεργοποίησέ το από τη λίστα.</string>
     <string name="picker_quick_add">Προσθήκη %1$s</string>
+
+    <!-- Ημερολόγιο -->
+    <string name="nav_calendar">Ημερολόγιο</string>
+    <string name="calendar_today">Σήμερα</string>
+    <string name="calendar_previous_month">Προηγούμενος μήνας</string>
+    <string name="calendar_next_month">Επόμενος μήνας</string>
+    <string name="calendar_show_day_details">Προβολή επιλεγμένης ημέρας</string>
+    <string name="calendar_show_summary">Προβολή σύνοψης μήνα</string>
+    <string name="calendar_summary_title">Σύνοψη μήνα</string>
+    <string name="calendar_summary_empty">Δεν έχουν καταχωρηθεί βάρδιες αυτόν τον μήνα.</string>
+    <plurals name="calendar_summary_worked">
+        <item quantity="one">%1$d βάρδια εργασίας · %2$d ώρες</item>
+        <item quantity="other">%1$d βάρδιες εργασίας · %2$d ώρες</item>
+    </plurals>
+    <string name="calendar_summary_overtime">Με υπερωρία: %1$d (+%2$d ώρες)</string>
+    <string name="calendar_summary_forecast">Προβλέψεις: %1$d</string>
+    <string name="calendar_forecast">Πρόβλεψη</string>
+    <string name="calendar_forecast_hint">Πρόβλεψη από το κυλιόμενο πρόγραμμα. Καταχώρησέ τη για να μείνει.</string>
+    <string name="calendar_edit">Επεξεργασία</string>
+    <string name="calendar_record">Καταχώρηση</string>
+    <string name="calendar_cell_today">σήμερα</string>
+    <string name="calendar_cell_overtime">με υπερωρία</string>
+    <string name="calendar_cell_forecast">πρόβλεψη: %1$s</string>
+    <string name="calendar_cell_select">Επιλογή</string>
+    <string name="calendar_cell_open">Άνοιγμα</string>
 </resources>

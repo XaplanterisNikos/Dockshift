@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dockshift's own "magic sparkle": a big and a small four-pointed star.
+     Marks predicted (forecast) days; tinted gold by the caller. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Big star: four curved points around (10,13) -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M10,4C10.5,9.5 13.5,12.5 19,13C13.5,13.5 10.5,16.5 10,22C9.5,16.5 6.5,13.5 1,13C6.5,12.5 9.5,9.5 10,4Z" />
+    <!-- Small star: top right, around (19,5) -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M19,1C19.2,3.4 20.6,4.8 23,5C20.6,5.2 19.2,6.6 19,9C18.8,6.6 17.4,5.2 15,5C17.4,4.8 18.8,3.4 19,1Z" />
+</vector>

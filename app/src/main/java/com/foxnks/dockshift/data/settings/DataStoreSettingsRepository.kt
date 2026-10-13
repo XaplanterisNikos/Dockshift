@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.foxnks.dockshift.domain.settings.AppSettings
+import com.foxnks.dockshift.domain.settings.CalendarView
 import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.settings.ThemeMode
 import java.io.IOException
@@ -42,6 +43,10 @@ class DataStoreSettingsRepository @Inject constructor(
                 themeMode = ThemeMode.entries.firstOrNull { it.name == preferences[Keys.THEME_MODE] }
                     ?: defaults.themeMode,
                 dynamicColor = preferences[Keys.DYNAMIC_COLOR] ?: defaults.dynamicColor,
+                calendarViewPortrait = calendarView(preferences[Keys.CALENDAR_VIEW_PORTRAIT])
+                    ?: defaults.calendarViewPortrait,
+                calendarViewLandscape = calendarView(preferences[Keys.CALENDAR_VIEW_LANDSCAPE])
+                    ?: defaults.calendarViewLandscape,
             )
         }
 
@@ -62,6 +67,18 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { preferences -> preferences[Keys.DYNAMIC_COLOR] = enabled }
     }
 
+    override suspend fun setCalendarView(landscape: Boolean, view: CalendarView) {
+        val key = if (landscape) Keys.CALENDAR_VIEW_LANDSCAPE else Keys.CALENDAR_VIEW_PORTRAIT
+        dataStore.edit { preferences -> preferences[key] = view.name }
+    }
+
+    /**
+     * A stored [CalendarView] name back to the value, or null when it was never saved
+     * or is unknown (e.g. written by a newer version), so the caller uses the default.
+     */
+    private fun calendarView(name: String?): CalendarView? =
+        CalendarView.entries.firstOrNull { it.name == name }
+
     /**
      * Storage keys. Their names are part of the saved file: renaming one would
      * silently reset that setting for every user, so they must never change.
@@ -71,5 +88,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val LEGACY_IMPORT_ASKED = booleanPreferencesKey("legacy_import_asked")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
+        val CALENDAR_VIEW_PORTRAIT = stringPreferencesKey("calendar_view_portrait")
+        val CALENDAR_VIEW_LANDSCAPE = stringPreferencesKey("calendar_view_landscape")
     }
 }

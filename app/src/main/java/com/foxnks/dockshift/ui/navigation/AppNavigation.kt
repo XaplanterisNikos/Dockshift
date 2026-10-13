@@ -8,6 +8,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.foxnks.dockshift.ui.calendar.CalendarRoute
 import com.foxnks.dockshift.ui.edit.EditShiftRoute
 import com.foxnks.dockshift.ui.legacy.LegacyFirstRunPrompt
 import com.foxnks.dockshift.ui.list.ShiftListRoute
@@ -21,7 +22,7 @@ import java.time.LocalDate
  * The app's navigation: one back stack of screen keys, shown by Navigation 3.
  *
  * - "Today" is always at the bottom of the stack, so back from any screen ends there.
- * - The bottom bar switches between "Today", "Shifts" and "Menu".
+ * - The bottom bar switches between "Today", "Shifts", "Calendar" and "Menu".
  * - Edit is pushed on top of any screen; Machines and Settings on top of the menu.
  *   They are popped when closed, so back from them returns to where they were opened.
  * Each entry gets its own ViewModel store, so opening the edit screen for two
@@ -53,6 +54,12 @@ fun AppNavigation() {
                     onEditDay = { backStack.openEdit(it) },
                     onSelectTopLevel = { backStack.selectTopLevel(it) },
                     newShiftDate = { LocalDate.now() },
+                )
+            }
+            entry<CalendarKey> {
+                CalendarRoute(
+                    onEditDay = { backStack.openEdit(it) },
+                    onSelectTopLevel = { backStack.selectTopLevel(it) },
                 )
             }
             entry<EditShiftKey> { key ->

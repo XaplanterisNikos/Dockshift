@@ -1,6 +1,7 @@
 package com.foxnks.dockshift.testing
 
 import com.foxnks.dockshift.domain.settings.AppSettings
+import com.foxnks.dockshift.domain.settings.CalendarView
 import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.settings.ThemeMode
 import kotlinx.coroutines.flow.Flow
@@ -36,5 +37,9 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setDynamicColor(enabled: Boolean) {
         state.update { it.copy(dynamicColor = enabled) }
+    }
+
+    override suspend fun setCalendarView(landscape: Boolean, view: CalendarView) {
+        state.update { if (landscape) it.copy(calendarViewLandscape = view) else it.copy(calendarViewPortrait = view) }
     }
 }
