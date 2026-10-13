@@ -1,11 +1,16 @@
 package com.foxnks.dockshift.ui
 
 import com.foxnks.dockshift.domain.settings.AppSettings
+import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.settings.ThemeMode
 import com.foxnks.dockshift.testing.FakeSettingsRepository
 import com.foxnks.dockshift.testing.MainDispatcherRule
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -31,5 +36,21 @@ class MainViewModelTest {
         repository.setThemeMode(ThemeMode.LIGHT)
 
         assertEquals(ThemeMode.LIGHT, viewModel.appearance.value.themeMode)
+    }
+
+    @Test
+    fun `the splash screen waits until the settings are read`() = runTest {
+        // Settings that are not read yet: nothing emitted until the test says so
+        val file = MutableSharedFlow<AppSettings>()
+        val repository = object : SettingsRepository by FakeSettingsRepository() {
+            override val settings: Flow<AppSettings> = file
+        }
+        val viewModel = MainViewModel(repository)
+        assertFalse(viewModel.ready.value)
+
+        file.emit(AppSettings(themeMode = ThemeMode.DARK))
+
+        assertTrue(viewModel.ready.value)
+        assertEquals(ThemeMode.DARK, viewModel.appearance.value.themeMode)
     }
 }

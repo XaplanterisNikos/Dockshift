@@ -70,7 +70,6 @@
     <string name="navigate_back">Back</string>
     <string name="settings_section_appearance">Appearance</string>
     <string name="settings_section_schedule">Schedule</string>
-    <string name="settings_section_data">Data</string>
     <string name="setting_theme_title">Theme</string>
     <string name="setting_theme_system">Same as the phone</string>
     <string name="setting_theme_light">Light</string>
@@ -296,4 +295,53 @@
     <string name="leave_delete_title">Delete this leave?</string>
     <string name="leave_delete_text">Its days go back to your usual schedule.</string>
     <string name="leave_open">Open the leave</string>
+
+    <!-- Data & backup (#13) -->
+    <string name="backup_title">Data &amp; backup</string>
+    <string name="menu_backup_summary">Backup, restore, import from the first version</string>
+    <string name="backup_section_backup">Backup</string>
+    <string name="backup_section_restore">Restore</string>
+    <string name="backup_section_delete">Delete</string>
+    <string name="backup_never">No backup yet</string>
+    <string name="backup_today">today</string>
+    <plurals name="backup_days_ago">
+        <item quantity="one">%d day ago</item>
+        <item quantity="other">%d days ago</item>
+    </plurals>
+    <string name="backup_last">Last backup: %1$s (%2$s)</string>
+    <string name="backup_now">Back up now</string>
+    <string name="backup_now_summary">Saves everything in %1$s</string>
+    <string name="backup_elsewhere">Save elsewhere…</string>
+    <string name="backup_elsewhere_summary">Google Drive, an SD card or any folder</string>
+    <string name="backup_reminder">Remind me every %1$d days</string>
+    <string name="backup_reminder_summary">A card on Today when a backup is due</string>
+    <string name="backup_restore">Restore from backup</string>
+    <string name="backup_restore_summary">Replaces all shifts, leave, machines and settings</string>
+    <string name="backup_share">Share</string>
+    <string name="backup_ok">OK</string>
+    <string name="backup_saved_title">Backup saved</string>
+    <string name="backup_saved_documents">Saved in %1$s. For a lost or broken phone, also send it somewhere else: e-mail, Drive, Viber…</string>
+    <string name="backup_saved_elsewhere">Saved in the file you chose.</string>
+    <string name="backup_restore_title">Restore this backup?</string>
+    <string name="backup_restore_replaces">Everything in the app now will be replaced by the backup.</string>
+    <string name="backup_continue">Continue</string>
+    <string name="backup_restore_confirm_title">Are you sure?</string>
+    <string name="backup_restore_confirm_text">The %1$d shifts stored now will be deleted and the %2$d shifts of the backup will take their place, with its leave, machines and settings. This cannot be undone.</string>
+    <string name="backup_restore_button">Restore</string>
+    <string name="backup_restored">Restored: %1$d shifts.</string>
+    <string name="backup_failed_save">The backup could not be saved. Check the free space and try again.</string>
+    <string name="backup_failed_read">The file could not be read.</string>
+    <string name="backup_failed_invalid">This file is not a Dockshift backup, or it is damaged. Nothing was changed.</string>
+    <string name="backup_failed_restore">The restore failed. Nothing was changed.</string>
+    <string name="backup_summary_made">Backup of %1$s</string>
+    <string name="backup_summary_shifts">%1$d shifts, %2$s – %3$s</string>
+    <string name="backup_summary_no_shifts">No shifts</string>
+    <string name="backup_summary_leaves_machines">%1$d leave periods · %2$d machines</string>
+    <string name="backup_working">Please wait…</string>
+    <string name="today_backup_never">You have not made a backup yet</string>
+    <plurals name="today_backup_due">
+        <item quantity="one">%d day since your last backup</item>
+        <item quantity="other">%d days since your last backup</item>
+    </plurals>
+    <string name="today_backup_button">Backup</string>
 </resources>

@@ -2,6 +2,7 @@ package com.foxnks.dockshift
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.foxnks.dockshift.domain.settings.ThemeMode
 import com.foxnks.dockshift.ui.MainViewModel
@@ -31,6 +33,24 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Before super.onCreate: switches from the splash theme to the app's theme
+        val splash = installSplashScreen()
+        // The minimum applies to a real start only, not to a rotation or a theme change
+        val keepUntil = if (savedInstanceState == null) SystemClock.uptimeMillis() + MIN_SPLASH_MILLIS else 0L
+        // Kept until the settings are read (no flash in the wrong theme), and for a
+        // short minimum so the icon is seen instead of blinking
+        splash.setKeepOnScreenCondition {
+            !viewModel.ready.value || SystemClock.uptimeMillis() < keepUntil
+        }
+        // A soft exit instead of a cut: the icon grows a little while everything fades
+        splash.setOnExitAnimationListener { provider ->
+            provider.iconView.animate().scaleX(ICON_EXIT_SCALE).scaleY(ICON_EXIT_SCALE).setDuration(EXIT_MILLIS).start()
+            provider.view.animate()
+                .alpha(0f)
+                .setDuration(EXIT_MILLIS)
+                .withEndAction { provider.remove() }
+                .start()
+        }
         super.onCreate(savedInstanceState)
         // Draw behind the system bars from the first frame; bar colors are refined below
         enableEdgeToEdge()
@@ -60,6 +80,15 @@ class MainActivity : ComponentActivity() {
     }
 
     private companion object {
+        /** The splash screen shows at least this long, even on a fast phone. */
+        const val MIN_SPLASH_MILLIS = 500L
+
+        /** Length of the splash screen's fade into the app. */
+        const val EXIT_MILLIS = 300L
+
+        /** How much the icon grows while fading out. */
+        const val ICON_EXIT_SCALE = 1.15f
+
         /** Navigation bar scrims for 3-button navigation, as in Android's own apps. */
         val LIGHT_SCRIM = Color.argb(0xE6, 0xFF, 0xFF, 0xFF)
         val DARK_SCRIM = Color.argb(0x80, 0x1B, 0x1B, 0x1B)

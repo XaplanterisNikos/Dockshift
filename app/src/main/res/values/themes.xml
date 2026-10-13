@@ -5,4 +5,15 @@
         All real styling (colors, typography) lives in the Compose theme (ui/theme).
     -->
     <style name="Theme.Dockshift" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!--
+        Splash screen while the app starts (androidx core-splashscreen: the same look on
+        every Android version): the launcher icon on the harbour blue, then a fade into
+        the app. The activity switches to Theme.Dockshift as soon as it is created.
+    -->
+    <style name="Theme.Dockshift.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Dockshift</item>
+    </style>
 </resources>

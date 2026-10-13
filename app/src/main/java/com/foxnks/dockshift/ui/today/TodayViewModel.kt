@@ -2,6 +2,7 @@ package com.foxnks.dockshift.ui.today
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.foxnks.dockshift.domain.backup.BackupReminder
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.holidays.GreekHolidays
 import com.foxnks.dockshift.domain.leave.Leave
@@ -77,7 +78,8 @@ sealed interface TodayUiState {
  *
  * @param shifts stored shifts.
  * @param leaves planned leaves.
- * @param settings whether public holidays are marked, and the rotation for predictions.
+ * @param settings whether public holidays are marked, the rotation for predictions, and
+ * the last backup for the reminder.
  * @param clock the current time; injected so tests can fix it.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -115,6 +117,15 @@ class TodayViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
             initialValue = TodayUiState.Loading,
         )
+
+    /**
+     * Days since the last backup when the reminder card is due, [Int.MAX_VALUE] when
+     * no backup was ever made, or null when no reminder is due (see [BackupReminder]).
+     */
+    val backupDueDays: StateFlow<Int?> =
+        combine(now, settings.settings, shifts.observeCount()) { time, saved, count ->
+            BackupReminder.dueDays(saved.backupReminder, saved.lastBackup, count, time.toLocalDate())
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
     /**
      * Re-reads the clock, e.g. when the app returns from the background after

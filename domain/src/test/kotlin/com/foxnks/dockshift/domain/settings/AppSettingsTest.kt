@@ -46,4 +46,10 @@ class AppSettingsTest {
         // Useful to everyone, and only a mark: they never become shifts
         assertTrue(AppSettings().showHolidays)
     }
+
+    @Test
+    fun `backup reminder is on and no backup was made by default`() {
+        assertTrue(AppSettings().backupReminder)
+        assertNull(AppSettings().lastBackup)
+    }
 }

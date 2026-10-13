@@ -54,6 +54,10 @@ data object LeavesKey : NavKey
 @Serializable
 data class EditLeaveKey(val id: Long, val day: String? = null) : NavKey
 
+/** Data & backup: backups, restoring, the v1 import, delete all. Opened from the menu or the reminder. */
+@Serializable
+data object BackupKey : NavKey
+
 /** Settings. Opened from the menu. */
 @Serializable
 data object SettingsKey : NavKey
