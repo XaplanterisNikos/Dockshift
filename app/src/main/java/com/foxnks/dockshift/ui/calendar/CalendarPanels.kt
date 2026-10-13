@@ -9,12 +9,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -41,10 +48,12 @@ import java.time.LocalDate
  *
  * @param summary the totals of the visible month.
  * @param modifier optional modifier from the caller.
+ * @param onRecordForecasts records the month's predicted days as shifts (asked first).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun MonthSummaryPanel(summary: MonthSummary, modifier: Modifier = Modifier) {
+fun MonthSummaryPanel(summary: MonthSummary, modifier: Modifier = Modifier, onRecordForecasts: () -> Unit = {}) {
+    var confirmRecord by rememberSaveable { mutableStateOf(false) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         PanelTitle(stringResource(R.string.calendar_summary_title))
         if (summary.isEmpty) {
@@ -79,6 +88,10 @@ fun MonthSummaryPanel(summary: MonthSummary, modifier: Modifier = Modifier) {
             }
             if (summary.forecastDays > 0) {
                 ForecastLabel(stringResource(R.string.calendar_summary_forecast, summary.forecastDays))
+                // All gold days of the month become shifts in one go; each can be edited after
+                OutlinedButton(onClick = { confirmRecord = true }) {
+                    Text(stringResource(R.string.calendar_record_forecasts, summary.forecastDays))
+                }
             }
         }
         // Holidays are listed even in a month without shifts
@@ -91,6 +104,21 @@ fun MonthSummaryPanel(summary: MonthSummary, modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.error,
             )
         }
+    }
+
+    if (confirmRecord) {
+        AlertDialog(
+            onDismissRequest = { confirmRecord = false },
+            title = { Text(stringResource(R.string.calendar_record_forecasts_title)) },
+            text = { Text(stringResource(R.string.calendar_record_forecasts_text, summary.forecastDays)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmRecord = false
+                    onRecordForecasts()
+                }) { Text(stringResource(R.string.calendar_record)) }
+            },
+            dismissButton = { TextButton(onClick = { confirmRecord = false }) { Text(stringResource(R.string.cancel)) } },
+        )
     }
 }
 

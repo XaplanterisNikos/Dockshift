@@ -2,8 +2,11 @@ package com.foxnks.dockshift.ui.calendar
 
 import com.foxnks.dockshift.domain.calendar.DayStatus
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
+import com.foxnks.dockshift.domain.rotation.RotationAnchor
+import com.foxnks.dockshift.domain.rotation.RotationSchedule
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.CalendarView
+import com.foxnks.dockshift.domain.settings.WorkSchedule
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.testing.FakeSettingsRepository
@@ -188,5 +191,48 @@ class CalendarViewModelTest {
 
         assertEquals(CalendarView.SUMMARY, settings.current.calendarViewLandscape)
         assertEquals(CalendarView.DAY_DETAILS, settings.current.calendarViewPortrait)
+    }
+
+    @Test
+    fun `with a rotation place, the days from today on are predicted in gold`() = runTest {
+        val anchor = RotationAnchor(LocalDate.of(2024, 8, 10), ShiftType.AFTERNOON)
+        val viewModel = viewModel(
+            InMemoryShiftRepository(listOf(Shift(LocalDate.of(2026, 10, 20), ShiftType.ANNUAL_LEAVE))),
+            FakeSettingsRepository(AppSettings(rotationAnchor = anchor)),
+        )
+        observe(viewModel)
+
+        val page = viewModel.uiState.value.visible!!
+        assertEquals(DayStatus.Forecast(RotationSchedule.typeOn(anchor, today)), page.day(today)?.status)
+        // Yesterday is a gap to fill, not a prediction; a stored day stays as stored
+        assertEquals(DayStatus.Empty, page.day(today.minusDays(1))?.status)
+        assertTrue(page.day(LocalDate.of(2026, 10, 20))?.status is DayStatus.Recorded)
+    }
+
+    @Test
+    fun `recording the month's predictions saves them as shifts and keeps stored days`() = runTest {
+        val anchor = RotationAnchor(LocalDate.of(2024, 8, 10), ShiftType.AFTERNOON)
+        val shifts = InMemoryShiftRepository(listOf(Shift(LocalDate.of(2026, 10, 20), ShiftType.ANNUAL_LEAVE)))
+        val viewModel = viewModel(shifts, FakeSettingsRepository(AppSettings(rotationAnchor = anchor)))
+        observe(viewModel)
+
+        viewModel.onRecordForecasts()
+
+        // 13–31 October: 19 days, one of them already stored
+        assertEquals(19, shifts.stored.keys.count { it.month.value == 10 })
+        assertEquals(ShiftType.ANNUAL_LEAVE, shifts.stored.getValue(LocalDate.of(2026, 10, 20)).type)
+        assertEquals(RotationSchedule.typeOn(anchor, LocalDate.of(2026, 10, 31)), shifts.stored.getValue(LocalDate.of(2026, 10, 31)).type)
+        // Now recorded, so no longer predicted
+        assertEquals(0, viewModel.uiState.value.visible!!.summary.forecastDays)
+    }
+
+    @Test
+    fun `a limited schedule predicts nothing`() = runTest {
+        val anchor = RotationAnchor(LocalDate.of(2024, 8, 10), ShiftType.AFTERNOON)
+        val settings = FakeSettingsRepository(AppSettings(rotationAnchor = anchor, workSchedule = WorkSchedule.MORNING_ONLY))
+        val viewModel = viewModel(settings = settings)
+        observe(viewModel)
+
+        assertEquals(0, viewModel.uiState.value.visible!!.summary.forecastDays)
     }
 }

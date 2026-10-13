@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -37,6 +39,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.foxnks.dockshift.R
 import com.foxnks.dockshift.domain.shift.Shift
+import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.ui.navigation.AppBottomBar
 import com.foxnks.dockshift.ui.navigation.TopLevel
 import com.foxnks.dockshift.ui.shift.DayCard
@@ -45,6 +48,7 @@ import com.foxnks.dockshift.ui.shift.MiniDayCard
 import com.foxnks.dockshift.ui.shift.ShiftChip
 import com.foxnks.dockshift.ui.shift.ShiftFormat
 import com.foxnks.dockshift.ui.shift.label
+import com.foxnks.dockshift.ui.theme.DockshiftTheme
 import java.time.LocalDate
 
 /**
@@ -132,6 +136,7 @@ fun TodayScreen(
                                     onClick = { onEditDay(day.date) },
                                     modifier = Modifier.width(76.dp),
                                     holiday = day.holiday,
+                                    forecast = day.forecast,
                                 )
                             }
                         }
@@ -145,6 +150,7 @@ fun TodayScreen(
                             onClick = { onEditDay(day.date) },
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                             holiday = day.holiday,
+                            forecast = day.forecast,
                         )
                     }
                 }
@@ -170,11 +176,18 @@ private fun CurrentShiftCard(state: TodayUiState.Ready, onEdit: () -> Unit, modi
                 )
             }
             val shift = state.current
-            if (shift == null) {
-                Text(stringResource(R.string.today_empty), style = MaterialTheme.typography.bodyLarge)
-                FilledTonalButton(onClick = onEdit) { Text(stringResource(R.string.add_shift)) }
-            } else {
-                ShiftDetails(shift)
+            val forecast = state.currentForecast
+            when {
+                shift != null -> ShiftDetails(shift)
+                // Not recorded, but the rotating schedule predicts it: show it in gold
+                forecast != null -> {
+                    ForecastLine(forecast)
+                    FilledTonalButton(onClick = onEdit) { Text(stringResource(R.string.calendar_record)) }
+                }
+                else -> {
+                    Text(stringResource(R.string.today_empty), style = MaterialTheme.typography.bodyLarge)
+                    FilledTonalButton(onClick = onEdit) { Text(stringResource(R.string.add_shift)) }
+                }
             }
         }
     }
@@ -189,4 +202,18 @@ private fun ShiftDetails(shift: Shift) {
     }
     shift.machines.forEach { MachineLine(it) }
     shift.comments?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+}
+
+/** "✦ Πρόβλεψη: Πρωί" in gold: the shift the rotating schedule predicts. */
+@Composable
+private fun ForecastLine(type: ShiftType) {
+    val gold = DockshiftTheme.shiftColors.forecast
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Icon(painterResource(R.drawable.ic_sparkle), contentDescription = null, tint = gold, modifier = Modifier.size(20.dp))
+        Text(
+            text = stringResource(R.string.today_forecast, type.label()),
+            style = MaterialTheme.typography.titleMedium,
+            color = gold,
+        )
+    }
 }

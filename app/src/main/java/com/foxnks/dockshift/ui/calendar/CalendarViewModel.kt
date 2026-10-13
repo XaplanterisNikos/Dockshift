@@ -4,11 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.foxnks.dockshift.domain.calendar.CalendarDay
 import com.foxnks.dockshift.domain.calendar.CalendarMonth
+import com.foxnks.dockshift.domain.calendar.DayStatus
 import com.foxnks.dockshift.domain.calendar.MonthGrid
 import com.foxnks.dockshift.domain.holidays.GreekHolidays
+import com.foxnks.dockshift.domain.rotation.RotationAnchor
+import com.foxnks.dockshift.domain.rotation.RotationSchedule
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.CalendarView
 import com.foxnks.dockshift.domain.settings.SettingsRepository
+import com.foxnks.dockshift.domain.settings.WorkSchedule
+import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
@@ -104,18 +109,26 @@ class CalendarViewModel @Inject constructor(
      * the pages can never come from two different moments.
      */
     private val pages: Flow<Pair<YearMonth, Map<YearMonth, CalendarMonth>>> =
-        combine(visibleMonth, settings.settings.map { it.showHolidays }.distinctUntilChanged()) { month, showHolidays ->
-            month to showHolidays
-        }.flatMapLatest { (month, showHolidays) ->
-            val shown = listOf(month.minusMonths(1), month, month.plusMonths(1))
-            // One query from the first cell of the previous page to the last cell of the next
-            val from = MonthGrid.range(shown.first()).start
-            val to = MonthGrid.range(shown.last()).endInclusive
-            // Holidays are computed, not stored: worked out once per month change
-            val holidays = if (showHolidays) GreekHolidays.between(from, to) else emptyMap()
-            shifts.observeShifts(from, to)
-                .map { list -> month to shown.associateWith { CalendarMonth.of(it, list, holidays) } }
-        }
+        combine(
+            visibleMonth,
+            today,
+            // Only the settings that change the pages: not the panel choice, for example
+            settings.settings.map { PageSettings(it.showHolidays, it.workSchedule, it.rotationAnchor) }.distinctUntilChanged(),
+        ) { month, now, pageSettings -> Triple(month, now, pageSettings) }
+            .flatMapLatest { (month, now, pageSettings) ->
+                val shown = listOf(month.minusMonths(1), month, month.plusMonths(1))
+                // One query from the first cell of the previous page to the last cell of the next
+                val from = MonthGrid.range(shown.first()).start
+                val to = MonthGrid.range(shown.last()).endInclusive
+                // Holidays are computed, not stored: worked out once per month change
+                val holidays = if (pageSettings.showHolidays) GreekHolidays.between(from, to) else emptyMap()
+                // Predictions too: gold days from today on, when the rotation place is set
+                val forecast = { date: LocalDate ->
+                    RotationSchedule.forecastOn(pageSettings.workSchedule, pageSettings.rotationAnchor, date, now)
+                }
+                shifts.observeShifts(from, to)
+                    .map { list -> month to shown.associateWith { CalendarMonth.of(it, list, holidays, forecast) } }
+            }
 
     /** The screen state, always up to date with the stored shifts and settings. */
     val uiState: StateFlow<CalendarUiState> =
@@ -177,6 +190,23 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Records every predicted day of the visible month as a shift of the predicted type,
+     * after the screen's confirmation. Days that already have a shift are never touched
+     * (they are not predictions), and each saved day can still be edited afterwards.
+     */
+    fun onRecordForecasts() {
+        val page = uiState.value.visible ?: return
+        viewModelScope.launch {
+            page.days
+                .filter { it.inMonth }
+                .forEach { day ->
+                    val status = day.status
+                    if (status is DayStatus.Forecast) shifts.save(Shift(day.date, status.type))
+                }
+        }
+    }
+
     /** Re-reads the date, e.g. when the app comes back from the background after midnight. */
     fun refresh() {
         today.value = LocalDate.now(clock)
@@ -194,6 +224,16 @@ class CalendarViewModel @Inject constructor(
             viewLandscape = defaults.calendarViewLandscape,
         )
     }
+
+    /**
+     * The settings a page depends on, and nothing else: changing the panel choice, for
+     * example, must not rebuild the pages.
+     */
+    private data class PageSettings(
+        val showHolidays: Boolean,
+        val workSchedule: WorkSchedule,
+        val rotationAnchor: RotationAnchor?,
+    )
 
     /** The panel of one orientation in these settings. */
     private fun AppSettings.calendarView(landscape: Boolean): CalendarView =

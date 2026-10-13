@@ -4,10 +4,6 @@
     <!-- Brand name: identical in every language -->
     <string name="app_name" translatable="false">Dockshift</string>
 
-    <!-- Settings: rotating schedule -->
-    <string name="setting_rotation_title">Rotating schedule</string>
-    <string name="setting_rotation_summary">Predict your shifts from the 49-day rotation</string>
-
     <!-- Import from the first version (v1 migration) -->
     <string name="legacy_stored_shifts">Stored shifts: %1$d</string>
     <string name="legacy_import_button">Import from the first version</string>
@@ -227,4 +223,32 @@
     <string name="stats_machine_overtime">+%1$d overtime</string>
     <string name="stats_show_all_machines">All machines (%1$d)</string>
     <string name="stats_show_fewer">Show fewer</string>
+
+    <!-- Work schedule and rotating schedule -->
+    <string name="setting_work_schedule_title">Work schedule</string>
+    <string name="work_schedule_rotating">All shifts (rotating schedule)</string>
+    <string name="work_schedule_morning_only">Mornings only</string>
+    <string name="work_schedule_afternoon_only">Afternoons only</string>
+    <string name="work_schedule_morning_afternoon">Mornings and afternoons</string>
+    <string name="work_schedule_afternoon_night">Afternoons and nights</string>
+    <string name="work_schedule_night_only">Nights only</string>
+    <string name="setting_rotation_place_title">My place in the rotation</string>
+    <string name="setting_rotation_place_unset">Not set: no predictions</string>
+    <string name="setting_rotation_place_value">Four-day rest from %1$s, then %2$s</string>
+    <string name="rotation_place_found">Found from your shifts. Check it and tap Save.</string>
+    <string name="rotation_place_question_rest">When did your last four-day rest start?</string>
+    <string name="rotation_place_pick_date">Choose the date</string>
+    <string name="rotation_place_future">The date cannot be after today.</string>
+    <string name="rotation_place_question_type">Which shift came after it?</string>
+    <string name="rotation_place_clear">Remove</string>
+    <string name="rotation_prompt_title">Rotating schedule</string>
+    <string name="rotation_prompt_text">Your shifts match the rotating schedule: four-day rest from %1$s, then %2$s.\n\nShow your next shifts as gold predictions? You can change this any time in Settings.</string>
+    <string name="rotation_prompt_yes">Yes</string>
+    <string name="rotation_prompt_no">Not now</string>
+    <string name="calendar_record_forecasts">Record the predictions (%1$d)</string>
+    <string name="calendar_record_forecasts_title">Record the predictions?</string>
+    <string name="calendar_record_forecasts_text">The %1$d gold days of this month will be saved as shifts. You can change any of them afterwards.</string>
+    <string name="today_forecast">Prediction: %1$s</string>
+    <string name="edit_other_types">Other shift (outside your schedule)</string>
+    <string name="edit_outside_schedule">The shift running now (%1$s) is outside your work schedule in Settings. To go on, pick any shift you want.</string>
 </resources>

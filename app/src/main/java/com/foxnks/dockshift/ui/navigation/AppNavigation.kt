@@ -14,6 +14,7 @@ import com.foxnks.dockshift.ui.legacy.LegacyFirstRunPrompt
 import com.foxnks.dockshift.ui.list.ShiftListRoute
 import com.foxnks.dockshift.ui.machines.MachinesRoute
 import com.foxnks.dockshift.ui.menu.MenuRoute
+import com.foxnks.dockshift.ui.rotation.RotationPrompt
 import com.foxnks.dockshift.ui.settings.SettingsRoute
 import com.foxnks.dockshift.ui.statistics.StatisticsRoute
 import com.foxnks.dockshift.ui.today.TodayRoute
@@ -86,6 +87,8 @@ fun AppNavigation() {
 
     // First-run "data from the first version?" question, over whatever screen is shown
     LegacyFirstRunPrompt()
+    // One-time "your shifts match the rotating schedule" question (after the one above)
+    RotationPrompt()
 }
 
 /** Opens the add/edit screen for [date], unless it is already on top (double tap). */

@@ -2,6 +2,7 @@ package com.foxnks.dockshift.domain.settings
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -12,9 +13,12 @@ import org.junit.Test
 class AppSettingsTest {
 
     @Test
-    fun `rotating schedule is off by default`() {
-        // A fresh install must not predict any shift until the user opts in
-        assertFalse(AppSettings().rotationEnabled)
+    fun `nothing is predicted by default`() {
+        // All shifts are allowed, but no place in the rotation is set: no prediction
+        // until the user sets it (or accepts the one-time suggestion)
+        assertEquals(WorkSchedule.ROTATING, AppSettings().workSchedule)
+        assertNull(AppSettings().rotationAnchor)
+        assertFalse(AppSettings().rotationPromptAnswered)
     }
 
     @Test

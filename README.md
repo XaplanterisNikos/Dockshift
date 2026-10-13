@@ -57,14 +57,33 @@ emulator or device with `./gradlew connectedAndroidTest`.
 - **Add / edit**: date, type, overtime, machines in order (each regular or overtime),
   comment. The editing rules live in `ShiftDraft` (`:domain`), so every combination the
   screen allows can be saved. Moving a shift onto a day that has one asks first.
-- **Menu**: the third tab of the bottom bar. The app's sections on top (today: Machines;
-  statistics, leave and vessels join as they are built), Settings below them.
+- **Calendar**: a month per page, swiped sideways, Monday first. Every day in its shift
+  color with a short name and "+4" for overtime; predicted days in gold with sparkles;
+  public holidays with a red number. Next to the grid, the month summary or the selected
+  day (one button switches, remembered separately upright and sideways).
+- **Rotating schedule**: the 49-day cycle of the terminal (shift types stepping afternoon →
+  morning → night, the whole pattern repeating every 147 days) in `RotationSchedule`
+  (`:domain`). Two questions set your place (when your last four-day rest started, and the
+  shift after it), or the app finds it from your recent shifts and asks once. From today
+  on, empty days show the prediction; a recorded day always wins. A month's predictions
+  can be recorded in one go. Other work schedules (mornings only, afternoons and nights,
+  …) predict nothing and offer only their shifts.
+- **New shift suggestion**: the prediction of the day, or the shift running now
+  (07–15 morning, 15–23 afternoon, 23–07 night); outside your schedule, nothing is
+  suggested and the screen says so.
+- **Public holidays**: the 13 official holidays of Greece, computed for any year (Orthodox
+  Easter with Meeus' algorithm), shown in the calendar, on Today and in the lists.
+- **Menu**: the last tab of the bottom bar. The app's sections on top (Machines,
+  Statistics; leave and vessels join as they are built), Settings below them.
+- **Statistics**: per year or month: working shifts and hours, overtime, shifts on
+  holidays, days per type, month-by-month bars, and the machines driven.
 - **Machines**: per category, searchable by number or location, with how many shifts used
   each one. Add a machine, change its number or location (past shifts follow, since they
   refer to the machine, not its number), deactivate it, or delete it for good if no shift
   ever used it. The rules (unique numbers, reactivating a retired number) live in
   `MachineForm` (`:domain`). A number missing from the shift form's picker can be added there.
-- **Settings**: appearance, rotating schedule, v1 import, delete all (two confirmations).
+- **Settings**: appearance, work schedule and place in the rotation, public holidays,
+  v1 import, delete all (two confirmations).
 
 ### Design system
 

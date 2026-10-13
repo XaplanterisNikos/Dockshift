@@ -1,5 +1,6 @@
 package com.foxnks.dockshift.domain.settings
 
+import com.foxnks.dockshift.domain.rotation.RotationAnchor
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -18,11 +19,21 @@ interface SettingsRepository {
     val settings: Flow<AppSettings>
 
     /**
-     * Turns the rotating schedule prediction on or off and persists the choice.
+     * Persists which shifts the operator works.
      *
-     * @param enabled the new value of [AppSettings.rotationEnabled].
+     * @param schedule the new value of [AppSettings.workSchedule].
      */
-    suspend fun setRotationEnabled(enabled: Boolean)
+    suspend fun setWorkSchedule(schedule: WorkSchedule)
+
+    /**
+     * Persists the operator's place in the rotating schedule, or removes it.
+     *
+     * @param anchor the new value of [AppSettings.rotationAnchor]; null removes it.
+     */
+    suspend fun setRotationAnchor(anchor: RotationAnchor?)
+
+    /** Records that the one-time "use the rotating schedule?" question was answered. */
+    suspend fun setRotationPromptAnswered()
 
     /** Records that the first-run v1 import question was answered (yes or no). */
     suspend fun setLegacyImportAsked()

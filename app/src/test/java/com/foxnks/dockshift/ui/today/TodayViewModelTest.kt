@@ -3,6 +3,8 @@ package com.foxnks.dockshift.ui.today
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
+import com.foxnks.dockshift.domain.rotation.RotationAnchor
+import com.foxnks.dockshift.domain.rotation.RotationSchedule
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.testing.FakeSettingsRepository
 import com.foxnks.dockshift.testing.InMemoryShiftRepository
@@ -107,5 +109,19 @@ class TodayViewModelTest {
         observe(viewModel)
 
         assertNull((viewModel.uiState.value as TodayUiState.Ready).currentHoliday)
+    }
+
+    @Test
+    fun `with a rotation place, empty days show the prediction`() = runTest {
+        val anchor = RotationAnchor(LocalDate.of(2024, 8, 10), ShiftType.AFTERNOON)
+        val shifts = InMemoryShiftRepository(listOf(Shift(tuesday.plusDays(1), ShiftType.ANNUAL_LEAVE)))
+        val viewModel = TodayViewModel(shifts, FakeSettingsRepository(AppSettings(rotationAnchor = anchor)), clockAt(tuesday.atTime(10, 0)))
+        observe(viewModel)
+
+        val state = viewModel.uiState.value as TodayUiState.Ready
+        assertEquals(RotationSchedule.typeOn(anchor, tuesday), state.currentForecast)
+        // A stored day has no prediction
+        assertNull(state.upcoming[0].forecast)
+        assertEquals(RotationSchedule.typeOn(anchor, tuesday.plusDays(2)), state.upcoming[1].forecast)
     }
 }
