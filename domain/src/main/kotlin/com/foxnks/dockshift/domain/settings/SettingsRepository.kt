@@ -40,4 +40,13 @@ interface SettingsRepository {
      * @param enabled the new value of [AppSettings.dynamicColor].
      */
     suspend fun setDynamicColor(enabled: Boolean)
+
+    /**
+     * Persists what the calendar shows beside the month, for one orientation.
+     *
+     * @param landscape true for [AppSettings.calendarViewLandscape], false for
+     * [AppSettings.calendarViewPortrait].
+     * @param view the new value.
+     */
+    suspend fun setCalendarView(landscape: Boolean, view: CalendarView)
 }

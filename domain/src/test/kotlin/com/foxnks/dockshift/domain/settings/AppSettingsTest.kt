@@ -29,4 +29,11 @@ class AppSettingsTest {
         assertEquals(ThemeMode.SYSTEM, AppSettings().themeMode)
         assertTrue(AppSettings().dynamicColor)
     }
+
+    @Test
+    fun `calendar shows the summary upright and the day details sideways by default`() {
+        // Upright there is room below the grid for totals; sideways, room beside it for a day
+        assertEquals(CalendarView.SUMMARY, AppSettings().calendarViewPortrait)
+        assertEquals(CalendarView.DAY_DETAILS, AppSettings().calendarViewLandscape)
+    }
 }

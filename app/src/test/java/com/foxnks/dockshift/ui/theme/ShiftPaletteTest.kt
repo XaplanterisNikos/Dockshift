@@ -31,6 +31,25 @@ class ShiftPaletteTest {
     }
 
     @Test
+    fun `forecast gold is readable in both modes`() {
+        val gold = ShiftPalette.FORECAST
+        val light = contrast(gold.light, gold.onLight)
+        val dark = contrast(gold.dark, gold.onDark)
+        assertTrue("forecast light: $light", light >= MIN_TEXT_CONTRAST)
+        assertTrue("forecast dark: $dark", dark >= MIN_TEXT_CONTRAST)
+    }
+
+    @Test
+    fun `forecast gold is not the color of any shift type`() {
+        // A prediction must never be mistaken for a recorded day
+        ShiftType.entries.forEach { type ->
+            val c = ShiftPalette.of(type)
+            assertTrue("$type light", c.light != ShiftPalette.FORECAST.light)
+            assertTrue("$type dark", c.dark != ShiftPalette.FORECAST.dark)
+        }
+    }
+
+    @Test
     fun `every shift type has its own color`() {
         // Two types sharing a color would be indistinguishable in the calendar
         val light = ShiftType.entries.map { ShiftPalette.of(it).light }
@@ -47,6 +66,11 @@ class ShiftPaletteTest {
             val c = ShiftPalette.of(type)
             listOf(c.light, c.onLight, c.dark, c.onDark).forEach { argb ->
                 assertEquals("$type alpha", 0xFFL, (argb shr 24) and 0xFF)
+            }
+        }
+        with(ShiftPalette.FORECAST) {
+            listOf(light, onLight, dark, onDark).forEach { argb ->
+                assertEquals("forecast alpha", 0xFFL, (argb shr 24) and 0xFF)
             }
         }
     }

@@ -32,6 +32,17 @@ data class ShiftColorValues(
  */
 object ShiftPalette {
 
+    /**
+     * Gold of a predicted (forecast) day: a pale gold fill with deep gold text, border
+     * and sparkles, like a touch of a magic wand. Not a shift type: a prediction keeps
+     * its type's name, and the gold says "not recorded yet". `light`/`dark` are the
+     * fills, `onLight`/`onDark` the gold drawn on them (checked by `ShiftPaletteTest`).
+     */
+    val FORECAST = ShiftColorValues(
+        light = 0xFFFFF3D1, onLight = 0xFF8A6400,
+        dark = 0xFF33290A, onDark = 0xFFF5CF5A,
+    )
+
     /** @return the colors of [type]. Exhaustive: a new type will not compile without colors. */
     fun of(type: ShiftType): ShiftColorValues = when (type) {
         ShiftType.MORNING -> ShiftColorValues(

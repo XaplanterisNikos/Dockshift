@@ -23,6 +23,14 @@ class ShiftColors(private val darkTheme: Boolean) {
     /** Text and icon color to draw on top of [container]. */
     fun onContainer(type: ShiftType): Color =
         ShiftPalette.of(type).let { Color(if (darkTheme) it.onDark else it.onLight) }
+
+    /** Fill of a predicted (forecast) day: pale gold. */
+    val forecastContainer: Color
+        get() = ShiftPalette.FORECAST.let { Color(if (darkTheme) it.dark else it.light) }
+
+    /** Gold of a predicted day: its text, border and sparkles, drawn on [forecastContainer]. */
+    val forecast: Color
+        get() = ShiftPalette.FORECAST.let { Color(if (darkTheme) it.onDark else it.onLight) }
 }
 
 /**
