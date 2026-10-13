@@ -146,4 +146,29 @@ class TodayViewModelTest {
         assertNull(state.upcoming[2].leave)
         assertEquals(RotationSchedule.typeOn(anchor, tuesday.plusDays(3)), state.upcoming[2].forecast)
     }
+
+    @Test
+    fun `backup reminder is due after 15 days, never without shifts or when turned off`() = runTest {
+        val shifts = InMemoryShiftRepository(listOf(Shift(tuesday, ShiftType.MORNING)))
+        val settings = FakeSettingsRepository(AppSettings(lastBackup = tuesday.minusDays(16)))
+        val viewModel = TodayViewModel(shifts, InMemoryLeaveRepository(), settings, clockAt(tuesday.atTime(10, 0)))
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.backupDueDays.collect() }
+
+        assertEquals(16, viewModel.backupDueDays.value)
+
+        // A backup today: nothing due
+        settings.setLastBackup(tuesday)
+        assertNull(viewModel.backupDueDays.value)
+
+        // Never backed up: due at once
+        settings.restore(AppSettings())
+        assertEquals(Int.MAX_VALUE, viewModel.backupDueDays.value)
+
+        settings.setBackupReminder(false)
+        assertNull(viewModel.backupDueDays.value)
+
+        settings.setBackupReminder(true)
+        shifts.deleteAll()
+        assertNull(viewModel.backupDueDays.value)
+    }
 }

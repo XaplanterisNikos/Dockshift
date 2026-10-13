@@ -53,7 +53,6 @@ import com.foxnks.dockshift.domain.settings.ThemeMode
 import com.foxnks.dockshift.domain.settings.WorkSchedule
 import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.ui.common.DateDialog
-import com.foxnks.dockshift.ui.legacy.LegacyImportSettingsItem
 import com.foxnks.dockshift.ui.shift.ShiftFormat
 import com.foxnks.dockshift.ui.shift.label
 import com.foxnks.dockshift.ui.theme.DockshiftTheme
@@ -77,13 +76,12 @@ fun SettingsRoute(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMod
         onRotationAnchorSaved = viewModel::onRotationAnchorSaved,
         onRotationAnchorCleared = viewModel::onRotationAnchorCleared,
         onShowHolidaysToggled = viewModel::onShowHolidaysToggled,
-        onDeleteAllShifts = viewModel::onDeleteAllShifts,
-        dataSection = { LegacyImportSettingsItem() },
     )
 }
 
 /**
- * Settings, grouped in sections: Appearance, Schedule, Data.
+ * Settings, grouped in sections: Appearance, Schedule. Data (backup, v1 import,
+ * delete all) has its own screen in the menu.
  *
  * @param uiState what to show.
  * @param onBack back arrow tapped.
@@ -93,8 +91,6 @@ fun SettingsRoute(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMod
  * @param onRotationAnchorSaved the rotation place was set: four-day rest start and the shift after it.
  * @param onRotationAnchorCleared the rotation place was removed.
  * @param onShowHolidaysToggled the public holidays switch was flipped.
- * @param onDeleteAllShifts "delete all shifts" was confirmed twice.
- * @param dataSection items of the Data section (a slot, so previews need no Hilt).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,8 +103,6 @@ fun SettingsScreen(
     onRotationAnchorSaved: (LocalDate, ShiftType) -> Unit = { _, _ -> },
     onRotationAnchorCleared: () -> Unit = {},
     onShowHolidaysToggled: (Boolean) -> Unit = {},
-    onDeleteAllShifts: () -> Unit = {},
-    dataSection: @Composable () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -159,11 +153,6 @@ fun SettingsScreen(
                     checked = uiState.showHolidays,
                     onCheckedChange = onShowHolidaysToggled,
                 )
-                HorizontalDivider()
-
-                SectionTitle(R.string.settings_section_data)
-                dataSection()
-                DeleteAllItem(storedShifts = uiState.storedShifts, onConfirmed = onDeleteAllShifts)
             }
         }
     }
@@ -394,53 +383,6 @@ private fun WorkSchedule.labelRes(): Int = when (this) {
     WorkSchedule.MORNING_AFTERNOON -> R.string.work_schedule_morning_afternoon
     WorkSchedule.AFTERNOON_NIGHT -> R.string.work_schedule_afternoon_night
     WorkSchedule.NIGHT_ONLY -> R.string.work_schedule_night_only
-}
-
-/** Two steps the "delete all" confirmation can be in. */
-private enum class DeleteAllStep { NONE, FIRST, SECOND }
-
-/**
- * "Delete all shifts", in red, behind two confirmations: the first says how many
- * shifts will go, the second that it cannot be undone.
- *
- * @param storedShifts how many shifts would be deleted.
- * @param onConfirmed called after the second confirmation.
- */
-@Composable
-private fun DeleteAllItem(storedShifts: Int, onConfirmed: () -> Unit) {
-    var step by rememberSaveable { mutableStateOf(DeleteAllStep.NONE) }
-
-    ListItem(
-        headlineContent = { Text(stringResource(R.string.settings_delete_all), color = MaterialTheme.colorScheme.error) },
-        supportingContent = { Text(stringResource(R.string.settings_delete_all_summary)) },
-        // Nothing to delete: the item stays visible but does nothing
-        modifier = Modifier.clickable(enabled = storedShifts > 0) { step = DeleteAllStep.FIRST },
-    )
-
-    when (step) {
-        DeleteAllStep.NONE -> Unit
-        DeleteAllStep.FIRST -> AlertDialog(
-            onDismissRequest = { step = DeleteAllStep.NONE },
-            title = { Text(stringResource(R.string.delete_all_title)) },
-            text = { Text(stringResource(R.string.delete_all_text, storedShifts)) },
-            confirmButton = {
-                TextButton(onClick = { step = DeleteAllStep.SECOND }) { Text(stringResource(R.string.delete_all_continue)) }
-            },
-            dismissButton = { TextButton(onClick = { step = DeleteAllStep.NONE }) { Text(stringResource(R.string.cancel)) } },
-        )
-        DeleteAllStep.SECOND -> AlertDialog(
-            onDismissRequest = { step = DeleteAllStep.NONE },
-            title = { Text(stringResource(R.string.delete_all_confirm_title)) },
-            text = { Text(stringResource(R.string.delete_all_confirm_text)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    step = DeleteAllStep.NONE
-                    onConfirmed()
-                }) { Text(stringResource(R.string.delete_all_button), color = MaterialTheme.colorScheme.error) }
-            },
-            dismissButton = { TextButton(onClick = { step = DeleteAllStep.NONE }) { Text(stringResource(R.string.cancel)) } },
-        )
-    }
 }
 
 /** Name of a theme option. */

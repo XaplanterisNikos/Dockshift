@@ -1,9 +1,15 @@
 package com.foxnks.dockshift.di
 
+import com.foxnks.dockshift.data.backup.AndroidBackupStorage
+import com.foxnks.dockshift.data.backup.BackupFormat
+import com.foxnks.dockshift.data.backup.BackupStorage
+import com.foxnks.dockshift.data.backup.JsonBackupFormat
+import com.foxnks.dockshift.data.backup.RoomBackupRepository
 import com.foxnks.dockshift.data.leave.RoomLeaveRepository
 import com.foxnks.dockshift.data.machine.RoomMachineRepository
 import com.foxnks.dockshift.data.settings.DataStoreSettingsRepository
 import com.foxnks.dockshift.data.shift.RoomShiftRepository
+import com.foxnks.dockshift.domain.backup.BackupRepository
 import com.foxnks.dockshift.domain.leave.LeaveRepository
 import com.foxnks.dockshift.domain.machine.MachineRepository
 import com.foxnks.dockshift.domain.settings.SettingsRepository
@@ -44,4 +50,16 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindMachineRepository(impl: RoomMachineRepository): MachineRepository
+
+    /** Whoever asks for [BackupRepository] gets the Room + DataStore instance. */
+    @Binds
+    abstract fun bindBackupRepository(impl: RoomBackupRepository): BackupRepository
+
+    /** Backups are written as JSON. */
+    @Binds
+    abstract fun bindBackupFormat(impl: JsonBackupFormat): BackupFormat
+
+    /** Backup files are kept through MediaStore and the system file picker. */
+    @Binds
+    abstract fun bindBackupStorage(impl: AndroidBackupStorage): BackupStorage
 }

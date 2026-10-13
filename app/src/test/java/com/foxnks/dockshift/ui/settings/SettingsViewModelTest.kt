@@ -142,19 +142,4 @@ class SettingsViewModelTest {
 
         assertEquals(RotationSchedule.latestAnchor(sample, today), viewModel.ready.detectedAnchor)
     }
-
-    @Test
-    fun `delete all removes every shift and the count follows`() = runTest {
-        val shifts = InMemoryShiftRepository(
-            listOf(Shift(LocalDate.of(2026, 10, 13), ShiftType.MORNING), Shift(LocalDate.of(2026, 10, 14), ShiftType.DAY_OFF)),
-        )
-        val viewModel = viewModel(shifts = shifts)
-        observe(viewModel)
-        assertEquals(2, viewModel.ready.storedShifts)
-
-        viewModel.onDeleteAllShifts()
-
-        assertTrue(shifts.stored.isEmpty())
-        assertEquals(0, viewModel.ready.storedShifts)
-    }
 }

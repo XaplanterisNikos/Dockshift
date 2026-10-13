@@ -127,6 +127,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.kotlinx.serialization.core)
 
+    // Backup files (JSON)
+    implementation(libs.kotlinx.serialization.json)
+
+    // Splash screen while the app starts (Android 12 API on every version)
+    implementation(libs.androidx.core.splashscreen)
+
     // Settings storage
     implementation(libs.androidx.datastore.preferences)
 

@@ -2,6 +2,7 @@ package com.foxnks.dockshift.domain.settings
 
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.rotation.RotationAnchor
+import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -83,4 +84,25 @@ interface SettingsRepository {
      * @param holidays the new value of [AppSettings.portClosedHolidays].
      */
     suspend fun setPortClosedHolidays(holidays: Set<GreekHoliday>)
+
+    /**
+     * Records the day of a successful backup.
+     *
+     * @param date the new value of [AppSettings.lastBackup].
+     */
+    suspend fun setLastBackup(date: LocalDate)
+
+    /**
+     * Turns the backup reminder on or off.
+     *
+     * @param enabled the new value of [AppSettings.backupReminder].
+     */
+    suspend fun setBackupReminder(enabled: Boolean)
+
+    /**
+     * Replaces every setting at once, when a backup is restored.
+     *
+     * @param settings the settings of the backup.
+     */
+    suspend fun restore(settings: AppSettings)
 }

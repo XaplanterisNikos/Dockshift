@@ -6,10 +6,13 @@ import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.settings.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -25,12 +28,15 @@ data class Appearance(
 
 /**
  * Activity-level ViewModel: provides the [Appearance] for the theme, so a change
- * in Settings re-themes the whole app immediately.
+ * in Settings re-themes the whole app immediately, and tells the splash screen when
+ * the saved settings have been read.
  *
  * @param settings source of the saved appearance settings.
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(settings: SettingsRepository) : ViewModel() {
+
+    private val loaded = MutableStateFlow(false)
 
     /**
      * Current appearance. Started eagerly so the saved choice is applied as early
@@ -40,5 +46,13 @@ class MainViewModel @Inject constructor(settings: SettingsRepository) : ViewMode
         .map { Appearance(themeMode = it.themeMode, dynamicColor = it.dynamicColor) }
         // Other settings changing must not redraw the whole app
         .distinctUntilChanged()
+        // Read once: the splash screen may go (same pass as the value, so no frame in between)
+        .onEach { loaded.value = true }
         .stateIn(viewModelScope, SharingStarted.Eagerly, Appearance())
+
+    /**
+     * True once the saved settings have been read. The splash screen stays until then,
+     * so the app never flashes in the wrong theme.
+     */
+    val ready: StateFlow<Boolean> = loaded.asStateFlow()
 }

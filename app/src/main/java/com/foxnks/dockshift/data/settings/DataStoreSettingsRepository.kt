@@ -1,6 +1,7 @@
 package com.foxnks.dockshift.data.settings
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -62,6 +63,8 @@ class DataStoreSettingsRepository @Inject constructor(
                 portClosedHolidays = preferences[Keys.PORT_CLOSED_HOLIDAYS].orEmpty()
                     .mapNotNull { name -> GreekHoliday.entries.firstOrNull { it.name == name } }
                     .toSet(),
+                lastBackup = preferences[Keys.LAST_BACKUP]?.let { runCatching { LocalDate.parse(it) }.getOrNull() },
+                backupReminder = preferences[Keys.BACKUP_REMINDER] ?: defaults.backupReminder,
             )
         }
 
@@ -71,14 +74,7 @@ class DataStoreSettingsRepository @Inject constructor(
     }
 
     override suspend fun setRotationAnchor(anchor: RotationAnchor?) {
-        dataStore.edit { preferences ->
-            if (anchor == null) {
-                preferences.remove(Keys.ROTATION_ANCHOR)
-            } else {
-                // Stored as "2024-08-10|AFTERNOON": readable, and stable across app versions
-                preferences[Keys.ROTATION_ANCHOR] = "${anchor.cycleStart}$ANCHOR_SEPARATOR${anchor.firstType.name}"
-            }
-        }
+        dataStore.edit { preferences -> preferences.putAnchor(anchor) }
     }
 
     override suspend fun setRotationPromptAnswered() {
@@ -108,14 +104,56 @@ class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setLeaveEntitlement(year: Int, days: Int) {
         dataStore.edit { preferences ->
-            val all = entitlementsOf(preferences[Keys.LEAVE_ENTITLEMENTS]) + (year to days)
-            // Stored as "2026:22,2027:24": readable and easy to extend
-            preferences[Keys.LEAVE_ENTITLEMENTS] = all.entries.sortedBy { it.key }.joinToString(",") { "${it.key}:${it.value}" }
+            preferences.putEntitlements(entitlementsOf(preferences[Keys.LEAVE_ENTITLEMENTS]) + (year to days))
         }
     }
 
     override suspend fun setPortClosedHolidays(holidays: Set<GreekHoliday>) {
         dataStore.edit { preferences -> preferences[Keys.PORT_CLOSED_HOLIDAYS] = holidays.map { it.name }.toSet() }
+    }
+
+    override suspend fun setLastBackup(date: LocalDate) {
+        dataStore.edit { preferences -> preferences[Keys.LAST_BACKUP] = date.toString() }
+    }
+
+    override suspend fun setBackupReminder(enabled: Boolean) {
+        dataStore.edit { preferences -> preferences[Keys.BACKUP_REMINDER] = enabled }
+    }
+
+    override suspend fun restore(settings: AppSettings) {
+        // One edit: the file holds either the old settings or the restored ones, never a mix
+        dataStore.edit { preferences ->
+            preferences.clear()
+            with(settings) {
+                preferences[Keys.WORK_SCHEDULE] = workSchedule.name
+                preferences.putAnchor(rotationAnchor)
+                preferences[Keys.ROTATION_PROMPT_ANSWERED] = rotationPromptAnswered
+                preferences[Keys.LEGACY_IMPORT_ASKED] = legacyImportAsked
+                preferences[Keys.THEME_MODE] = themeMode.name
+                preferences[Keys.DYNAMIC_COLOR] = dynamicColor
+                preferences[Keys.CALENDAR_VIEW_PORTRAIT] = calendarViewPortrait.name
+                preferences[Keys.CALENDAR_VIEW_LANDSCAPE] = calendarViewLandscape.name
+                preferences[Keys.SHOW_HOLIDAYS] = showHolidays
+                preferences.putEntitlements(leaveEntitlements)
+                preferences[Keys.PORT_CLOSED_HOLIDAYS] = portClosedHolidays.map { it.name }.toSet()
+                lastBackup?.let { preferences[Keys.LAST_BACKUP] = it.toString() }
+                preferences[Keys.BACKUP_REMINDER] = backupReminder
+            }
+        }
+    }
+
+    /** Stores the rotation place as "2024-08-10|AFTERNOON" (readable, stable), or removes it. */
+    private fun MutablePreferences.putAnchor(anchor: RotationAnchor?) {
+        if (anchor == null) {
+            remove(Keys.ROTATION_ANCHOR)
+        } else {
+            this[Keys.ROTATION_ANCHOR] = "${anchor.cycleStart}$ANCHOR_SEPARATOR${anchor.firstType.name}"
+        }
+    }
+
+    /** Stores the leave days per year as "2026:22,2027:24": readable and easy to extend. */
+    private fun MutablePreferences.putEntitlements(entitlements: Map<Int, Int>) {
+        this[Keys.LEAVE_ENTITLEMENTS] = entitlements.entries.sortedBy { it.key }.joinToString(",") { "${it.key}:${it.value}" }
     }
 
     /** "2026:22,2027:24" back to a map; unreadable parts are skipped. */
@@ -164,6 +202,8 @@ class DataStoreSettingsRepository @Inject constructor(
         val SHOW_HOLIDAYS = booleanPreferencesKey("show_holidays")
         val LEAVE_ENTITLEMENTS = stringPreferencesKey("leave_entitlements")
         val PORT_CLOSED_HOLIDAYS = stringSetPreferencesKey("port_closed_holidays")
+        val LAST_BACKUP = stringPreferencesKey("last_backup")
+        val BACKUP_REMINDER = booleanPreferencesKey("backup_reminder")
     }
 
     private companion object {

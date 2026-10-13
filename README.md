@@ -74,7 +74,7 @@ emulator or device with `./gradlew connectedAndroidTest`.
 - **Public holidays**: the 13 official holidays of Greece, computed for any year (Orthodox
   Easter with Meeus' algorithm), shown in the calendar, on Today and in the lists.
 - **Menu**: the last tab of the bottom bar. The app's sections on top (Machines,
-  Statistics, Leave; vessels join when built), Settings below them.
+  Statistics, Leave, Data & backup; vessels join when built), Settings below them.
 - **Statistics**: per year or month: working shifts and hours, overtime, shifts on
   holidays, days per type, month-by-month bars, and the machines driven.
 - **Leave**: the days you are entitled to each year (10–60), and leave planned ahead as
@@ -88,8 +88,16 @@ emulator or device with `./gradlew connectedAndroidTest`.
   refer to the machine, not its number), deactivate it, or delete it for good if no shift
   ever used it. The rules (unique numbers, reactivating a retired number) live in
   `MachineForm` (`:domain`). A number missing from the shift form's picker can be added there.
-- **Settings**: appearance, work schedule and place in the rotation, public holidays,
-  v1 import, delete all (two confirmations).
+- **Data & backup**: one JSON file with everything (shifts, machines, leave, settings),
+  saved in `Documents/DataShift_foxnks` (kept when the app is uninstalled) or anywhere
+  through the system picker (Google Drive, SD card), and shared from the app. Restoring
+  checks the file first, shows what it holds, asks twice and replaces everything in one
+  transaction. A card on Today reminds every 15 days (can be turned off). The v1 import
+  and "delete all" (two confirmations) live here too. The file states its format and
+  version, so later versions keep reading older backups.
+- **Settings**: appearance, work schedule and place in the rotation, public holidays.
+- **Splash screen**: the launcher icon on the harbour blue while the app starts, until the
+  settings are read (no flash in the wrong theme), then a short fade.
 
 ### Design system
 
@@ -105,7 +113,7 @@ emulator or device with `./gradlew connectedAndroidTest`.
 ### Moving from the first version
 
 Users of v1 bring their data over once, from its backup file (`DataShift_foxnks/dataShift_foxnks.csv`):
-the app asks on first start, or later from the menu. The system file picker opens straight in
+the app asks once on first start, or later from Menu → Data & backup. The system file picker opens straight in
 that folder, so no storage permission is needed. The file is fully checked first: any unreadable
 value is reported with its line and nothing is saved; otherwise a report is shown and everything
 is saved in one transaction, never overwriting days already in the app. All v1-specific code

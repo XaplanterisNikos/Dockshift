@@ -32,8 +32,7 @@ sealed interface SettingsUiState {
      *
      * @property themeMode light/dark choice.
      * @property dynamicColor whether app colors follow the wallpaper.
-     * @property storedShifts how many shifts are stored (shown before "delete all").
-     * @property showHolidays whether public holidays are marked.
+         * @property showHolidays whether public holidays are marked.
      * @property workSchedule which shifts the operator works.
      * @property rotationAnchor the operator's place in the rotation, as their latest
      * four-day rest up to today; null when not set.
@@ -44,7 +43,6 @@ sealed interface SettingsUiState {
     data class Ready(
         val themeMode: ThemeMode,
         val dynamicColor: Boolean,
-        val storedShifts: Int = 0,
         val showHolidays: Boolean = true,
         val workSchedule: WorkSchedule = WorkSchedule.ROTATING,
         val rotationAnchor: RotationAnchor? = null,
@@ -58,7 +56,7 @@ sealed interface SettingsUiState {
  * "save" button, as in the phone's own settings.
  *
  * @param settings where the settings are stored.
- * @param shifts stored shifts, for the count, "delete all" and finding the rotation place.
+ * @param shifts stored shifts, for finding the rotation place.
  * @param clock the current time, for "today".
  */
 @HiltViewModel
@@ -73,14 +71,12 @@ class SettingsViewModel @Inject constructor(
     /** The screen state, always holding the latest saved values. */
     val uiState: StateFlow<SettingsUiState> = combine(
         settings.settings,
-        shifts.observeCount(),
         // One full rotation period back is enough to find the place, and avoids old schedules
         shifts.observeShifts(today.minusDays(RotationSchedule.PERIOD_DAYS.toLong()), today),
-    ) { saved, count, recent ->
+    ) { saved, recent ->
         SettingsUiState.Ready(
             themeMode = saved.themeMode,
             dynamicColor = saved.dynamicColor,
-            storedShifts = count,
             showHolidays = saved.showHolidays,
             workSchedule = saved.workSchedule,
             rotationAnchor = saved.rotationAnchor?.let { RotationSchedule.latestAnchor(it, today) },
@@ -131,11 +127,6 @@ class SettingsViewModel @Inject constructor(
     /** @param enabled new position of the public holidays switch. */
     fun onShowHolidaysToggled(enabled: Boolean) {
         viewModelScope.launch { settings.setShowHolidays(enabled) }
-    }
-
-    /** Deletes every stored shift, after the screen's double confirmation. Machines and settings stay. */
-    fun onDeleteAllShifts() {
-        viewModelScope.launch { shifts.deleteAll() }
     }
 
     private companion object {

@@ -50,7 +50,7 @@ private fun rememberLegacyPicker(viewModel: LegacyImportViewModel): () -> Unit {
  * version?" (only on a fresh install, only once) and the dialogs of the import.
  * Draws nothing when there is nothing to ask or show.
  *
- * @param viewModel provided by Hilt; activity-scoped, so it is the same one Settings uses.
+ * @param viewModel provided by Hilt; activity-scoped, so it is the same one the Data & backup screen uses.
  */
 @Composable
 fun LegacyFirstRunPrompt(viewModel: LegacyImportViewModel = hiltViewModel()) {
@@ -72,13 +72,13 @@ fun LegacyFirstRunPrompt(viewModel: LegacyImportViewModel = hiltViewModel()) {
 }
 
 /**
- * In Settings → Data: "Import from the first version", with the number of stored
+ * In Menu → Data & backup: "Import from the first version", with the number of stored
  * shifts underneath, and the dialogs of the import.
  *
  * @param viewModel provided by Hilt.
  */
 @Composable
-fun LegacyImportSettingsItem(viewModel: LegacyImportViewModel = hiltViewModel()) {
+fun LegacyImportItem(viewModel: LegacyImportViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val openPicker = rememberLegacyPicker(viewModel)
 

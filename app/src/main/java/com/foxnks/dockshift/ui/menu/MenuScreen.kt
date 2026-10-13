@@ -23,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.NavKey
 import com.foxnks.dockshift.R
 import com.foxnks.dockshift.ui.navigation.AppBottomBar
+import com.foxnks.dockshift.ui.navigation.BackupKey
 import com.foxnks.dockshift.ui.navigation.LeavesKey
 import com.foxnks.dockshift.ui.navigation.MachinesKey
 import com.foxnks.dockshift.ui.navigation.SettingsKey
@@ -53,6 +54,7 @@ private val sections = listOf(
     MenuEntry(MachinesKey, R.string.menu_machines, R.string.menu_machines_summary, R.drawable.ic_forklift),
     MenuEntry(StatisticsKey, R.string.menu_statistics, R.string.menu_statistics_summary, R.drawable.ic_bar_chart),
     MenuEntry(LeavesKey, R.string.menu_leave, R.string.menu_leave_summary, R.drawable.ic_beach),
+    MenuEntry(BackupKey, R.string.backup_title, R.string.menu_backup_summary, R.drawable.ic_backup),
 )
 
 /** Settings, kept apart below the sections: it changes the app, not your data. */

@@ -68,7 +68,6 @@
     <string name="navigate_back">Πίσω</string>
     <string name="settings_section_appearance">Εμφάνιση</string>
     <string name="settings_section_schedule">Πρόγραμμα</string>
-    <string name="settings_section_data">Δεδομένα</string>
     <string name="setting_theme_title">Θέμα</string>
     <string name="setting_theme_system">Όπως το κινητό</string>
     <string name="setting_theme_light">Ανοιχτό</string>
@@ -292,4 +291,53 @@
     <string name="leave_delete_title">Διαγραφή άδειας;</string>
     <string name="leave_delete_text">Οι μέρες της γυρίζουν στο κανονικό σου πρόγραμμα.</string>
     <string name="leave_open">Άνοιγμα άδειας</string>
+
+    <!-- Δεδομένα & backup (#13) -->
+    <string name="backup_title">Δεδομένα &amp; backup</string>
+    <string name="menu_backup_summary">Backup, επαναφορά, εισαγωγή από την πρώτη έκδοση</string>
+    <string name="backup_section_backup">Backup</string>
+    <string name="backup_section_restore">Επαναφορά</string>
+    <string name="backup_section_delete">Διαγραφή</string>
+    <string name="backup_never">Δεν έχει γίνει ακόμα backup</string>
+    <string name="backup_today">σήμερα</string>
+    <plurals name="backup_days_ago">
+        <item quantity="one">πριν από %d μέρα</item>
+        <item quantity="other">πριν από %d μέρες</item>
+    </plurals>
+    <string name="backup_last">Τελευταίο backup: %1$s (%2$s)</string>
+    <string name="backup_now">Backup τώρα</string>
+    <string name="backup_now_summary">Αποθηκεύει τα πάντα στο %1$s</string>
+    <string name="backup_elsewhere">Αποθήκευση αλλού…</string>
+    <string name="backup_elsewhere_summary">Google Drive, κάρτα SD ή όποιον φάκελο θέλετε</string>
+    <string name="backup_reminder">Υπενθύμιση κάθε %1$d μέρες</string>
+    <string name="backup_reminder_summary">Μια κάρτα στο «Σήμερα» όταν χρειάζεται backup</string>
+    <string name="backup_restore">Επαναφορά από backup</string>
+    <string name="backup_restore_summary">Αντικαθιστά όλες τις βάρδιες, άδειες, μηχανήματα και ρυθμίσεις</string>
+    <string name="backup_share">Κοινοποίηση</string>
+    <string name="backup_ok">OK</string>
+    <string name="backup_saved_title">Το backup αποθηκεύτηκε</string>
+    <string name="backup_saved_documents">Αποθηκεύτηκε στο %1$s. Για χαμένο ή χαλασμένο κινητό, στείλτε το και κάπου αλλού: email, Drive, Viber…</string>
+    <string name="backup_saved_elsewhere">Αποθηκεύτηκε στο αρχείο που διαλέξατε.</string>
+    <string name="backup_restore_title">Επαναφορά αυτού του backup;</string>
+    <string name="backup_restore_replaces">Όλα όσα έχει τώρα η εφαρμογή θα αντικατασταθούν από το backup.</string>
+    <string name="backup_continue">Συνέχεια</string>
+    <string name="backup_restore_confirm_title">Είστε σίγουροι;</string>
+    <string name="backup_restore_confirm_text">Οι %1$d βάρδιες που υπάρχουν τώρα θα διαγραφούν και θα μπουν οι %2$d βάρδιες του backup, μαζί με τις άδειες, τα μηχανήματα και τις ρυθμίσεις του. Δεν αναιρείται.</string>
+    <string name="backup_restore_button">Επαναφορά</string>
+    <string name="backup_restored">Έγινε επαναφορά: %1$d βάρδιες.</string>
+    <string name="backup_failed_save">Το backup δεν αποθηκεύτηκε. Ελέγξτε τον ελεύθερο χώρο και δοκιμάστε ξανά.</string>
+    <string name="backup_failed_read">Το αρχείο δεν διαβάστηκε.</string>
+    <string name="backup_failed_invalid">Αυτό το αρχείο δεν είναι backup του Dockshift ή είναι χαλασμένο. Δεν άλλαξε τίποτα.</string>
+    <string name="backup_failed_restore">Η επαναφορά απέτυχε. Δεν άλλαξε τίποτα.</string>
+    <string name="backup_summary_made">Backup της %1$s</string>
+    <string name="backup_summary_shifts">%1$d βάρδιες, %2$s – %3$s</string>
+    <string name="backup_summary_no_shifts">Χωρίς βάρδιες</string>
+    <string name="backup_summary_leaves_machines">%1$d άδειες · %2$d μηχανήματα</string>
+    <string name="backup_working">Περιμένετε…</string>
+    <string name="today_backup_never">Δεν έχετε κάνει ακόμα backup</string>
+    <plurals name="today_backup_due">
+        <item quantity="one">%d μέρα από το τελευταίο backup</item>
+        <item quantity="other">%d μέρες από το τελευταίο backup</item>
+    </plurals>
+    <string name="today_backup_button">Backup</string>
 </resources>

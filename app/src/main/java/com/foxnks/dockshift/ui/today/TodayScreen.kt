@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -24,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -65,18 +68,29 @@ fun TodayRoute(
     onEditDay: (LocalDate) -> Unit,
     onOpenLeave: (Long) -> Unit,
     onSelectTopLevel: (TopLevel) -> Unit,
+    onOpenBackup: () -> Unit = {},
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
     // Back from the background (maybe after midnight or 07:00): recompute "today"
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    TodayScreen(uiState, onEditDay, onSelectTopLevel, onOpenLeave)
+    val backupDueDays by viewModel.backupDueDays.collectAsStateWithLifecycle()
+    TodayScreen(uiState, onEditDay, onSelectTopLevel, onOpenLeave, backupDueDays, onOpenBackup)
 }
 
 /**
  * Today's shift in a card (type, machines with their location, overtime, comment)
  * and the next days below: small cards upright, a row of mini cards sideways.
  * Public holidays are named in red. Tapping any day opens it for editing.
+ * Every 15 days (unless turned off) a card under today's shift reminds to back up.
+ *
+ * @param uiState what to show.
+ * @param onEditDay opens a day for adding or editing.
+ * @param onSelectTopLevel switch screen from the bottom bar.
+ * @param onOpenLeave opens a planned leave (its id).
+ * @param backupDueDays days since the last backup when the reminder is due
+ * ([Int.MAX_VALUE]: never backed up), or null for no reminder.
+ * @param onOpenBackup opens Data & backup.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,6 +99,8 @@ fun TodayScreen(
     onEditDay: (LocalDate) -> Unit,
     onSelectTopLevel: (TopLevel) -> Unit,
     onOpenLeave: (Long) -> Unit = {},
+    backupDueDays: Int? = null,
+    onOpenBackup: () -> Unit = {},
 ) {
     /** A leave day cannot be worked: it opens its leave instead of the shift form. */
     fun openDay(date: LocalDate, leave: Leave?) {
@@ -121,6 +137,15 @@ fun TodayScreen(
                         onEdit = { openDay(uiState.currentDate, uiState.currentLeave) },
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
+                }
+                if (backupDueDays != null) {
+                    item {
+                        BackupReminderCard(
+                            days = backupDueDays,
+                            onOpenBackup = onOpenBackup,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
+                        )
+                    }
                 }
                 item {
                     Text(
@@ -163,6 +188,42 @@ fun TodayScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * "16 days since your last backup" (or "no backup yet") with a button to Data & backup.
+ *
+ * @param days days since the last backup; [Int.MAX_VALUE] when never made.
+ * @param onOpenBackup opens Data & backup.
+ * @param modifier optional modifier from the caller.
+ */
+@Composable
+private fun BackupReminderCard(days: Int, onOpenBackup: () -> Unit, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        ),
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(painterResource(R.drawable.ic_backup), contentDescription = null)
+            Text(
+                text = if (days == Int.MAX_VALUE) {
+                    stringResource(R.string.today_backup_never)
+                } else {
+                    pluralStringResource(R.plurals.today_backup_due, days, days)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onOpenBackup) { Text(stringResource(R.string.today_backup_button)) }
         }
     }
 }

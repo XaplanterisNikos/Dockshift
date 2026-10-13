@@ -6,6 +6,7 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.foxnks.dockshift.data.db.DatabaseMigrations
 import com.foxnks.dockshift.data.db.DockshiftDatabase
 import com.foxnks.dockshift.data.db.MachineSeedCallback
+import com.foxnks.dockshift.data.db.dao.BackupDao
 import com.foxnks.dockshift.data.db.dao.ImportDao
 import com.foxnks.dockshift.data.db.dao.LeaveDao
 import com.foxnks.dockshift.data.db.dao.MachineDao
@@ -60,4 +61,8 @@ object DatabaseModule {
     /** Bulk-import data access, from the single database. */
     @Provides
     fun provideImportDao(database: DockshiftDatabase): ImportDao = database.importDao()
+
+    /** Backup data access, from the single database. */
+    @Provides
+    fun provideBackupDao(database: DockshiftDatabase): BackupDao = database.backupDao()
 }
