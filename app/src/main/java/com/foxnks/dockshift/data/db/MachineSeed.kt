@@ -29,7 +29,8 @@ object MachineSeed {
 }
 
 /**
- * Inserts [MachineSeed] once, when the database file is first created.
+ * Inserts [MachineSeed] once, when the database file is first created, with the
+ * starting locations of [MachinePositions].
  *
  * Uses the plain SQLite statement API (prepare, bind, step) because the DAOs are
  * not available yet while the database is being created.
@@ -38,12 +39,14 @@ class MachineSeedCallback : RoomDatabase.Callback() {
 
     override suspend fun onCreate(connection: SQLiteConnection) {
         // One prepared statement reused for every row: fast and injection-proof
-        connection.prepare("INSERT INTO machines (category, number, active) VALUES (?, ?, 1)").use { statement ->
+        connection.prepare("INSERT INTO machines (category, number, active, location) VALUES (?, ?, 1, ?)").use { statement ->
             for ((category, numbers) in MachineSeed.machines) {
                 for (number in numbers) {
                     // Parameter indexes are 1-based in SQLite
                     statement.bindText(1, category.name)
                     statement.bindText(2, number)
+                    val location = MachinePositions.locationOf(category, number)
+                    if (location != null) statement.bindText(3, location) else statement.bindNull(3)
                     statement.step()
                     // Clear the executed state so the statement can run again
                     statement.reset()

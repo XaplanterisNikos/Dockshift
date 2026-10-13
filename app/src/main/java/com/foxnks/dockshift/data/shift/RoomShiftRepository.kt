@@ -30,6 +30,8 @@ class RoomShiftRepository @Inject constructor(
 
     override fun observeCount(): Flow<Int> = dao.observeCount()
 
+    override fun observeYears(): Flow<List<Int>> = dao.observeYears()
+
     override suspend fun save(shift: Shift) {
         dao.replace(shift.toEntity(), shift.toAssignmentEntities())
     }

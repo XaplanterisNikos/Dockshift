@@ -2,6 +2,7 @@ package com.foxnks.dockshift.ui.settings
 
 import android.os.Build
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -23,9 +25,13 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -55,6 +61,7 @@ fun SettingsRoute(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMod
         onThemeModeSelected = viewModel::onThemeModeSelected,
         onDynamicColorToggled = viewModel::onDynamicColorToggled,
         onRotationToggled = viewModel::onRotationToggled,
+        onDeleteAllShifts = viewModel::onDeleteAllShifts,
         dataSection = { LegacyImportSettingsItem() },
     )
 }
@@ -67,6 +74,7 @@ fun SettingsRoute(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMod
  * @param onThemeModeSelected a theme option was picked.
  * @param onDynamicColorToggled the wallpaper-colors switch was flipped.
  * @param onRotationToggled the rotating schedule switch was flipped.
+ * @param onDeleteAllShifts "delete all shifts" was confirmed twice.
  * @param dataSection items of the Data section (a slot, so previews need no Hilt).
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,6 +85,7 @@ fun SettingsScreen(
     onThemeModeSelected: (ThemeMode) -> Unit,
     onDynamicColorToggled: (Boolean) -> Unit,
     onRotationToggled: (Boolean) -> Unit,
+    onDeleteAllShifts: () -> Unit = {},
     dataSection: @Composable () -> Unit = {},
 ) {
     Scaffold(
@@ -127,6 +136,7 @@ fun SettingsScreen(
 
                 SectionTitle(R.string.settings_section_data)
                 dataSection()
+                DeleteAllItem(storedShifts = uiState.storedShifts, onConfirmed = onDeleteAllShifts)
             }
         }
     }
@@ -181,6 +191,53 @@ private fun SwitchItem(
         trailingContent = { Switch(checked = checked, onCheckedChange = null) },
         modifier = Modifier.toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange),
     )
+}
+
+/** Two steps the "delete all" confirmation can be in. */
+private enum class DeleteAllStep { NONE, FIRST, SECOND }
+
+/**
+ * "Delete all shifts", in red, behind two confirmations: the first says how many
+ * shifts will go, the second that it cannot be undone.
+ *
+ * @param storedShifts how many shifts would be deleted.
+ * @param onConfirmed called after the second confirmation.
+ */
+@Composable
+private fun DeleteAllItem(storedShifts: Int, onConfirmed: () -> Unit) {
+    var step by rememberSaveable { mutableStateOf(DeleteAllStep.NONE) }
+
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.settings_delete_all), color = MaterialTheme.colorScheme.error) },
+        supportingContent = { Text(stringResource(R.string.settings_delete_all_summary)) },
+        // Nothing to delete: the item stays visible but does nothing
+        modifier = Modifier.clickable(enabled = storedShifts > 0) { step = DeleteAllStep.FIRST },
+    )
+
+    when (step) {
+        DeleteAllStep.NONE -> Unit
+        DeleteAllStep.FIRST -> AlertDialog(
+            onDismissRequest = { step = DeleteAllStep.NONE },
+            title = { Text(stringResource(R.string.delete_all_title)) },
+            text = { Text(stringResource(R.string.delete_all_text, storedShifts)) },
+            confirmButton = {
+                TextButton(onClick = { step = DeleteAllStep.SECOND }) { Text(stringResource(R.string.delete_all_continue)) }
+            },
+            dismissButton = { TextButton(onClick = { step = DeleteAllStep.NONE }) { Text(stringResource(R.string.cancel)) } },
+        )
+        DeleteAllStep.SECOND -> AlertDialog(
+            onDismissRequest = { step = DeleteAllStep.NONE },
+            title = { Text(stringResource(R.string.delete_all_confirm_title)) },
+            text = { Text(stringResource(R.string.delete_all_confirm_text)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    step = DeleteAllStep.NONE
+                    onConfirmed()
+                }) { Text(stringResource(R.string.delete_all_button), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { step = DeleteAllStep.NONE }) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
 }
 
 /** Name of a theme option. */

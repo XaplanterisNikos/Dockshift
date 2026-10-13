@@ -4,11 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.settings.ThemeMode
+import com.foxnks.dockshift.domain.shift.ShiftRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -26,11 +27,13 @@ sealed interface SettingsUiState {
      * @property themeMode light/dark choice.
      * @property dynamicColor whether app colors follow the wallpaper.
      * @property rotationEnabled whether the rotating schedule predicts shifts.
+     * @property storedShifts how many shifts are stored (shown before "delete all").
      */
     data class Ready(
         val themeMode: ThemeMode,
         val dynamicColor: Boolean,
         val rotationEnabled: Boolean,
+        val storedShifts: Int = 0,
     ) : SettingsUiState
 }
 
@@ -39,21 +42,23 @@ sealed interface SettingsUiState {
  * "save" button, as in the phone's own settings.
  *
  * @param settings where the settings are stored.
+ * @param shifts stored shifts, for the count and "delete all".
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settings: SettingsRepository,
+    private val shifts: ShiftRepository,
 ) : ViewModel() {
 
     /** The screen state, always holding the latest saved values. */
-    val uiState: StateFlow<SettingsUiState> = settings.settings
-        .map {
-            SettingsUiState.Ready(
-                themeMode = it.themeMode,
-                dynamicColor = it.dynamicColor,
-                rotationEnabled = it.rotationEnabled,
-            )
-        }
+    val uiState: StateFlow<SettingsUiState> = combine(settings.settings, shifts.observeCount()) { saved, count ->
+        SettingsUiState.Ready(
+            themeMode = saved.themeMode,
+            dynamicColor = saved.dynamicColor,
+            rotationEnabled = saved.rotationEnabled,
+            storedShifts = count,
+        )
+    }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
@@ -73,6 +78,11 @@ class SettingsViewModel @Inject constructor(
     /** @param enabled new position of the rotating schedule switch. */
     fun onRotationToggled(enabled: Boolean) {
         viewModelScope.launch { settings.setRotationEnabled(enabled) }
+    }
+
+    /** Deletes every stored shift, after the screen's double confirmation. Machines and settings stay. */
+    fun onDeleteAllShifts() {
+        viewModelScope.launch { shifts.deleteAll() }
     }
 
     private companion object {

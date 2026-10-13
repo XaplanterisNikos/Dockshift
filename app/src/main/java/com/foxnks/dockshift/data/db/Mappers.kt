@@ -48,6 +48,7 @@ fun MachineEntity.toDomain(): Machine = Machine(
     category = MachineCategory.valueOf(category),
     number = number,
     active = active,
+    location = location,
 )
 
 /** Shift row and its machine rows → domain shift, machines in their saved order. */

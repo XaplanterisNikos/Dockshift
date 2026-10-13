@@ -5,9 +5,11 @@ import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Transaction
+import com.foxnks.dockshift.data.db.MachinePositions
 import com.foxnks.dockshift.data.db.entity.MachineEntity
 import com.foxnks.dockshift.data.db.entity.ShiftEntity
 import com.foxnks.dockshift.data.db.entity.ShiftMachineEntity
+import com.foxnks.dockshift.domain.machine.MachineCategory
 
 /**
  * One shift to import, as database values.
@@ -65,7 +67,14 @@ abstract class ImportDao {
             val number = item.machineNumber ?: continue
             val machineId = machineIds.getOrPut(category to number) {
                 findMachine(category, number)?.id
-                    ?: insertMachine(MachineEntity(category = category, number = number, active = true))
+                    ?: insertMachine(
+                        MachineEntity(
+                            category = category,
+                            number = number,
+                            active = true,
+                            location = MachinePositions.locationOf(MachineCategory.valueOf(category), number),
+                        ),
+                    )
             }
             insertAssignment(
                 ShiftMachineEntity(shiftDate = item.shift.date, position = 0, machineId = machineId, duringOvertime = false),

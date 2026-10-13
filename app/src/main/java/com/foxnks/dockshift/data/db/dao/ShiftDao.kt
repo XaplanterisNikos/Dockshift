@@ -32,6 +32,10 @@ abstract class ShiftDao {
     @Query("SELECT COUNT(*) FROM shifts")
     abstract fun observeCount(): Flow<Int>
 
+    /** Years that have shifts, newest first; dates are ISO text, so the year is the first 4 characters. */
+    @Query("SELECT DISTINCT CAST(substr(date, 1, 4) AS INTEGER) AS year FROM shifts ORDER BY year DESC")
+    abstract fun observeYears(): Flow<List<Int>>
+
     /**
      * Replaces the shift of [shift]'s date and its whole machine list.
      *

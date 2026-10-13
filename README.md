@@ -15,7 +15,7 @@ their data from the old app with a CSV export/import that keeps the same format.
 ## Tech stack
 
 - Kotlin, Jetpack Compose, Material 3 (Dynamic Color on Android 12+)
-- MVVM with `StateFlow`, Kotlin Coroutines/Flow
+- MVVM with `StateFlow`, Kotlin Coroutines/Flow, Navigation 3 (one ViewModel per screen entry)
 - Hilt for dependency injection, Preferences DataStore for settings
 - Room 3 with bundled SQLite for shifts and machines, exported schemas for safe migrations
 - Android Gradle Plugin 9 with built-in Kotlin, KSP, Gradle version catalog
@@ -44,8 +44,19 @@ emulator or device with `./gradlew connectedAndroidTest`.
 - One shift per calendar day (the date is the key), with its type, optional
   4-hour overtime, and the machines driven in order (each marked regular or overtime).
 - Machines are user-managed and only ever soft-deleted, so past shifts keep their history.
+  Each machine has one location (e.g. a pier block), seeded from v1 and editable.
 - Every database version's schema is committed under `app/schemas/`; schema changes
   ship with migrations, never with destructive resets.
+
+### Screens
+
+- **Today**: the current shift with its machines, locations and overtime, and the next
+  7 days. A night shift stays "current" until 07:00 the next morning.
+- **Shifts**: every stored shift, filtered by year (only years with data) and month.
+- **Add / edit**: date, type, overtime, machines in order (each regular or overtime),
+  comment. The editing rules live in `ShiftDraft` (`:domain`), so every combination the
+  screen allows can be saved. Moving a shift onto a day that has one asks first.
+- **Settings**: appearance, rotating schedule, v1 import, delete all (two confirmations).
 
 ### Design system
 

@@ -1,0 +1,84 @@
+package com.foxnks.dockshift.ui.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
+import com.foxnks.dockshift.ui.edit.EditShiftRoute
+import com.foxnks.dockshift.ui.legacy.LegacyFirstRunPrompt
+import com.foxnks.dockshift.ui.list.ShiftListRoute
+import com.foxnks.dockshift.ui.settings.SettingsRoute
+import com.foxnks.dockshift.ui.today.TodayRoute
+import java.time.LocalDate
+
+/**
+ * The app's navigation: one back stack of screen keys, shown by Navigation 3.
+ *
+ * - "Today" is always at the bottom of the stack, so back from any screen ends there.
+ * - The bottom bar switches between "Today" and "Shifts".
+ * - Edit and Settings are pushed on top and popped when closed.
+ * Each entry gets its own ViewModel store, so opening the edit screen for two
+ * different days gives two independent ViewModels.
+ */
+@Composable
+fun AppNavigation() {
+    // Saved across rotation and process death (the keys are @Serializable)
+    val backStack = rememberNavBackStack(TodayKey)
+
+    NavDisplay(
+        backStack = backStack,
+        onBack = { backStack.removeLastOrNull() },
+        entryDecorators = listOf(
+            // Keeps each screen's saved UI state (scroll positions, open sheets...)
+            rememberSaveableStateHolderNavEntryDecorator(),
+            // One ViewModel per screen entry, cleared when the entry is popped
+            rememberViewModelStoreNavEntryDecorator(),
+        ),
+        entryProvider = entryProvider {
+            entry<TodayKey> {
+                TodayRoute(
+                    onEditDay = { backStack.openEdit(it) },
+                    onOpenSettings = { backStack.add(SettingsKey) },
+                    onSelectTopLevel = { backStack.selectTopLevel(it) },
+                )
+            }
+            entry<ShiftListKey> {
+                ShiftListRoute(
+                    onEditDay = { backStack.openEdit(it) },
+                    onSelectTopLevel = { backStack.selectTopLevel(it) },
+                    newShiftDate = { LocalDate.now() },
+                )
+            }
+            entry<EditShiftKey> { key ->
+                EditShiftRoute(date = LocalDate.parse(key.date), onDone = { backStack.removeLastOrNull() })
+            }
+            entry<SettingsKey> {
+                SettingsRoute(onBack = { backStack.removeLastOrNull() })
+            }
+        },
+    )
+
+    // First-run "data from the first version?" question, over whatever screen is shown
+    LegacyFirstRunPrompt()
+}
+
+/** Opens the add/edit screen for [date], unless it is already on top (double tap). */
+private fun NavBackStack<NavKey>.openEdit(date: LocalDate) {
+    val key = EditShiftKey(date.toString())
+    if (lastOrNull() != key) add(key)
+}
+
+/**
+ * Bottom-bar navigation: the stack becomes just "Today", or "Today" plus the
+ * chosen top-level screen, so back always returns to "Today" first.
+ */
+private fun NavBackStack<NavKey>.selectTopLevel(item: TopLevel) {
+    if (lastOrNull() == item.key) return
+    // Never empty the stack: "Today" (index 0) always stays
+    while (size > 1) removeLastOrNull()
+    if (item.key != TodayKey) add(item.key)
+}

@@ -70,6 +70,8 @@ class DatabaseTest {
 
         assertEquals(MachineSeed.machines.values.sumOf { it.size }, all.size)
         assertEquals("SC 97", all.first().label)
+        // A fresh install starts with the v1 locations
+        assertEquals("Προβλήτα ΙΙ Μπλόκ 15", all.single { it.label == "RTG 12" }.location)
     }
 
     @Test

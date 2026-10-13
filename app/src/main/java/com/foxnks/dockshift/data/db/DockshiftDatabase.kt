@@ -15,10 +15,14 @@ import com.foxnks.dockshift.data.db.entity.ShiftMachineEntity
  * Every schema change raises [version] and must ship with a migration that keeps
  * the users' data; destructive migrations are never used. `exportSchema` writes
  * each version's schema to `app/schemas/` so migrations can be validated.
+ *
+ * Versions:
+ * 1. machines, shifts, shift_machines.
+ * 2. machines.location ([DatabaseMigrations.MIGRATION_1_2]).
  */
 @Database(
     entities = [MachineEntity::class, ShiftEntity::class, ShiftMachineEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class DockshiftDatabase : RoomDatabase() {
