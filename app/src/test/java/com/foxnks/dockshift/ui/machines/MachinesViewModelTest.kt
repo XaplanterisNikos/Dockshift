@@ -5,6 +5,7 @@ import com.foxnks.dockshift.domain.machine.MachineCategory
 import com.foxnks.dockshift.testing.InMemoryMachineRepository
 import com.foxnks.dockshift.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -17,6 +18,7 @@ import org.junit.Rule
 import org.junit.Test
 
 /** Filtering, adding, editing and deleting in [MachinesViewModel]. */
+@OptIn(ExperimentalCoroutinesApi::class) // UnconfinedTestDispatcher is still experimental
 class MachinesViewModelTest {
 
     @get:Rule

@@ -13,6 +13,7 @@ import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -24,6 +25,7 @@ import org.junit.Rule
 import org.junit.Test
 
 /** When the one-time rotation question is asked, and what its answers save. */
+@OptIn(ExperimentalCoroutinesApi::class) // UnconfinedTestDispatcher is still experimental
 class RotationPromptViewModelTest {
 
     @get:Rule

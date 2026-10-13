@@ -19,6 +19,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -30,6 +31,7 @@ import org.junit.Rule
 import org.junit.Test
 
 /** [CalendarViewModel] on a fixed date, against shifts and settings in memory. */
+@OptIn(ExperimentalCoroutinesApi::class) // UnconfinedTestDispatcher is still experimental
 class CalendarViewModelTest {
 
     @get:Rule
