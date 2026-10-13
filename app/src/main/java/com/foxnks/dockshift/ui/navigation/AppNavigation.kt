@@ -11,6 +11,8 @@ import androidx.navigation3.ui.NavDisplay
 import com.foxnks.dockshift.ui.edit.EditShiftRoute
 import com.foxnks.dockshift.ui.legacy.LegacyFirstRunPrompt
 import com.foxnks.dockshift.ui.list.ShiftListRoute
+import com.foxnks.dockshift.ui.machines.MachinesRoute
+import com.foxnks.dockshift.ui.menu.MenuRoute
 import com.foxnks.dockshift.ui.settings.SettingsRoute
 import com.foxnks.dockshift.ui.today.TodayRoute
 import java.time.LocalDate
@@ -19,8 +21,9 @@ import java.time.LocalDate
  * The app's navigation: one back stack of screen keys, shown by Navigation 3.
  *
  * - "Today" is always at the bottom of the stack, so back from any screen ends there.
- * - The bottom bar switches between "Today" and "Shifts".
- * - Edit and Settings are pushed on top and popped when closed.
+ * - The bottom bar switches between "Today", "Shifts" and "Menu".
+ * - Edit is pushed on top of any screen; Machines and Settings on top of the menu.
+ *   They are popped when closed, so back from them returns to where they were opened.
  * Each entry gets its own ViewModel store, so opening the edit screen for two
  * different days gives two independent ViewModels.
  */
@@ -42,7 +45,6 @@ fun AppNavigation() {
             entry<TodayKey> {
                 TodayRoute(
                     onEditDay = { backStack.openEdit(it) },
-                    onOpenSettings = { backStack.add(SettingsKey) },
                     onSelectTopLevel = { backStack.selectTopLevel(it) },
                 )
             }
@@ -55,6 +57,15 @@ fun AppNavigation() {
             }
             entry<EditShiftKey> { key ->
                 EditShiftRoute(date = LocalDate.parse(key.date), onDone = { backStack.removeLastOrNull() })
+            }
+            entry<MenuKey> {
+                MenuRoute(
+                    onOpen = { backStack.openOnce(it) },
+                    onSelectTopLevel = { backStack.selectTopLevel(it) },
+                )
+            }
+            entry<MachinesKey> {
+                MachinesRoute(onBack = { backStack.removeLastOrNull() })
             }
             entry<SettingsKey> {
                 SettingsRoute(onBack = { backStack.removeLastOrNull() })
@@ -69,6 +80,11 @@ fun AppNavigation() {
 /** Opens the add/edit screen for [date], unless it is already on top (double tap). */
 private fun NavBackStack<NavKey>.openEdit(date: LocalDate) {
     val key = EditShiftKey(date.toString())
+    if (lastOrNull() != key) add(key)
+}
+
+/** Opens [key] on top, unless it is already there (a quick double tap opens it once). */
+private fun NavBackStack<NavKey>.openOnce(key: NavKey) {
     if (lastOrNull() != key) add(key)
 }
 

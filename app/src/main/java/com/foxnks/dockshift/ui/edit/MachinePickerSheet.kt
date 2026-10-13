@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,14 +33,18 @@ import androidx.compose.ui.unit.dp
 import com.foxnks.dockshift.R
 import com.foxnks.dockshift.domain.machine.Machine
 import com.foxnks.dockshift.domain.machine.MachineCategory
+import com.foxnks.dockshift.domain.machine.MachineForm
 
 /**
  * Bottom sheet for picking a machine: category chips, a number search (there are
- * 182 trucks), and the matching active machines with their location.
+ * 182 trucks), and the matching active machines with their location. When the
+ * typed number matches nothing, it offers to add that machine on the spot.
  *
  * @param machines the active machines.
  * @param initialCategory category selected when the sheet opens.
  * @param onPick called with the tapped machine; the sheet then closes.
+ * @param onQuickAdd called with the category and typed number to add (or
+ * reactivate) that machine and pick it; the sheet then closes.
  * @param onDismiss called when the sheet is closed without picking.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +53,7 @@ fun MachinePickerSheet(
     machines: List<Machine>,
     initialCategory: MachineCategory,
     onPick: (Machine) -> Unit,
+    onQuickAdd: (MachineCategory, String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     // Survive rotation while the sheet is open
@@ -97,6 +103,16 @@ fun MachinePickerSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(16.dp),
                 )
+                // A new machine at the terminal: add it without leaving the shift
+                val number = query.trim()
+                if (number.isNotEmpty() && number.length <= MachineForm.MAX_NUMBER_LENGTH) {
+                    TextButton(
+                        onClick = { onQuickAdd(category, number) },
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    ) {
+                        Text(stringResource(R.string.picker_quick_add, "${category.name} $number"))
+                    }
+                }
             } else {
                 LazyColumn(Modifier.heightIn(max = 480.dp)) {
                     items(matching, key = { it.id }) { machine ->

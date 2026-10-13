@@ -57,7 +57,6 @@
 
     <!-- Οθόνη ρυθμίσεων -->
     <string name="settings_title">Ρυθμίσεις</string>
-    <string name="settings_open">Άνοιγμα ρυθμίσεων</string>
     <string name="navigate_back">Πίσω</string>
     <string name="settings_section_appearance">Εμφάνιση</string>
     <string name="settings_section_schedule">Πρόγραμμα</string>
@@ -116,4 +115,39 @@
     <string name="delete_all_confirm_title">Είστε σίγουροι;</string>
     <string name="delete_all_confirm_text">Αυτό δεν αναιρείται.</string>
     <string name="delete_all_button">Διαγραφή όλων</string>
+
+    <!-- Μενού και μηχανήματα -->
+    <string name="nav_menu">Μενού</string>
+    <string name="menu_machines">Μηχανήματα</string>
+    <string name="menu_machines_summary">Προσθήκη, αλλαγή νούμερου ή θέσης, απόσυρση</string>
+    <string name="menu_settings_summary">Εμφάνιση, πρόγραμμα, δεδομένα</string>
+    <string name="machines_add">Προσθήκη μηχανήματος</string>
+    <string name="machines_search">Νούμερο ή θέση</string>
+    <string name="machines_inactive_label">%1$s · ανενεργό</string>
+    <string name="machines_no_location">Χωρίς θέση</string>
+    <plurals name="machines_used_in">
+        <item quantity="one">%d βάρδια</item>
+        <item quantity="other">%d βάρδιες</item>
+    </plurals>
+    <string name="machines_added">Προστέθηκε το %1$s</string>
+    <string name="machines_reactivated">Το %1$s ήταν ανενεργό και ενεργοποιήθηκε ξανά</string>
+    <string name="machines_deleted">Διαγράφηκε το %1$s</string>
+    <string name="machines_new">Νέο μηχάνημα</string>
+    <string name="machines_number">Νούμερο μηχανήματος</string>
+    <string name="machines_location">Θέση</string>
+    <string name="machines_active">Ενεργό</string>
+    <string name="machines_active_summary">Τα ανενεργά δεν εμφανίζονται στις νέες βάρδιες, αλλά μένουν στις παλιές.</string>
+    <plurals name="machines_history_note">
+        <item quantity="one">Χρησιμοποιείται σε %d βάρδια, οπότε μπορεί μόνο να απενεργοποιηθεί. Νέο νούμερο ή θέση φαίνεται και σε αυτή.</item>
+        <item quantity="other">Χρησιμοποιείται σε %d βάρδιες, οπότε μπορεί μόνο να απενεργοποιηθεί. Νέο νούμερο ή θέση φαίνεται και σε αυτές.</item>
+    </plurals>
+    <string name="machines_delete">Οριστική διαγραφή</string>
+    <string name="machines_save">Αποθήκευση</string>
+    <string name="machines_delete_title">Διαγραφή του %1$s;</string>
+    <string name="machines_delete_text">Καμία βάρδια δεν χρησιμοποιεί αυτό το μηχάνημα. Θα φύγει εντελώς από τη λίστα.</string>
+    <string name="machines_error_blank">Γράψε το νούμερο του μηχανήματος.</string>
+    <string name="machines_error_too_long">Έως %1$d χαρακτήρες.</string>
+    <string name="machines_error_duplicate">Το %1$s υπάρχει ήδη.</string>
+    <string name="machines_error_duplicate_inactive">Το %1$s υπάρχει ήδη (ανενεργό). Ενεργοποίησέ το από τη λίστα.</string>
+    <string name="picker_quick_add">Προσθήκη %1$s</string>
 </resources>

@@ -16,6 +16,7 @@ import com.foxnks.dockshift.R
 enum class TopLevel(val key: NavKey, @StringRes val label: Int, @DrawableRes val icon: Int) {
     TODAY(TodayKey, R.string.nav_today, R.drawable.ic_today),
     SHIFTS(ShiftListKey, R.string.nav_shifts, R.drawable.ic_list),
+    MENU(MenuKey, R.string.nav_menu, R.drawable.ic_menu),
 }
 
 /**

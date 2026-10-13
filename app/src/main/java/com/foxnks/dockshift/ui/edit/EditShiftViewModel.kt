@@ -3,6 +3,8 @@ package com.foxnks.dockshift.ui.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.foxnks.dockshift.domain.machine.Machine
+import com.foxnks.dockshift.domain.machine.MachineCategory
+import com.foxnks.dockshift.domain.machine.MachineForm
 import com.foxnks.dockshift.domain.machine.MachineRepository
 import com.foxnks.dockshift.domain.shift.ShiftDraft
 import com.foxnks.dockshift.domain.shift.ShiftRepository
@@ -58,7 +60,7 @@ sealed interface EditShiftUiState {
 @HiltViewModel
 class EditShiftViewModel @Inject constructor(
     private val shifts: ShiftRepository,
-    machines: MachineRepository,
+    private val machines: MachineRepository,
 ) : ViewModel() {
 
     private val state = MutableStateFlow<EditShiftUiState>(EditShiftUiState.Loading)
@@ -108,6 +110,23 @@ class EditShiftViewModel @Inject constructor(
 
     /** @param machine the machine picked in the machine sheet. */
     fun onMachineAdded(machine: Machine) = edit { it.addMachine(machine) }
+
+    /**
+     * Adds a machine that was missing from the picker (or reactivates it, if it was
+     * deactivated) and puts it in the shift.
+     *
+     * @param category the category selected in the picker.
+     * @param number the typed fleet number.
+     */
+    fun onMachineQuickAdded(category: MachineCategory, number: String) {
+        val clean = number.trim()
+        // Same limits as the machines screen; the picker only offers valid numbers
+        if (clean.isEmpty() || clean.length > MachineForm.MAX_NUMBER_LENGTH) return
+        viewModelScope.launch {
+            val machine = machines.addOrReactivate(category, clean)
+            edit { it.addMachine(machine) }
+        }
+    }
 
     /** @param index position of the machine to remove. */
     fun onMachineRemoved(index: Int) = edit { it.removeMachineAt(index) }

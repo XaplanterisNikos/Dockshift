@@ -51,6 +51,15 @@ fun MachineEntity.toDomain(): Machine = Machine(
     location = location,
 )
 
+/** Domain machine → database row (id 0 means "insert as new"). */
+fun Machine.toEntity(): MachineEntity = MachineEntity(
+    id = id,
+    category = category.name,
+    number = number,
+    active = active,
+    location = location,
+)
+
 /** Shift row and its machine rows → domain shift, machines in their saved order. */
 fun ShiftWithMachines.toDomain(): Shift = Shift(
     date = LocalDate.parse(shift.date),

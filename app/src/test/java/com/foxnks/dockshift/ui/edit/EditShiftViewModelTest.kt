@@ -156,4 +156,27 @@ class EditShiftViewModelTest {
 
         assertEquals(ShiftType.NIGHT, viewModel.editing.draft.type)
     }
+
+    @Test
+    fun `a machine missing from the picker is added and put in the shift`() = runTest {
+        val viewModel = EditShiftViewModel(InMemoryShiftRepository(), machines)
+        viewModel.start(day)
+        viewModel.onTypeSelected(ShiftType.MORNING)
+
+        viewModel.onMachineQuickAdded(MachineCategory.RTG, " 46 ")
+
+        assertEquals("RTG 46", viewModel.editing.draft.machines.single().machine.label)
+        assertTrue(machines.stored.any { it.label == "RTG 46" && it.active })
+    }
+
+    @Test
+    fun `quick add ignores a blank number`() = runTest {
+        val viewModel = EditShiftViewModel(InMemoryShiftRepository(), machines)
+        viewModel.start(day)
+
+        viewModel.onMachineQuickAdded(MachineCategory.RTG, "  ")
+
+        assertTrue(viewModel.editing.draft.machines.isEmpty())
+        assertEquals(1, machines.stored.size)
+    }
 }

@@ -59,7 +59,6 @@
 
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
-    <string name="settings_open">Open settings</string>
     <string name="navigate_back">Back</string>
     <string name="settings_section_appearance">Appearance</string>
     <string name="settings_section_schedule">Schedule</string>
@@ -118,4 +117,39 @@
     <string name="delete_all_confirm_title">Are you sure?</string>
     <string name="delete_all_confirm_text">This cannot be undone.</string>
     <string name="delete_all_button">Delete all</string>
+
+    <!-- Menu and machines -->
+    <string name="nav_menu">Menu</string>
+    <string name="menu_machines">Machines</string>
+    <string name="menu_machines_summary">Add, renumber, move or retire machines</string>
+    <string name="menu_settings_summary">Appearance, schedule, data</string>
+    <string name="machines_add">Add machine</string>
+    <string name="machines_search">Number or location</string>
+    <string name="machines_inactive_label">%1$s · inactive</string>
+    <string name="machines_no_location">No location</string>
+    <plurals name="machines_used_in">
+        <item quantity="one">%d shift</item>
+        <item quantity="other">%d shifts</item>
+    </plurals>
+    <string name="machines_added">%1$s added</string>
+    <string name="machines_reactivated">%1$s was inactive and is active again</string>
+    <string name="machines_deleted">%1$s deleted</string>
+    <string name="machines_new">New machine</string>
+    <string name="machines_number">Fleet number</string>
+    <string name="machines_location">Location</string>
+    <string name="machines_active">Active</string>
+    <string name="machines_active_summary">Inactive machines are not offered for new shifts, but stay in past ones.</string>
+    <plurals name="machines_history_note">
+        <item quantity="one">Used in %d shift, so it can only be deactivated. A new number or location also shows in that shift.</item>
+        <item quantity="other">Used in %d shifts, so it can only be deactivated. A new number or location also shows in those shifts.</item>
+    </plurals>
+    <string name="machines_delete">Delete for good</string>
+    <string name="machines_save">Save</string>
+    <string name="machines_delete_title">Delete %1$s?</string>
+    <string name="machines_delete_text">No shift uses this machine. It will be removed from the list completely.</string>
+    <string name="machines_error_blank">Enter the fleet number.</string>
+    <string name="machines_error_too_long">At most %1$d characters.</string>
+    <string name="machines_error_duplicate">%1$s already exists.</string>
+    <string name="machines_error_duplicate_inactive">%1$s already exists (inactive). Turn it back on from the list.</string>
+    <string name="picker_quick_add">Add %1$s</string>
 </resources>

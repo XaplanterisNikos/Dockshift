@@ -91,6 +91,7 @@ fun EditShiftRoute(date: LocalDate, onDone: () -> Unit, viewModel: EditShiftView
             onTypeSelected = viewModel::onTypeSelected,
             onOvertimeToggled = viewModel::onOvertimeToggled,
             onMachineAdded = viewModel::onMachineAdded,
+            onMachineQuickAdded = viewModel::onMachineQuickAdded,
             onMachineRemoved = viewModel::onMachineRemoved,
             onMachineMovedUp = viewModel::onMachineMovedUp,
             onMachineMovedDown = viewModel::onMachineMovedDown,
@@ -113,6 +114,7 @@ data class EditShiftActions(
     val onTypeSelected: (ShiftType) -> Unit,
     val onOvertimeToggled: (Boolean) -> Unit,
     val onMachineAdded: (Machine) -> Unit,
+    val onMachineQuickAdded: (MachineCategory, String) -> Unit,
     val onMachineRemoved: (Int) -> Unit,
     val onMachineMovedUp: (Int) -> Unit,
     val onMachineMovedDown: (Int) -> Unit,
@@ -285,6 +287,10 @@ private fun EditForm(draft: ShiftDraft, machines: List<Machine>, actions: EditSh
             initialCategory = draft.machines.lastOrNull()?.machine?.category ?: MachineCategory.RTG,
             onPick = {
                 actions.onMachineAdded(it)
+                showMachinePicker = false
+            },
+            onQuickAdd = { category, number ->
+                actions.onMachineQuickAdded(category, number)
                 showMachinePicker = false
             },
             onDismiss = { showMachinePicker = false },

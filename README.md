@@ -43,7 +43,8 @@ emulator or device with `./gradlew connectedAndroidTest`.
 
 - One shift per calendar day (the date is the key), with its type, optional
   4-hour overtime, and the machines driven in order (each marked regular or overtime).
-- Machines are user-managed and only ever soft-deleted, so past shifts keep their history.
+- Machines are user-managed. One used by any shift is only ever soft-deleted (deactivated),
+  so past shifts keep their history.
   Each machine has one location (e.g. a pier block), seeded from v1 and editable.
 - Every database version's schema is committed under `app/schemas/`; schema changes
   ship with migrations, never with destructive resets.
@@ -56,6 +57,13 @@ emulator or device with `./gradlew connectedAndroidTest`.
 - **Add / edit**: date, type, overtime, machines in order (each regular or overtime),
   comment. The editing rules live in `ShiftDraft` (`:domain`), so every combination the
   screen allows can be saved. Moving a shift onto a day that has one asks first.
+- **Menu**: the third tab of the bottom bar. The app's sections on top (today: Machines;
+  statistics, leave and vessels join as they are built), Settings below them.
+- **Machines**: per category, searchable by number or location, with how many shifts used
+  each one. Add a machine, change its number or location (past shifts follow, since they
+  refer to the machine, not its number), deactivate it, or delete it for good if no shift
+  ever used it. The rules (unique numbers, reactivating a retired number) live in
+  `MachineForm` (`:domain`). A number missing from the shift form's picker can be added there.
 - **Settings**: appearance, rotating schedule, v1 import, delete all (two confirmations).
 
 ### Design system
