@@ -128,7 +128,7 @@ class DatabaseTest {
         val rtg12 = machine("RTG 12")
         shifts.save(Shift(day, ShiftType.MORNING, machines = listOf(MachineAssignment(rtg12))))
 
-        machines.deactivate(rtg12.id)
+        machines.setActive(rtg12.id, false)
 
         // Gone from the pick list...
         assertTrue(machines.observeActive().first().none { it.id == rtg12.id })
@@ -141,7 +141,7 @@ class DatabaseTest {
     @Test
     fun addingAnExistingMachineReactivatesTheSameOne() = runTest {
         val rtg12 = machine("RTG 12")
-        machines.deactivate(rtg12.id)
+        machines.setActive(rtg12.id, false)
 
         val readded = machines.addOrReactivate(MachineCategory.RTG, " 12 ")
 
@@ -155,5 +155,72 @@ class DatabaseTest {
         val added = machines.addOrReactivate(MachineCategory.TRUCKS, "6411")
 
         assertTrue(machines.observeActive().first().any { it.id == added.id && it.label == "TRUCKS 6411" })
+    }
+
+    @Test
+    fun newTruckStartsAtItsParking() = runTest {
+        // Odd fleet number: the odd-numbers parking, as in v1
+        val added = machines.addOrReactivate(MachineCategory.TRUCKS, "6411")
+
+        assertEquals("Προβλήτα ΙΙΙ Πάρκινγκ Μονά", added.location)
+    }
+
+    @Test
+    fun renamedMachineShowsInOldShifts() = runTest {
+        val rtg12 = machine("RTG 12")
+        shifts.save(Shift(day, ShiftType.MORNING, machines = listOf(MachineAssignment(rtg12))))
+
+        machines.save(rtg12.copy(number = "46", location = "Μπλόκ 1"))
+
+        // Shifts point at the machine, not at its number: the history follows the rename
+        val historic = shifts.observeShift(day).first()!!.machines.single().machine
+        assertEquals("RTG 46", historic.label)
+        assertEquals("Μπλόκ 1", historic.location)
+    }
+
+    @Test
+    fun savingANewMachineGivesItAnId() = runTest {
+        val saved = machines.save(Machine(0, MachineCategory.QC, "50", location = "Προβλήτα ΙΙ"))
+
+        assertTrue(saved.id > 0)
+        assertEquals(saved, machines.observeAll().first().single { it.id == saved.id })
+    }
+
+    @Test
+    fun usageCountsDistinctShifts() = runTest {
+        val rtg12 = machine("RTG 12")
+        // Twice in one shift (regular and overtime) counts as one shift
+        shifts.save(
+            Shift(
+                day,
+                ShiftType.MORNING,
+                overtime = true,
+                machines = listOf(MachineAssignment(rtg12), MachineAssignment(rtg12, duringOvertime = true)),
+            ),
+        )
+        shifts.save(Shift(day.plusDays(1), ShiftType.MORNING, machines = listOf(MachineAssignment(rtg12))))
+
+        val usage = machines.observeUsage().first()
+
+        assertEquals(2, usage[rtg12.id])
+        // Never-used machines are simply missing
+        assertNull(usage[machine("RTG 13").id])
+    }
+
+    @Test
+    fun machineWithShiftsCannotBeDeleted() = runTest {
+        val rtg12 = machine("RTG 12")
+        shifts.save(Shift(day, ShiftType.MORNING, machines = listOf(MachineAssignment(rtg12))))
+
+        assertFalse(machines.delete(rtg12.id))
+        assertTrue(machines.observeAll().first().any { it.id == rtg12.id })
+    }
+
+    @Test
+    fun unusedMachineIsDeletedForGood() = runTest {
+        val typo = machines.addOrReactivate(MachineCategory.RTG, "466")
+
+        assertTrue(machines.delete(typo.id))
+        assertTrue(machines.observeAll().first().none { it.id == typo.id })
     }
 }

@@ -42,26 +42,49 @@ class InMemoryShiftRepository(initial: List<Shift> = emptyList()) : ShiftReposit
 }
 
 /**
- * [MachineRepository] in memory.
+ * [MachineRepository] in memory, keeping the database's rules: sorted lists, and
+ * a machine with usage can never be deleted.
  *
  * @param initial machines stored from the start.
+ * @param usage shifts per machine id, as the database would count them.
  */
-class InMemoryMachineRepository(initial: List<Machine> = emptyList()) : MachineRepository {
+class InMemoryMachineRepository(
+    initial: List<Machine> = emptyList(),
+    usage: Map<Long, Int> = emptyMap(),
+) : MachineRepository {
 
     private val machines = MutableStateFlow(initial)
+    private val usageById = MutableStateFlow(usage)
 
-    override fun observeAll(): Flow<List<Machine>> = machines
+    /** Everything stored, sorted by id, for assertions. */
+    val stored: List<Machine> get() = machines.value.sortedBy { it.id }
 
-    override fun observeActive(): Flow<List<Machine>> = machines.map { list -> list.filter { it.active } }
+    /** The display order of the real repository: category, then number. */
+    private val order = compareBy<Machine> { it.category.ordinal }.thenBy { it.number.toIntOrNull() ?: Int.MAX_VALUE }
+
+    override fun observeAll(): Flow<List<Machine>> = machines.map { it.sortedWith(order) }
+
+    override fun observeActive(): Flow<List<Machine>> = machines.map { list -> list.filter { it.active }.sortedWith(order) }
+
+    override fun observeUsage(): Flow<Map<Long, Int>> = usageById
 
     override suspend fun addOrReactivate(category: MachineCategory, number: String): Machine {
         val existing = machines.value.firstOrNull { it.category == category && it.number == number.trim() }
-        val result = existing?.copy(active = true)
-            ?: Machine(id = (machines.value.maxOfOrNull { it.id } ?: 0) + 1, category = category, number = number.trim())
-        machines.update { list -> list.filter { it.id != result.id } + result }
-        return result
+        return save(existing?.copy(active = true) ?: Machine(id = 0, category = category, number = number.trim()))
     }
 
-    override suspend fun deactivate(id: Long) =
-        machines.update { list -> list.map { if (it.id == id) it.copy(active = false) else it } }
+    override suspend fun save(machine: Machine): Machine {
+        val saved = if (machine.id == 0L) machine.copy(id = (machines.value.maxOfOrNull { it.id } ?: 0L) + 1) else machine
+        machines.update { list -> list.filter { it.id != saved.id } + saved }
+        return saved
+    }
+
+    override suspend fun setActive(id: Long, active: Boolean) =
+        machines.update { list -> list.map { if (it.id == id) it.copy(active = active) else it } }
+
+    override suspend fun delete(id: Long): Boolean {
+        if ((usageById.value[id] ?: 0) > 0) return false
+        machines.update { list -> list.filter { it.id != id } }
+        return true
+    }
 }

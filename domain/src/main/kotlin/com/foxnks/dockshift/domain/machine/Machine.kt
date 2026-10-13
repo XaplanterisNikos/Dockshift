@@ -3,8 +3,8 @@ package com.foxnks.dockshift.domain.machine
 /**
  * One physical machine of the terminal, e.g. RTG 12.
  *
- * Machines are never physically deleted: a retired one is only deactivated
- * ("soft delete"), so past shifts keep showing which machine was driven.
+ * A machine that any shift used is never physically deleted: a retired one is only
+ * deactivated ("soft delete"), so past shifts keep showing which machine was driven.
  *
  * @property id database identity; 0 means "not saved yet".
  * @property category the fixed equipment category.

@@ -25,6 +25,14 @@ data object ShiftListKey : NavKey
 @Serializable
 data class EditShiftKey(val date: String) : NavKey
 
-/** Settings. */
+/** The central menu: the app's other sections, and Settings. */
+@Serializable
+data object MenuKey : NavKey
+
+/** The machine list: add, rename, move, deactivate. Opened from the menu. */
+@Serializable
+data object MachinesKey : NavKey
+
+/** Settings. Opened from the menu. */
 @Serializable
 data object SettingsKey : NavKey

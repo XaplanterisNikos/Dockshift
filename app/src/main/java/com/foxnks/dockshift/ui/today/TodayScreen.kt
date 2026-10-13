@@ -17,7 +17,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -48,21 +47,19 @@ import java.time.LocalDate
  * Entry point of the "Today" screen.
  *
  * @param onEditDay open the shift of a day for adding or editing.
- * @param onOpenSettings open Settings.
  * @param onSelectTopLevel switch screen from the bottom bar.
  * @param viewModel provided by Hilt, one per screen entry.
  */
 @Composable
 fun TodayRoute(
     onEditDay: (LocalDate) -> Unit,
-    onOpenSettings: () -> Unit,
     onSelectTopLevel: (TopLevel) -> Unit,
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
     // Back from the background (maybe after midnight or 07:00): recompute "today"
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    TodayScreen(uiState, onEditDay, onOpenSettings, onSelectTopLevel)
+    TodayScreen(uiState, onEditDay, onSelectTopLevel)
 }
 
 /**
@@ -74,20 +71,11 @@ fun TodayRoute(
 fun TodayScreen(
     uiState: TodayUiState,
     onEditDay: (LocalDate) -> Unit,
-    onOpenSettings: () -> Unit,
     onSelectTopLevel: (TopLevel) -> Unit,
 ) {
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
-                actions = {
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_open))
-                    }
-                },
-            )
-        },
+        // Settings live in the menu (bottom bar), so the top bar has no actions
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) },
         bottomBar = { AppBottomBar(selected = TopLevel.TODAY, onSelect = onSelectTopLevel) },
         floatingActionButton = {
             if (uiState is TodayUiState.Ready) {

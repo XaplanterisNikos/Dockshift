@@ -1,8 +1,10 @@
 package com.foxnks.dockshift.data.machine
 
+import com.foxnks.dockshift.data.db.MachinePositions
 import com.foxnks.dockshift.data.db.dao.MachineDao
 import com.foxnks.dockshift.data.db.machineDisplayOrder
 import com.foxnks.dockshift.data.db.toDomain
+import com.foxnks.dockshift.data.db.toEntity
 import com.foxnks.dockshift.domain.machine.Machine
 import com.foxnks.dockshift.domain.machine.MachineCategory
 import com.foxnks.dockshift.domain.machine.MachineRepository
@@ -25,14 +27,29 @@ class RoomMachineRepository @Inject constructor(
     override fun observeActive(): Flow<List<Machine>> =
         dao.observeActive().map { rows -> rows.map { it.toDomain() }.sortedWith(machineDisplayOrder) }
 
+    override fun observeUsage(): Flow<Map<Long, Int>> =
+        dao.observeUsage().map { rows -> rows.associate { it.machineId to it.shifts } }
+
     override suspend fun addOrReactivate(category: MachineCategory, number: String): Machine {
         val trimmed = number.trim()
         // Fail before touching the database; Machine would reject it anyway
         require(trimmed.isNotEmpty()) { "Machine number must not be blank" }
-        return dao.addOrReactivate(category.name, trimmed).toDomain()
+        // A brand-new machine starts at its v1 location when there is one (e.g. truck parking)
+        return dao.addOrReactivate(category.name, trimmed, MachinePositions.locationOf(category, trimmed)).toDomain()
     }
 
-    override suspend fun deactivate(id: Long) {
-        dao.setActive(id, false)
+    override suspend fun save(machine: Machine): Machine {
+        if (machine.id == 0L) {
+            val entity = machine.toEntity()
+            return entity.copy(id = dao.insert(entity)).toDomain()
+        }
+        dao.update(machine.toEntity())
+        return machine
     }
+
+    override suspend fun setActive(id: Long, active: Boolean) {
+        dao.setActive(id, active)
+    }
+
+    override suspend fun delete(id: Long): Boolean = dao.deleteIfUnused(id) > 0
 }
