@@ -28,12 +28,14 @@ sealed interface SettingsUiState {
      * @property dynamicColor whether app colors follow the wallpaper.
      * @property rotationEnabled whether the rotating schedule predicts shifts.
      * @property storedShifts how many shifts are stored (shown before "delete all").
+     * @property showHolidays whether public holidays are marked.
      */
     data class Ready(
         val themeMode: ThemeMode,
         val dynamicColor: Boolean,
         val rotationEnabled: Boolean,
         val storedShifts: Int = 0,
+        val showHolidays: Boolean = true,
     ) : SettingsUiState
 }
 
@@ -57,6 +59,7 @@ class SettingsViewModel @Inject constructor(
             dynamicColor = saved.dynamicColor,
             rotationEnabled = saved.rotationEnabled,
             storedShifts = count,
+            showHolidays = saved.showHolidays,
         )
     }
         .stateIn(
@@ -78,6 +81,11 @@ class SettingsViewModel @Inject constructor(
     /** @param enabled new position of the rotating schedule switch. */
     fun onRotationToggled(enabled: Boolean) {
         viewModelScope.launch { settings.setRotationEnabled(enabled) }
+    }
+
+    /** @param enabled new position of the public holidays switch. */
+    fun onShowHolidaysToggled(enabled: Boolean) {
+        viewModelScope.launch { settings.setShowHolidays(enabled) }
     }
 
     /** Deletes every stored shift, after the screen's double confirmation. Machines and settings stay. */

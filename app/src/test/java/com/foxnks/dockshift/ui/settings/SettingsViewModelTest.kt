@@ -80,6 +80,19 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun `the holidays switch is saved and shown`() = runTest {
+        val repository = FakeSettingsRepository()
+        val viewModel = SettingsViewModel(repository, InMemoryShiftRepository())
+        observe(viewModel)
+        assertTrue((viewModel.uiState.value as SettingsUiState.Ready).showHolidays)
+
+        viewModel.onShowHolidaysToggled(false)
+
+        assertFalse(repository.current.showHolidays)
+        assertFalse((viewModel.uiState.value as SettingsUiState.Ready).showHolidays)
+    }
+
+    @Test
     fun `delete all removes every shift and the count follows`() = runTest {
         val shifts = InMemoryShiftRepository(
             listOf(Shift(LocalDate.of(2026, 10, 13), ShiftType.MORNING), Shift(LocalDate.of(2026, 10, 14), ShiftType.DAY_OFF)),

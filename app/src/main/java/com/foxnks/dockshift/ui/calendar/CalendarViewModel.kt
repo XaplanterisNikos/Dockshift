@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.foxnks.dockshift.domain.calendar.CalendarDay
 import com.foxnks.dockshift.domain.calendar.CalendarMonth
 import com.foxnks.dockshift.domain.calendar.MonthGrid
+import com.foxnks.dockshift.domain.holidays.GreekHolidays
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.CalendarView
 import com.foxnks.dockshift.domain.settings.SettingsRepository
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -101,12 +103,18 @@ class CalendarViewModel @Inject constructor(
      * The visible month together with its pages. Kept as one pair so the month and
      * the pages can never come from two different moments.
      */
-    private val pages: Flow<Pair<YearMonth, Map<YearMonth, CalendarMonth>>> = visibleMonth
-        .flatMapLatest { month ->
+    private val pages: Flow<Pair<YearMonth, Map<YearMonth, CalendarMonth>>> =
+        combine(visibleMonth, settings.settings.map { it.showHolidays }.distinctUntilChanged()) { month, showHolidays ->
+            month to showHolidays
+        }.flatMapLatest { (month, showHolidays) ->
             val shown = listOf(month.minusMonths(1), month, month.plusMonths(1))
             // One query from the first cell of the previous page to the last cell of the next
-            shifts.observeShifts(MonthGrid.range(shown.first()).start, MonthGrid.range(shown.last()).endInclusive)
-                .map { list -> month to shown.associateWith { CalendarMonth.of(it, list) } }
+            val from = MonthGrid.range(shown.first()).start
+            val to = MonthGrid.range(shown.last()).endInclusive
+            // Holidays are computed, not stored: worked out once per month change
+            val holidays = if (showHolidays) GreekHolidays.between(from, to) else emptyMap()
+            shifts.observeShifts(from, to)
+                .map { list -> month to shown.associateWith { CalendarMonth.of(it, list, holidays) } }
         }
 
     /** The screen state, always up to date with the stored shifts and settings. */

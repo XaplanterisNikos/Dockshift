@@ -1,5 +1,7 @@
 package com.foxnks.dockshift.domain.calendar
 
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
+import com.foxnks.dockshift.domain.holidays.GreekHolidays
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
 import java.time.LocalDate
@@ -110,6 +112,29 @@ class CalendarMonthTest {
         assertTrue(page.summary.countByType.isEmpty())
         assertEquals(0, page.summary.workShifts)
         assertFalse(page.summary.isEmpty)
+    }
+
+    @Test
+    fun `holidays are attached to their days and listed in the summary`() {
+        val page = CalendarMonth.of(
+            october,
+            listOf(Shift(oct(28), ShiftType.MORNING)),
+            holidays = GreekHolidays.between(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 12, 31)),
+        )
+
+        // A holiday can still be a working day: both are kept
+        assertEquals(GreekHoliday.OHI_DAY, page.day(oct(28))?.holiday)
+        assertTrue(page.day(oct(28))?.status is DayStatus.Recorded)
+        assertNull(page.day(oct(27))?.holiday)
+        assertEquals(listOf(oct(28) to GreekHoliday.OHI_DAY), page.summary.holidays)
+    }
+
+    @Test
+    fun `without holidays no day is marked`() {
+        val page = CalendarMonth.of(october, emptyList())
+
+        assertTrue(page.days.all { it.holiday == null })
+        assertTrue(page.summary.holidays.isEmpty())
     }
 
     @Test

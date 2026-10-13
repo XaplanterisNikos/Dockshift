@@ -187,4 +187,40 @@
     <string name="calendar_cell_forecast">πρόβλεψη: %1$s</string>
     <string name="calendar_cell_select">Επιλογή</string>
     <string name="calendar_cell_open">Άνοιγμα</string>
+
+    <!-- Επίσημες αργίες Ελλάδας -->
+    <string name="setting_holidays_title">Εμφάνιση αργιών</string>
+    <string name="setting_holidays_summary">Οι επίσημες αργίες της Ελλάδας με κόκκινο στο ημερολόγιο και στις λίστες</string>
+    <string name="holiday_new_year">Πρωτοχρονιά</string>
+    <string name="holiday_epiphany">Θεοφάνεια</string>
+    <string name="holiday_clean_monday">Καθαρά Δευτέρα</string>
+    <string name="holiday_independence_day">25η Μαρτίου</string>
+    <string name="holiday_good_friday">Μεγάλη Παρασκευή</string>
+    <string name="holiday_easter">Κυριακή του Πάσχα</string>
+    <string name="holiday_easter_monday">Δευτέρα του Πάσχα</string>
+    <string name="holiday_labour_day">Πρωτομαγιά</string>
+    <string name="holiday_whit_monday">Αγίου Πνεύματος</string>
+    <string name="holiday_assumption">Κοίμηση της Θεοτόκου</string>
+    <string name="holiday_ohi_day">28η Οκτωβρίου</string>
+    <string name="holiday_christmas">Χριστούγεννα</string>
+    <string name="holiday_second_day_of_christmas">Σύναξη της Θεοτόκου</string>
+    <string name="calendar_summary_holidays">Αργίες: %1$s</string>
+
+    <!-- Στατιστικά -->
+    <string name="menu_statistics">Στατιστικά</string>
+    <string name="menu_statistics_summary">Βάρδιες, υπερωρίες, μηχανήματα</string>
+    <string name="stats_work_shifts">Βάρδιες εργασίας</string>
+    <string name="stats_hours">%1$d ώρες</string>
+    <string name="stats_overtime">Υπερωρίες</string>
+    <string name="stats_overtime_hours">+%1$d ώρες</string>
+    <string name="stats_holidays_worked">Σε αργία</string>
+    <string name="stats_holidays_worked_detail">βάρδιες εργασίας</string>
+    <string name="stats_by_type">Ημέρες ανά τύπο</string>
+    <string name="stats_by_month">Ανά μήνα</string>
+    <string name="stats_with_overtime">Με υπερωρία</string>
+    <string name="stats_month_bar">%1$s: %2$d βάρδιες εργασίας, %3$d με υπερωρία</string>
+    <string name="stats_machines">Μηχανήματα</string>
+    <string name="stats_machine_overtime">+%1$d υπερωρία</string>
+    <string name="stats_show_all_machines">Όλα τα μηχανήματα (%1$d)</string>
+    <string name="stats_show_fewer">Λιγότερα</string>
 </resources>

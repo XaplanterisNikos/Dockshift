@@ -1,6 +1,8 @@
 package com.foxnks.dockshift.ui.calendar
 
 import com.foxnks.dockshift.domain.calendar.DayStatus
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
+import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.CalendarView
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
@@ -17,6 +19,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -129,6 +132,35 @@ class CalendarViewModelTest {
         val state = viewModel.uiState.value
         assertTrue(state.selectedDay?.status is DayStatus.Recorded)
         assertEquals(1, state.visible?.summary?.overtimeShifts)
+    }
+
+    @Test
+    fun `public holidays are marked when the setting is on`() = runTest {
+        val viewModel = viewModel()
+        observe(viewModel)
+
+        val october = viewModel.uiState.value.visible!!
+        assertEquals(GreekHoliday.OHI_DAY, october.day(LocalDate.of(2026, 10, 28))?.holiday)
+        assertEquals(listOf(LocalDate.of(2026, 10, 28) to GreekHoliday.OHI_DAY), october.summary.holidays)
+    }
+
+    @Test
+    fun `turning holidays off removes the marks at once`() = runTest {
+        val settings = FakeSettingsRepository()
+        val viewModel = viewModel(settings = settings)
+        observe(viewModel)
+
+        settings.setShowHolidays(false)
+
+        assertNull(viewModel.uiState.value.visible!!.day(LocalDate.of(2026, 10, 28))?.holiday)
+    }
+
+    @Test
+    fun `holidays stay hidden when the setting is off from the start`() = runTest {
+        val viewModel = viewModel(settings = FakeSettingsRepository(AppSettings(showHolidays = false)))
+        observe(viewModel)
+
+        assertTrue(viewModel.uiState.value.visible!!.days.all { it.holiday == null })
     }
 
     @Test

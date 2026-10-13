@@ -1,7 +1,9 @@
 package com.foxnks.dockshift.ui.list
 
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
+import com.foxnks.dockshift.testing.FakeSettingsRepository
 import com.foxnks.dockshift.testing.InMemoryShiftRepository
 import com.foxnks.dockshift.testing.MainDispatcherRule
 import java.time.Clock
@@ -46,7 +48,7 @@ class ShiftListViewModelTest {
 
     @Test
     fun `opens on the current year, newest first, grouped by month`() = runTest {
-        val viewModel = ShiftListViewModel(shifts, clock)
+        val viewModel = ShiftListViewModel(shifts, FakeSettingsRepository(), clock)
         observe(viewModel)
 
         val state = viewModel.ready
@@ -59,7 +61,7 @@ class ShiftListViewModelTest {
 
     @Test
     fun `month filter keeps only that month`() = runTest {
-        val viewModel = ShiftListViewModel(shifts, clock)
+        val viewModel = ShiftListViewModel(shifts, FakeSettingsRepository(), clock)
         observe(viewModel)
 
         viewModel.onMonthSelected(9)
@@ -69,7 +71,7 @@ class ShiftListViewModelTest {
 
     @Test
     fun `changing year shows that year and resets the month`() = runTest {
-        val viewModel = ShiftListViewModel(shifts, clock)
+        val viewModel = ShiftListViewModel(shifts, FakeSettingsRepository(), clock)
         observe(viewModel)
         viewModel.onMonthSelected(10)
 
@@ -82,10 +84,20 @@ class ShiftListViewModelTest {
 
     @Test
     fun `the current year is offered even with no shifts`() = runTest {
-        val viewModel = ShiftListViewModel(InMemoryShiftRepository(), clock)
+        val viewModel = ShiftListViewModel(InMemoryShiftRepository(), FakeSettingsRepository(), clock)
         observe(viewModel)
 
         assertEquals(listOf(2026), viewModel.ready.years)
         assertEquals(emptyList<MonthGroup>(), viewModel.ready.groups)
+    }
+
+    @Test
+    fun `public holidays of the shown period come with the list`() = runTest {
+        val viewModel = ShiftListViewModel(shifts, FakeSettingsRepository(), clock)
+        observe(viewModel)
+
+        viewModel.onMonthSelected(10)
+
+        assertEquals(mapOf(LocalDate.of(2026, 10, 28) to GreekHoliday.OHI_DAY), viewModel.ready.holidays)
     }
 }

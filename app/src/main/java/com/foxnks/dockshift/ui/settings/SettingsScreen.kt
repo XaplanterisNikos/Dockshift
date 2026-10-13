@@ -61,6 +61,7 @@ fun SettingsRoute(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMod
         onThemeModeSelected = viewModel::onThemeModeSelected,
         onDynamicColorToggled = viewModel::onDynamicColorToggled,
         onRotationToggled = viewModel::onRotationToggled,
+        onShowHolidaysToggled = viewModel::onShowHolidaysToggled,
         onDeleteAllShifts = viewModel::onDeleteAllShifts,
         dataSection = { LegacyImportSettingsItem() },
     )
@@ -74,6 +75,7 @@ fun SettingsRoute(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMod
  * @param onThemeModeSelected a theme option was picked.
  * @param onDynamicColorToggled the wallpaper-colors switch was flipped.
  * @param onRotationToggled the rotating schedule switch was flipped.
+ * @param onShowHolidaysToggled the public holidays switch was flipped.
  * @param onDeleteAllShifts "delete all shifts" was confirmed twice.
  * @param dataSection items of the Data section (a slot, so previews need no Hilt).
  */
@@ -85,6 +87,7 @@ fun SettingsScreen(
     onThemeModeSelected: (ThemeMode) -> Unit,
     onDynamicColorToggled: (Boolean) -> Unit,
     onRotationToggled: (Boolean) -> Unit,
+    onShowHolidaysToggled: (Boolean) -> Unit = {},
     onDeleteAllShifts: () -> Unit = {},
     dataSection: @Composable () -> Unit = {},
 ) {
@@ -131,6 +134,12 @@ fun SettingsScreen(
                     summary = R.string.setting_rotation_summary,
                     checked = uiState.rotationEnabled,
                     onCheckedChange = onRotationToggled,
+                )
+                SwitchItem(
+                    title = R.string.setting_holidays_title,
+                    summary = R.string.setting_holidays_summary,
+                    checked = uiState.showHolidays,
+                    onCheckedChange = onShowHolidaysToggled,
                 )
                 HorizontalDivider()
 
