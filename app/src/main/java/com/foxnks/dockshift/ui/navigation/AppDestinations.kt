@@ -37,6 +37,10 @@ data object MenuKey : NavKey
 @Serializable
 data object MachinesKey : NavKey
 
+/** Statistics of shifts, overtime and machines. Opened from the menu. */
+@Serializable
+data object StatisticsKey : NavKey
+
 /** Settings. Opened from the menu. */
 @Serializable
 data object SettingsKey : NavKey

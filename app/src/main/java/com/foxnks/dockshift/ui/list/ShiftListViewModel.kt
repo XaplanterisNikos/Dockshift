@@ -2,6 +2,9 @@ package com.foxnks.dockshift.ui.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
+import com.foxnks.dockshift.domain.holidays.GreekHolidays
+import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -37,12 +41,14 @@ sealed interface ShiftListUiState {
      * @property year the selected year.
      * @property month the selected month (1-12), or null for the whole year.
      * @property groups the matching shifts grouped by month, newest month first.
+     * @property holidays public holidays of the shown period by date (empty when turned off).
      */
     data class Ready(
         val years: List<Int>,
         val year: Int,
         val month: Int?,
         val groups: List<MonthGroup>,
+        val holidays: Map<LocalDate, GreekHoliday> = emptyMap(),
     ) : ShiftListUiState
 }
 
@@ -51,12 +57,14 @@ sealed interface ShiftListUiState {
  * The year filter only offers years that have data, so it grows by itself.
  *
  * @param shifts stored shifts.
+ * @param settings whether public holidays are marked.
  * @param clock the current time, for the default year.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ShiftListViewModel @Inject constructor(
     private val shifts: ShiftRepository,
+    settings: SettingsRepository,
     clock: Clock,
 ) : ViewModel() {
 
@@ -70,13 +78,19 @@ class ShiftListViewModel @Inject constructor(
 
     /** The screen state. */
     val uiState: StateFlow<ShiftListUiState> =
-        combine(shifts.observeYears(), chosenYear, chosenMonth) { years, year, month ->
+        combine(
+            shifts.observeYears(),
+            chosenYear,
+            chosenMonth,
+            settings.settings.map { it.showHolidays }.distinctUntilChanged(),
+        ) { years, year, month, showHolidays ->
             // The current year is always offered, so new users see where their shifts will go
             val allYears = (years + currentYear).distinct().sortedDescending()
-            Triple(allYears, year ?: currentYear, month)
-        }.flatMapLatest { (years, year, month) ->
+            Filter(allYears, year ?: currentYear, month, showHolidays)
+        }.flatMapLatest { (years, year, month, showHolidays) ->
             val from = if (month == null) LocalDate.of(year, 1, 1) else YearMonth.of(year, month).atDay(1)
             val to = if (month == null) LocalDate.of(year, 12, 31) else YearMonth.of(year, month).atEndOfMonth()
+            val holidays = if (showHolidays) GreekHolidays.between(from, to) else emptyMap()
             shifts.observeShifts(from, to).map { list ->
                 ShiftListUiState.Ready(
                     years = years,
@@ -86,6 +100,7 @@ class ShiftListViewModel @Inject constructor(
                         .sortedByDescending { it.date }
                         .groupBy { YearMonth.from(it.date) }
                         .map { (month, shifts) -> MonthGroup(month, shifts) },
+                    holidays = holidays,
                 )
             }
         }.stateIn(
@@ -104,6 +119,9 @@ class ShiftListViewModel @Inject constructor(
     fun onMonthSelected(month: Int?) {
         chosenMonth.value = month
     }
+
+    /** The chosen filters together, so they are applied as one. */
+    private data class Filter(val years: List<Int>, val year: Int, val month: Int?, val showHolidays: Boolean)
 
     private companion object {
         /** Keeps the state alive across a rotation. */

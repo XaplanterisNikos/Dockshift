@@ -47,6 +47,7 @@ class DataStoreSettingsRepository @Inject constructor(
                     ?: defaults.calendarViewPortrait,
                 calendarViewLandscape = calendarView(preferences[Keys.CALENDAR_VIEW_LANDSCAPE])
                     ?: defaults.calendarViewLandscape,
+                showHolidays = preferences[Keys.SHOW_HOLIDAYS] ?: defaults.showHolidays,
             )
         }
 
@@ -72,6 +73,10 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { preferences -> preferences[key] = view.name }
     }
 
+    override suspend fun setShowHolidays(enabled: Boolean) {
+        dataStore.edit { preferences -> preferences[Keys.SHOW_HOLIDAYS] = enabled }
+    }
+
     /**
      * A stored [CalendarView] name back to the value, or null when it was never saved
      * or is unknown (e.g. written by a newer version), so the caller uses the default.
@@ -90,5 +95,6 @@ class DataStoreSettingsRepository @Inject constructor(
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val CALENDAR_VIEW_PORTRAIT = stringPreferencesKey("calendar_view_portrait")
         val CALENDAR_VIEW_LANDSCAPE = stringPreferencesKey("calendar_view_landscape")
+        val SHOW_HOLIDAYS = booleanPreferencesKey("show_holidays")
     }
 }

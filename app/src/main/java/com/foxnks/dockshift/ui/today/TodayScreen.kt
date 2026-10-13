@@ -1,5 +1,6 @@
 package com.foxnks.dockshift.ui.today
 
+import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,16 +9,16 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -37,10 +39,12 @@ import com.foxnks.dockshift.R
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.ui.navigation.AppBottomBar
 import com.foxnks.dockshift.ui.navigation.TopLevel
+import com.foxnks.dockshift.ui.shift.DayCard
 import com.foxnks.dockshift.ui.shift.MachineLine
+import com.foxnks.dockshift.ui.shift.MiniDayCard
 import com.foxnks.dockshift.ui.shift.ShiftChip
 import com.foxnks.dockshift.ui.shift.ShiftFormat
-import com.foxnks.dockshift.ui.shift.shiftSummary
+import com.foxnks.dockshift.ui.shift.label
 import java.time.LocalDate
 
 /**
@@ -64,7 +68,8 @@ fun TodayRoute(
 
 /**
  * Today's shift in a card (type, machines with their location, overtime, comment)
- * and the next days below. Tapping any day opens it for editing.
+ * and the next days below: small cards upright, a row of mini cards sideways.
+ * Public holidays are named in red. Tapping any day opens it for editing.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,6 +90,7 @@ fun TodayScreen(
             }
         },
     ) { innerPadding ->
+        val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
         when (uiState) {
             TodayUiState.Loading -> Box(Modifier.fillMaxSize().padding(innerPadding), Alignment.Center) {
                 CircularProgressIndicator()
@@ -112,9 +118,35 @@ fun TodayScreen(
                         modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 4.dp),
                     )
                 }
-                items(uiState.upcoming, key = { it.date.toString() }) { day ->
-                    DayRow(day, onClick = { onEditDay(day.date) })
-                    HorizontalDivider()
+                if (landscape) {
+                    // Sideways: the next days as a row of mini cards
+                    item {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(uiState.upcoming, key = { it.date.toString() }) { day ->
+                                MiniDayCard(
+                                    date = day.date,
+                                    shift = day.shift,
+                                    onClick = { onEditDay(day.date) },
+                                    modifier = Modifier.width(76.dp),
+                                    holiday = day.holiday,
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    // Upright: one small card per day
+                    items(uiState.upcoming, key = { it.date.toString() }) { day ->
+                        DayCard(
+                            date = day.date,
+                            shift = day.shift,
+                            onClick = { onEditDay(day.date) },
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                            holiday = day.holiday,
+                        )
+                    }
                 }
             }
         }
@@ -127,6 +159,9 @@ private fun CurrentShiftCard(state: TodayUiState.Ready, onEdit: () -> Unit, modi
     Card(modifier = modifier.fillMaxWidth().clickable(onClick = onEdit)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(ShiftFormat.long(state.currentDate), style = MaterialTheme.typography.titleMedium)
+            state.currentHoliday?.let {
+                Text(it.label(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error)
+            }
             if (state.nightFromYesterday) {
                 Text(
                     text = stringResource(R.string.today_night_from_yesterday),
@@ -154,21 +189,4 @@ private fun ShiftDetails(shift: Shift) {
     }
     shift.machines.forEach { MachineLine(it) }
     shift.comments?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-}
-
-/** One of the next days: date, type and a short summary, or "not recorded". */
-@Composable
-private fun DayRow(day: DayEntry, onClick: () -> Unit) {
-    val shift = day.shift
-    ListItem(
-        headlineContent = { Text(ShiftFormat.short(day.date)) },
-        supportingContent = {
-            Text(
-                text = if (shift == null) stringResource(R.string.day_not_recorded) else shiftSummary(shift),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        },
-        trailingContent = { shift?.let { ShiftChip(it.type) } },
-        modifier = Modifier.clickable(onClick = onClick),
-    )
 }

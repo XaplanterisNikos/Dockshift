@@ -23,6 +23,11 @@ object ShiftFormat {
     fun short(date: LocalDate): String =
         date.format(DateTimeFormatter.ofPattern("EEE d/M", Locale.getDefault()))
 
+    /** Short week day for day cards, e.g. "Τετ". */
+    fun weekday(date: LocalDate): String =
+        date.format(DateTimeFormatter.ofPattern("EEE", Locale.getDefault()))
+            .replaceFirstChar { it.titlecase(Locale.getDefault()) }
+
     /** Month heading, e.g. "Οκτώβριος 2026" (stand-alone month name). */
     fun month(year: Int, month: Int): String =
         LocalDate.of(year, month, 1).format(DateTimeFormatter.ofPattern("LLLL yyyy", Locale.getDefault()))

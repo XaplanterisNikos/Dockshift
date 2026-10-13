@@ -40,6 +40,7 @@ import com.foxnks.dockshift.domain.calendar.CalendarDay
 import com.foxnks.dockshift.domain.calendar.CalendarMonth
 import com.foxnks.dockshift.domain.calendar.DayStatus
 import com.foxnks.dockshift.domain.calendar.MonthGrid
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
 import com.foxnks.dockshift.ui.shift.ShiftFormat
@@ -120,6 +121,7 @@ fun MonthPage(
                         isSelected = day.inMonth && day.date == selectedDate,
                         clickLabel = clickLabel,
                         onClick = { onDayClick(day) },
+                        isHoliday = day.holiday != null,
                         modifier = Modifier
                             .weight(1f)
                             .then(if (fillHeight) Modifier.fillMaxHeight() else Modifier.aspectRatio(CELL_ASPECT_RATIO)),
@@ -144,8 +146,7 @@ fun MonthPage(
  * @param day the day and what is known about it.
  * @param isToday whether it is the current date.
  * @param isSelected whether it is the selected day (day-details mode only).
- * @param isHoliday whether it is a public holiday (red number). Nothing sets it yet:
- * the Greek public holidays come with their own issue.
+ * @param isHoliday whether it is a public holiday (red number).
  * @param clickLabel what tapping does, for TalkBack.
  * @param onClick called on tap.
  * @param modifier size and position from the grid.
@@ -283,6 +284,7 @@ private fun CellText(text: String, color: Color, modifier: Modifier = Modifier) 
 private fun cellDescription(day: CalendarDay, isToday: Boolean): String {
     val parts = mutableListOf(ShiftFormat.long(day.date))
     if (isToday) parts += stringResource(R.string.calendar_cell_today)
+    day.holiday?.let { parts += it.label() }
     when (val status = day.status) {
         is DayStatus.Recorded -> {
             parts += status.shift.type.label()
@@ -294,7 +296,7 @@ private fun cellDescription(day: CalendarDay, isToday: Boolean): String {
     return parts.joinToString(", ")
 }
 
-/** Sample October 2026 for previews: a few shifts, overtime, and gold forecasts after the 20th. */
+/** Sample October 2026 for previews: a few shifts, overtime, 28 October, and gold forecasts after the 20th. */
 internal fun previewMonth(): CalendarMonth {
     val october = YearMonth.of(2026, 10)
     val shifts = listOf(
@@ -308,7 +310,8 @@ internal fun previewMonth(): CalendarMonth {
         Shift(october.atDay(12), ShiftType.SICK_LEAVE),
         Shift(october.atDay(13), ShiftType.TRAINING),
     )
-    return CalendarMonth.of(october, shifts) { date ->
+    val holidays = mapOf(october.atDay(28) to GreekHoliday.OHI_DAY)
+    return CalendarMonth.of(october, shifts, holidays) { date ->
         if (YearMonth.from(date) == october && date.dayOfMonth > 20) ShiftType.entries[date.dayOfMonth % 3] else null
     }
 }

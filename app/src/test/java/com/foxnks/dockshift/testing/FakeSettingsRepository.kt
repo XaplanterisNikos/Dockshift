@@ -42,4 +42,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setCalendarView(landscape: Boolean, view: CalendarView) {
         state.update { if (landscape) it.copy(calendarViewLandscape = view) else it.copy(calendarViewPortrait = view) }
     }
+
+    override suspend fun setShowHolidays(enabled: Boolean) {
+        state.update { it.copy(showHolidays = enabled) }
+    }
 }

@@ -191,4 +191,40 @@
     <string name="calendar_cell_forecast">forecast: %1$s</string>
     <string name="calendar_cell_select">Select</string>
     <string name="calendar_cell_open">Open</string>
+
+    <!-- Public holidays of Greece -->
+    <string name="setting_holidays_title">Show public holidays</string>
+    <string name="setting_holidays_summary">Mark the official holidays of Greece in red in the calendar and the lists</string>
+    <string name="holiday_new_year">New Year\'s Day</string>
+    <string name="holiday_epiphany">Epiphany</string>
+    <string name="holiday_clean_monday">Clean Monday</string>
+    <string name="holiday_independence_day">Independence Day (25 March)</string>
+    <string name="holiday_good_friday">Good Friday</string>
+    <string name="holiday_easter">Easter Sunday</string>
+    <string name="holiday_easter_monday">Easter Monday</string>
+    <string name="holiday_labour_day">Labour Day</string>
+    <string name="holiday_whit_monday">Whit Monday</string>
+    <string name="holiday_assumption">Assumption of Mary</string>
+    <string name="holiday_ohi_day">Ohi Day (28 October)</string>
+    <string name="holiday_christmas">Christmas Day</string>
+    <string name="holiday_second_day_of_christmas">Second day of Christmas</string>
+    <string name="calendar_summary_holidays">Holidays: %1$s</string>
+
+    <!-- Statistics -->
+    <string name="menu_statistics">Statistics</string>
+    <string name="menu_statistics_summary">Shifts, overtime, machines</string>
+    <string name="stats_work_shifts">Working shifts</string>
+    <string name="stats_hours">%1$d hours</string>
+    <string name="stats_overtime">Overtime</string>
+    <string name="stats_overtime_hours">+%1$d hours</string>
+    <string name="stats_holidays_worked">On holidays</string>
+    <string name="stats_holidays_worked_detail">shifts worked</string>
+    <string name="stats_by_type">Days by type</string>
+    <string name="stats_by_month">Month by month</string>
+    <string name="stats_with_overtime">With overtime</string>
+    <string name="stats_month_bar">%1$s: %2$d working shifts, %3$d with overtime</string>
+    <string name="stats_machines">Machines</string>
+    <string name="stats_machine_overtime">+%1$d overtime</string>
+    <string name="stats_show_all_machines">All machines (%1$d)</string>
+    <string name="stats_show_fewer">Show fewer</string>
 </resources>

@@ -2,6 +2,9 @@ package com.foxnks.dockshift.ui.today
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
+import com.foxnks.dockshift.domain.holidays.GreekHolidays
+import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftRepository
 import com.foxnks.dockshift.domain.shift.WorkDay
@@ -14,6 +17,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -23,8 +28,9 @@ import kotlinx.coroutines.flow.stateIn
  *
  * @property date the day.
  * @property shift its stored shift, or null if nothing is recorded.
+ * @property holiday its public holiday, or null (also when holidays are turned off).
  */
-data class DayEntry(val date: LocalDate, val shift: Shift?)
+data class DayEntry(val date: LocalDate, val shift: Shift?, val holiday: GreekHoliday? = null)
 
 /** What the "Today" screen shows. */
 sealed interface TodayUiState {
@@ -37,12 +43,14 @@ sealed interface TodayUiState {
      * @property nightFromYesterday true when [currentDate] is yesterday because its night shift is still running.
      * @property current the shift of [currentDate], or null if nothing is recorded.
      * @property upcoming the days after [currentDate].
+     * @property currentHoliday the public holiday of [currentDate], or null.
      */
     data class Ready(
         val currentDate: LocalDate,
         val nightFromYesterday: Boolean,
         val current: Shift?,
         val upcoming: List<DayEntry>,
+        val currentHoliday: GreekHoliday? = null,
     ) : TodayUiState
 }
 
@@ -50,12 +58,14 @@ sealed interface TodayUiState {
  * ViewModel of the "Today" screen: the current shift and the next [UPCOMING_DAYS] days.
  *
  * @param shifts stored shifts.
+ * @param settings whether public holidays are marked.
  * @param clock the current time; injected so tests can fix it.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class TodayViewModel @Inject constructor(
     private val shifts: ShiftRepository,
+    settings: SettingsRepository,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -63,12 +73,17 @@ class TodayViewModel @Inject constructor(
     private val now = MutableStateFlow(LocalDateTime.now(clock))
 
     /** The screen state, always up to date with the stored shifts. */
-    val uiState: StateFlow<TodayUiState> = now
-        .flatMapLatest { time ->
+    val uiState: StateFlow<TodayUiState> =
+        combine(now, settings.settings.map { it.showHolidays }.distinctUntilChanged()) { time, showHolidays ->
+            time to showHolidays
+        }.flatMapLatest { (time, showHolidays) ->
             val today = time.toLocalDate()
             // From yesterday (a night may still be running) to a week after today
-            shifts.observeShifts(today.minusDays(1), today.plusDays(UPCOMING_DAYS + 1L))
-                .map { list -> build(time, list.associateBy { it.date }) }
+            val from = today.minusDays(1)
+            val to = today.plusDays(UPCOMING_DAYS + 1L)
+            val holidays = if (showHolidays) GreekHolidays.between(from, to) else emptyMap()
+            shifts.observeShifts(from, to)
+                .map { list -> build(time, list.associateBy { it.date }, holidays) }
         }
         .stateIn(
             scope = viewModelScope,
@@ -85,8 +100,12 @@ class TodayViewModel @Inject constructor(
         now.value = LocalDateTime.now(clock)
     }
 
-    /** Builds the screen state for [time] from the shifts around it. */
-    private fun build(time: LocalDateTime, byDate: Map<LocalDate, Shift>): TodayUiState.Ready {
+    /** Builds the screen state for [time] from the shifts and holidays around it. */
+    private fun build(
+        time: LocalDateTime,
+        byDate: Map<LocalDate, Shift>,
+        holidays: Map<LocalDate, GreekHoliday>,
+    ): TodayUiState.Ready {
         val today = time.toLocalDate()
         val current = WorkDay.current(time, byDate[today.minusDays(1)]?.type)
         return TodayUiState.Ready(
@@ -95,8 +114,9 @@ class TodayViewModel @Inject constructor(
             current = byDate[current],
             upcoming = (1..UPCOMING_DAYS).map { offset ->
                 val date = current.plusDays(offset.toLong())
-                DayEntry(date, byDate[date])
+                DayEntry(date, byDate[date], holidays[date])
             },
+            currentHoliday = holidays[current],
         )
     }
 

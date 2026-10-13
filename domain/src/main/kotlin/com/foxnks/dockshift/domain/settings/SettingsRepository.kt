@@ -49,4 +49,11 @@ interface SettingsRepository {
      * @param view the new value.
      */
     suspend fun setCalendarView(landscape: Boolean, view: CalendarView)
+
+    /**
+     * Turns the public holiday marks on or off and persists the choice.
+     *
+     * @param enabled the new value of [AppSettings.showHolidays].
+     */
+    suspend fun setShowHolidays(enabled: Boolean)
 }

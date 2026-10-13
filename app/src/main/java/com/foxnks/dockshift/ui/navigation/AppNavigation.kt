@@ -15,6 +15,7 @@ import com.foxnks.dockshift.ui.list.ShiftListRoute
 import com.foxnks.dockshift.ui.machines.MachinesRoute
 import com.foxnks.dockshift.ui.menu.MenuRoute
 import com.foxnks.dockshift.ui.settings.SettingsRoute
+import com.foxnks.dockshift.ui.statistics.StatisticsRoute
 import com.foxnks.dockshift.ui.today.TodayRoute
 import java.time.LocalDate
 
@@ -23,7 +24,7 @@ import java.time.LocalDate
  *
  * - "Today" is always at the bottom of the stack, so back from any screen ends there.
  * - The bottom bar switches between "Today", "Shifts", "Calendar" and "Menu".
- * - Edit is pushed on top of any screen; Machines and Settings on top of the menu.
+ * - Edit is pushed on top of any screen; Machines, Statistics and Settings on top of the menu.
  *   They are popped when closed, so back from them returns to where they were opened.
  * Each entry gets its own ViewModel store, so opening the edit screen for two
  * different days gives two independent ViewModels.
@@ -73,6 +74,9 @@ fun AppNavigation() {
             }
             entry<MachinesKey> {
                 MachinesRoute(onBack = { backStack.removeLastOrNull() })
+            }
+            entry<StatisticsKey> {
+                StatisticsRoute(onBack = { backStack.removeLastOrNull() })
             }
             entry<SettingsKey> {
                 SettingsRoute(onBack = { backStack.removeLastOrNull() })

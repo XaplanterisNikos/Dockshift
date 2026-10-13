@@ -20,6 +20,9 @@ package com.foxnks.dockshift.domain.settings
  * the month summary by default (a phone held upright has room below the grid).
  * @property calendarViewLandscape what the calendar shows beside the month in
  * landscape: the selected day's details by default (room on the side).
+ * @property showHolidays whether the Greek public holidays are marked (red day number
+ * and name) in the calendar, on "Today" and in the shift list. On by default: useful
+ * to everyone, and they are only shown, never turned into shifts.
  */
 data class AppSettings(
     val rotationEnabled: Boolean = false,
@@ -28,4 +31,5 @@ data class AppSettings(
     val dynamicColor: Boolean = true,
     val calendarViewPortrait: CalendarView = CalendarView.SUMMARY,
     val calendarViewLandscape: CalendarView = CalendarView.DAY_DETAILS,
+    val showHolidays: Boolean = true,
 )

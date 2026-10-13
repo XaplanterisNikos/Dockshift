@@ -1,5 +1,6 @@
 package com.foxnks.dockshift.domain.calendar
 
+import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
 import java.time.LocalDate
@@ -41,11 +42,14 @@ sealed interface DayStatus {
  * @property inMonth false for the faded days of the previous/next month that fill
  * the first and last rows.
  * @property status what is known about the day.
+ * @property holiday the public holiday of the day, or null (also null when the user
+ * turned holidays off). Independent of [status]: a holiday can be a working day.
  */
 data class CalendarDay(
     val date: LocalDate,
     val inMonth: Boolean,
     val status: DayStatus,
+    val holiday: GreekHoliday? = null,
 )
 
 /**
@@ -57,6 +61,7 @@ data class CalendarDay(
  * @property workedHours hours of those shifts, overtime included.
  * @property overtimeShifts working shifts with overtime.
  * @property forecastDays days shown as a prediction (not recorded), counted apart.
+ * @property holidays the public holidays of the month, by date.
  */
 data class MonthSummary(
     val countByType: Map<ShiftType, Int>,
@@ -64,6 +69,7 @@ data class MonthSummary(
     val workedHours: Int,
     val overtimeShifts: Int,
     val forecastDays: Int,
+    val holidays: List<Pair<LocalDate, GreekHoliday>> = emptyList(),
 ) {
     /** True when the month has nothing recorded and nothing predicted. */
     val isEmpty: Boolean
@@ -90,6 +96,7 @@ data class MonthSummary(
                 workedHours = recorded.sumOf { it.workedHours },
                 overtimeShifts = recorded.count { it.overtime },
                 forecastDays = inMonth.count { it.status is DayStatus.Forecast },
+                holidays = inMonth.mapNotNull { day -> day.holiday?.let { day.date to it } },
             )
         }
     }
@@ -124,12 +131,15 @@ data class CalendarMonth(
          * @param month the month of the page.
          * @param shifts stored shifts; any that are not on the page are ignored, so a
          * wider list (e.g. three months at once) can be passed as it is.
+         * @param holidays public holidays by date (see `GreekHolidays.between`); a wider
+         * map can be passed as it is. Empty when the user turned holidays off.
          * @param forecast the predicted type of a day, or null. Nothing predicts yet;
          * the rotating schedule (#8) will plug in here.
          */
         fun of(
             month: YearMonth,
             shifts: Collection<Shift>,
+            holidays: Map<LocalDate, GreekHoliday> = emptyMap(),
             forecast: (LocalDate) -> ShiftType? = { null },
         ): CalendarMonth {
             val byDate = shifts.associateBy { it.date }
@@ -144,6 +154,7 @@ data class CalendarMonth(
                         predicted != null -> DayStatus.Forecast(predicted)
                         else -> DayStatus.Empty
                     },
+                    holiday = holidays[date],
                 )
             }
             return CalendarMonth(month, days, MonthSummary.of(days))

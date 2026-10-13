@@ -36,7 +36,8 @@ import java.time.LocalDate
 
 /**
  * The month's totals: days per type as colored pills, worked shifts and hours,
- * overtime, and (once the rotation predicts) how many days are forecasts.
+ * overtime, (once the rotation predicts) how many days are forecasts, and the
+ * month's public holidays.
  *
  * @param summary the totals of the visible month.
  * @param modifier optional modifier from the caller.
@@ -80,6 +81,16 @@ fun MonthSummaryPanel(summary: MonthSummary, modifier: Modifier = Modifier) {
                 ForecastLabel(stringResource(R.string.calendar_summary_forecast, summary.forecastDays))
             }
         }
+        // Holidays are listed even in a month without shifts
+        if (summary.holidays.isNotEmpty()) {
+            // map is inline, so the composable label() may be called inside it (joinToString's lambda is not)
+            val names = summary.holidays.map { (date, holiday) -> "${holiday.label()} (${date.dayOfMonth}/${date.monthValue})" }
+            Text(
+                text = stringResource(R.string.calendar_summary_holidays, names.joinToString(", ")),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
     }
 }
 
@@ -91,21 +102,19 @@ fun MonthSummaryPanel(summary: MonthSummary, modifier: Modifier = Modifier) {
  * @param day the selected day, or null while its month is being read.
  * @param onEditDay opens the day for adding or editing.
  * @param modifier optional modifier from the caller.
- * @param holidayName the public holiday of the day, shown in red. Nothing sets it
- * yet: the Greek public holidays come with their own issue.
  */
 @Composable
 fun DayDetailsPanel(
     day: CalendarDay?,
     onEditDay: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
-    holidayName: String? = null,
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (day != null) {
             PanelTitle(ShiftFormat.long(day.date))
-            holidayName?.let {
-                Text(it, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error)
+            // The public holiday of the day, in red like its number in the grid
+            day.holiday?.let {
+                Text(it.label(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error)
             }
             when (val status = day.status) {
                 is DayStatus.Recorded -> {

@@ -36,4 +36,10 @@ class AppSettingsTest {
         assertEquals(CalendarView.SUMMARY, AppSettings().calendarViewPortrait)
         assertEquals(CalendarView.DAY_DETAILS, AppSettings().calendarViewLandscape)
     }
+
+    @Test
+    fun `public holidays are shown by default`() {
+        // Useful to everyone, and only a mark: they never become shifts
+        assertTrue(AppSettings().showHolidays)
+    }
 }
