@@ -11,6 +11,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -21,6 +22,7 @@ import org.junit.Rule
 import org.junit.Test
 
 /** Year/month filters of [ShiftListViewModel]. */
+@OptIn(ExperimentalCoroutinesApi::class) // UnconfinedTestDispatcher is still experimental
 class ShiftListViewModelTest {
 
     @get:Rule

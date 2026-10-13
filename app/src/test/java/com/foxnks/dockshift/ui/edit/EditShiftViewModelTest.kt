@@ -16,6 +16,7 @@ import com.foxnks.dockshift.testing.MainDispatcherRule
 import com.foxnks.dockshift.domain.worker.WorkerProfile
 import com.foxnks.dockshift.domain.worker.WorkerRole
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import java.time.Clock
@@ -30,6 +31,7 @@ import org.junit.Rule
 import org.junit.Test
 
 /** Loading, saving, moving and deleting in [EditShiftViewModel]. */
+@OptIn(ExperimentalCoroutinesApi::class) // UnconfinedTestDispatcher is still experimental
 class EditShiftViewModelTest {
 
     @get:Rule

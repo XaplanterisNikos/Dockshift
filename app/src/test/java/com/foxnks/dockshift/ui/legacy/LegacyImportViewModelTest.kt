@@ -11,6 +11,7 @@ import com.foxnks.dockshift.testing.MainDispatcherRule
 import com.foxnks.dockshift.testing.PlainLegacyNotes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -22,6 +23,7 @@ import org.junit.Rule
 import org.junit.Test
 
 /** The v1 import flow of [LegacyImportViewModel], against in-memory fakes. */
+@OptIn(ExperimentalCoroutinesApi::class) // UnconfinedTestDispatcher is still experimental
 class LegacyImportViewModelTest {
 
     @get:Rule

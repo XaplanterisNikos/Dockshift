@@ -8,6 +8,7 @@ import com.foxnks.dockshift.domain.worker.WorkerRole
 import com.foxnks.dockshift.testing.FakeSettingsRepository
 import com.foxnks.dockshift.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -18,6 +19,7 @@ import org.junit.Rule
 import org.junit.Test
 
 /** [WorkerViewModel] (the profile form) and [WorkerPromptViewModel] (the first-run question). */
+@OptIn(ExperimentalCoroutinesApi::class) // UnconfinedTestDispatcher is still experimental
 class WorkerViewModelsTest {
 
     @get:Rule
