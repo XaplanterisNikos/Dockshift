@@ -5,8 +5,10 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.foxnks.dockshift.domain.settings.AppSettings
 import com.foxnks.dockshift.domain.settings.SettingsRepository
+import com.foxnks.dockshift.domain.settings.ThemeMode
 import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -36,6 +38,10 @@ class DataStoreSettingsRepository @Inject constructor(
             AppSettings(
                 rotationEnabled = preferences[Keys.ROTATION_ENABLED] ?: defaults.rotationEnabled,
                 legacyImportAsked = preferences[Keys.LEGACY_IMPORT_ASKED] ?: defaults.legacyImportAsked,
+                // Stored by name; an unknown name (e.g. from a newer version) falls back to the default
+                themeMode = ThemeMode.entries.firstOrNull { it.name == preferences[Keys.THEME_MODE] }
+                    ?: defaults.themeMode,
+                dynamicColor = preferences[Keys.DYNAMIC_COLOR] ?: defaults.dynamicColor,
             )
         }
 
@@ -48,6 +54,14 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { preferences -> preferences[Keys.LEGACY_IMPORT_ASKED] = true }
     }
 
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.edit { preferences -> preferences[Keys.THEME_MODE] = mode.name }
+    }
+
+    override suspend fun setDynamicColor(enabled: Boolean) {
+        dataStore.edit { preferences -> preferences[Keys.DYNAMIC_COLOR] = enabled }
+    }
+
     /**
      * Storage keys. Their names are part of the saved file: renaming one would
      * silently reset that setting for every user, so they must never change.
@@ -55,5 +69,7 @@ class DataStoreSettingsRepository @Inject constructor(
     private object Keys {
         val ROTATION_ENABLED = booleanPreferencesKey("rotation_enabled")
         val LEGACY_IMPORT_ASKED = booleanPreferencesKey("legacy_import_asked")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
+        val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
     }
 }

@@ -1,6 +1,8 @@
 package com.foxnks.dockshift.domain.settings
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -19,5 +21,12 @@ class AppSettingsTest {
     fun `first-run import question has not been asked by default`() {
         // A fresh install must ask about data from the first version
         assertFalse(AppSettings().legacyImportAsked)
+    }
+
+    @Test
+    fun `appearance follows the phone by default`() {
+        // Light/dark like the system, colors from the wallpaper where supported
+        assertEquals(ThemeMode.SYSTEM, AppSettings().themeMode)
+        assertTrue(AppSettings().dynamicColor)
     }
 }

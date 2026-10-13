@@ -47,6 +47,17 @@ emulator or device with `./gradlew connectedAndroidTest`.
 - Every database version's schema is committed under `app/schemas/`; schema changes
   ship with migrations, never with destructive resets.
 
+### Design system
+
+- Material 3. App colors come from the wallpaper on Android 12+ (Dynamic Color), or
+  from Dockshift's own harbour-blue schemes (seed `#1B6A80`) on Android 10–11 or when
+  turned off in Settings. Light/dark follows the phone or a choice in Settings.
+- Every shift type has a fixed color (`ShiftPalette`), the same in the calendar, lists,
+  charts and widget, never taken from the wallpaper. The palette is designed with equal
+  lightness per role, and a unit test checks the text contrast of every color (WCAG AA).
+- The phone's system font, which covers Greek fully and follows the user's font size.
+- Original vector launcher icon, with a monochrome layer for themed icons (Android 13+).
+
 ### Moving from the first version
 
 Users of v1 bring their data over once, from its backup file (`DataShift_foxnks/dataShift_foxnks.csv`):

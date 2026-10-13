@@ -43,4 +43,31 @@
     <!-- Σημειώσεις που προστίθενται στα σχόλια των βαρδιών που εισάγονται -->
     <string name="legacy_note_container_moves">Κινήσεις: %1$d</string>
     <string name="legacy_note_machine_non_working_day">Μηχάνημα: %1$s</string>
+
+    <!-- Τύποι βάρδιας -->
+    <string name="shift_type_morning">Πρωί</string>
+    <string name="shift_type_afternoon">Απόγευμα</string>
+    <string name="shift_type_night">Νύχτα</string>
+    <string name="shift_type_day_off">Ρεπό</string>
+    <string name="shift_type_annual_leave">Άδεια</string>
+    <string name="shift_type_sick_leave">Αναρρωτική</string>
+    <string name="shift_type_public_holiday">Αργία</string>
+    <string name="shift_type_training">Εκπαίδευση</string>
+    <string name="shift_type_strike">Απεργία</string>
+    <string name="shift_type_parental_leave">Γονική άδεια</string>
+    <string name="home_shift_colors">Χρώματα βαρδιών</string>
+
+    <!-- Οθόνη ρυθμίσεων -->
+    <string name="settings_title">Ρυθμίσεις</string>
+    <string name="settings_open">Άνοιγμα ρυθμίσεων</string>
+    <string name="navigate_back">Πίσω</string>
+    <string name="settings_section_appearance">Εμφάνιση</string>
+    <string name="settings_section_schedule">Πρόγραμμα</string>
+    <string name="settings_section_data">Δεδομένα</string>
+    <string name="setting_theme_title">Θέμα</string>
+    <string name="setting_theme_system">Όπως το κινητό</string>
+    <string name="setting_theme_light">Ανοιχτό</string>
+    <string name="setting_theme_dark">Σκούρο</string>
+    <string name="setting_dynamic_color_title">Χρώματα από την ταπετσαρία</string>
+    <string name="setting_dynamic_color_summary">Τα χρώματα της εφαρμογής ακολουθούν την ταπετσαρία. Τα χρώματα των βαρδιών μένουν ίδια.</string>
 </resources>

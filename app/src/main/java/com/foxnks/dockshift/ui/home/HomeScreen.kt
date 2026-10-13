@@ -2,161 +2,111 @@ package com.foxnks.dockshift.ui.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.foxnks.dockshift.R
-import com.foxnks.dockshift.ui.legacy.LegacyImportSection
+import com.foxnks.dockshift.domain.shift.ShiftType
+import com.foxnks.dockshift.ui.legacy.LegacyFirstRunPrompt
+import com.foxnks.dockshift.ui.shift.ShiftChip
 import com.foxnks.dockshift.ui.theme.DockshiftTheme
 
 /**
- * Entry point of the home screen: connects the [HomeViewModel] to [HomeScreen].
- *
- * This is the only composable that knows the ViewModel exists; everything below it
- * receives plain values and callbacks, so it can be previewed and tested in isolation.
- *
- * @param modifier optional modifier from the caller.
- * @param viewModel provided by Hilt; tests or previews never need to pass it.
- */
-@Composable
-fun HomeRoute(
-    modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = hiltViewModel(),
-) {
-    // Stops collecting while the app is in the background, saving work and battery
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeScreen(
-        uiState = uiState,
-        onRotationToggled = viewModel::onRotationToggled,
-        modifier = modifier,
-        // Temporary home of the v1 import, until the Settings screen exists
-        footer = { LegacyImportSection() },
-    )
-}
-
-/**
  * Temporary home screen of the v2 skeleton: app name, an "under construction"
- * message and the rotating schedule switch, which proves the full path
- * screen → ViewModel → repository → DataStore and back. The switch moves to the
- * settings screen when the real screens arrive.
+ * message and the shift colors, so the design system can be checked on a real
+ * phone in light and dark mode. Replaced by the "today" screen in issue #6.
  *
- * @param uiState what to show.
- * @param onRotationToggled called with the new value when the user flips the switch.
+ * It also hosts the first-run v1 import question.
+ *
+ * @param onOpenSettings called when the settings icon is tapped.
  * @param modifier optional modifier from the caller.
- * @param footer extra content below the settings (a slot, so this screen stays free
- * of ViewModels and its previews need no Hilt).
+ * @param firstRunPrompt the first-run import prompt (a slot, so previews need no Hilt).
  */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
-    uiState: HomeUiState,
-    onRotationToggled: (Boolean) -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    footer: @Composable () -> Unit = {},
+    firstRunPrompt: @Composable () -> Unit = { LegacyFirstRunPrompt() },
 ) {
-    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
-        // innerPadding keeps the content clear of the system bars (edge-to-edge)
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_open))
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
+        // innerPadding keeps the content clear of the bars (edge-to-edge)
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.Center,
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.headlineMedium,
-            )
             Text(
                 text = stringResource(R.string.home_placeholder),
                 style = MaterialTheme.typography.bodyLarge,
             )
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Exhaustive `when`: a new state added to HomeUiState will not compile until handled here
-            when (uiState) {
-                HomeUiState.Loading -> CircularProgressIndicator()
-                is HomeUiState.Ready -> RotationSettingRow(
-                    checked = uiState.rotationEnabled,
-                    onCheckedChange = onRotationToggled,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            footer()
-        }
-    }
-}
-
-/**
- * A settings row with a title, a short explanation and a switch.
- * The whole row is the touch target, not only the small switch.
- *
- * @param checked current switch position.
- * @param onCheckedChange called with the new value on tap.
- */
-@Composable
-private fun RotationSettingRow(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            // Makes the row tappable and announces it as a switch to TalkBack
-            .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
+            Spacer(Modifier.height(32.dp))
             Text(
-                text = stringResource(R.string.setting_rotation_title),
+                text = stringResource(R.string.home_shift_colors),
                 style = MaterialTheme.typography.titleMedium,
             )
-            Text(
-                text = stringResource(R.string.setting_rotation_summary),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Spacer(Modifier.height(12.dp))
+            // Every shift type in its color; wraps onto as many lines as the width needs
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                ShiftType.entries.forEach { ShiftChip(it) }
+            }
         }
-        // onCheckedChange = null: the row already handles taps, so the switch must not do it twice
-        Switch(checked = checked, onCheckedChange = null)
+    }
+
+    firstRunPrompt()
+}
+
+/** Android Studio preview of [HomeScreen] in light mode; not part of the running app. */
+@Preview(showBackground = true)
+@Composable
+private fun HomeScreenLightPreview() {
+    DockshiftTheme(darkTheme = false, dynamicColor = false) {
+        HomeScreen(onOpenSettings = {}, firstRunPrompt = {})
     }
 }
 
-/** Android Studio preview of [HomeScreen] with loaded settings; not part of the running app. */
-@Preview(showBackground = true)
+/** Android Studio preview of [HomeScreen] in dark mode. */
+@Preview(showBackground = true, backgroundColor = 0xFF101416)
 @Composable
-private fun HomeScreenReadyPreview() {
-    DockshiftTheme {
-        HomeScreen(uiState = HomeUiState.Ready(rotationEnabled = false), onRotationToggled = {})
-    }
-}
-
-/** Android Studio preview of [HomeScreen] while settings are loading. */
-@Preview(showBackground = true)
-@Composable
-private fun HomeScreenLoadingPreview() {
-    DockshiftTheme {
-        HomeScreen(uiState = HomeUiState.Loading, onRotationToggled = {})
+private fun HomeScreenDarkPreview() {
+    DockshiftTheme(darkTheme = true, dynamicColor = false) {
+        HomeScreen(onOpenSettings = {}, firstRunPrompt = {})
     }
 }
