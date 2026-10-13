@@ -48,8 +48,13 @@ class RoomBackupRepository @Inject constructor(
             // id 0: the database gives new identities
             leaves = contents.leaves.map { it.copy(id = 0).toEntity() },
         )
+        // A backup older than the profile has no id: keep this phone's, never lose one
+        val currentId = settings.settings.first().worker.id
+        val restored = contents.settings.let { saved ->
+            if (saved.worker.id.isBlank()) saved.copy(worker = saved.worker.copy(id = currentId)) else saved
+        }
         // The restored data is exactly that backup: it counts as the last backup
-        settings.restore(contents.settings.copy(lastBackup = contents.createdAt.toLocalDate()))
+        settings.restore(restored.copy(lastBackup = contents.createdAt.toLocalDate()))
     }
 
     /** "2.0.0-alpha01", or empty if the system cannot tell. */

@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -84,7 +85,8 @@ sealed interface EditShiftUiState {
  *
  * @param shifts stored shifts.
  * @param machines the machine list, for the machine picker.
- * @param settings the work schedule and rotation, for the offered and suggested types.
+ * @param settings the work schedule and rotation, for the offered and suggested types,
+ * and the user's machine categories, for the picker.
  * @param clock the current time, for the suggestion by time of day.
  */
 @HiltViewModel
@@ -103,6 +105,14 @@ class EditShiftViewModel @Inject constructor(
     /** Active machines for the picker, sorted by category and number. */
     val activeMachines: StateFlow<List<Machine>> = machines.observeActive()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), emptyList())
+
+    /**
+     * The categories the machine picker offers first: the user's own (see
+     * `WorkerProfile.machineCategories`), every category without a profile.
+     */
+    val machineCategories: StateFlow<List<MachineCategory>> = settings.settings
+        .map { it.worker.machineCategories }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), MachineCategory.entries)
 
     private var started = false
 

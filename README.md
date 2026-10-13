@@ -73,7 +73,7 @@ emulator or device with `./gradlew connectedAndroidTest`.
   suggested and the screen says so.
 - **Public holidays**: the 13 official holidays of Greece, computed for any year (Orthodox
   Easter with Meeus' algorithm), shown in the calendar, on Today and in the lists.
-- **Menu**: the last tab of the bottom bar. The app's sections on top (Machines,
+- **Menu**: the last tab of the bottom bar. The user's profile at the very top, then the app's sections (Machines,
   Statistics, Leave, Data & backup; vessels join when built), Settings below them.
 - **Statistics**: per year or month: working shifts and hours, overtime, shifts on
   holidays, days per type, month-by-month bars, and the machines driven.
@@ -95,6 +95,12 @@ emulator or device with `./gradlew connectedAndroidTest`.
   transaction. A card on Today reminds every 15 days (can be turned off). The v1 import
   and "delete all" (two confirmations) live here too. The file states its format and
   version, so later versions keep reading older backups.
+- **Worker**: the user's profile: name, email (checked with a regex in `WorkerForm`),
+  role (operator, driver or both) and the machine categories worked. The machine
+  picker of a shift offers only those categories, with "All categories" for the odd
+  shift. Nothing is required yet. A permanent random id (UUID) is made on the first
+  start for the future online account, and backups carry it to a new phone. Asked
+  once on the first start, then from the menu.
 - **Settings**: appearance, work schedule and place in the rotation, public holidays.
 - **Splash screen**: the launcher icon on the harbour blue while the app starts, until the
   settings are read (no flash in the wrong theme), then a short fade.

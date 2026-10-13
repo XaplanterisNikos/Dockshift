@@ -7,6 +7,7 @@ import com.foxnks.dockshift.domain.settings.CalendarView
 import com.foxnks.dockshift.domain.settings.SettingsRepository
 import com.foxnks.dockshift.domain.settings.ThemeMode
 import com.foxnks.dockshift.domain.settings.WorkSchedule
+import com.foxnks.dockshift.domain.worker.WorkerProfile
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,6 +74,19 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setBackupReminder(enabled: Boolean) {
         state.update { it.copy(backupReminder = enabled) }
+    }
+
+    override suspend fun setWorker(worker: WorkerProfile) {
+        // The stored id never changes, as in the real store
+        state.update { it.copy(worker = worker.copy(id = it.worker.id)) }
+    }
+
+    override suspend fun ensureWorkerId(id: String) {
+        state.update { if (it.worker.id.isBlank()) it.copy(worker = it.worker.copy(id = id)) else it }
+    }
+
+    override suspend fun setWorkerPromptAsked() {
+        state.update { it.copy(workerPromptAsked = true) }
     }
 
     override suspend fun restore(settings: AppSettings) {

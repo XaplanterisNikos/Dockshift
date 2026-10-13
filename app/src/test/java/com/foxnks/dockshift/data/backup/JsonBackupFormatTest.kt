@@ -13,6 +13,8 @@ import com.foxnks.dockshift.domain.settings.WorkSchedule
 import com.foxnks.dockshift.domain.shift.MachineAssignment
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
+import com.foxnks.dockshift.domain.worker.WorkerProfile
+import com.foxnks.dockshift.domain.worker.WorkerRole
 import java.time.LocalDate
 import java.time.LocalDateTime
 import org.junit.Assert.assertEquals
@@ -57,6 +59,14 @@ class JsonBackupFormatTest {
             leaveEntitlements = mapOf(2026 to 24, 2027 to 25),
             portClosedHolidays = setOf(GreekHoliday.entries.first()),
             backupReminder = false,
+            worker = WorkerProfile(
+                id = "3f2b8c1e-0d4a-4b6e-9a1f-2c3d4e5f6a7b",
+                name = "Νίκος",
+                email = "foxnks@gmail.com",
+                role = WorkerRole.OPERATOR,
+                categories = setOf(MachineCategory.RTG, MachineCategory.QC),
+            ),
+            workerPromptAsked = true,
         ),
     )
 
@@ -79,17 +89,24 @@ class JsonBackupFormatTest {
     }
 
     @Test
+    fun `the restored phone is not asked for the profile`() {
+        val fresh = contents.copy(settings = AppSettings())
+        assertTrue(format.decode(format.encode(fresh)).settings.workerPromptAsked)
+    }
+
+    @Test
     fun `missing settings get the defaults`() {
         val text = """{"format":"dockshift-backup","version":1,"createdAt":"2026-10-14T10:00"}"""
         val decoded = format.decode(text)
         assertTrue(decoded.shifts.isEmpty())
         assertEquals(AppSettings().themeMode, decoded.settings.themeMode)
         assertTrue(decoded.settings.backupReminder)
+        assertEquals(WorkerProfile(), decoded.settings.worker)
     }
 
     @Test
     fun `unknown fields of a newer app are skipped`() {
-        val text = """{"format":"dockshift-backup","version":1,"createdAt":"2026-10-14T10:00","worker":{"name":"Νίκος"}}"""
+        val text = """{"format":"dockshift-backup","version":1,"createdAt":"2026-10-14T10:00","future":{"name":"Νίκος"}}"""
         assertTrue(format.decode(text).machines.isEmpty())
     }
 

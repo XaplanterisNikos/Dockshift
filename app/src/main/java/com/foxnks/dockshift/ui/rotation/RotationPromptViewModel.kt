@@ -20,8 +20,9 @@ import kotlinx.coroutines.launch
  * The one-time question "your shifts match the rotating schedule: show predictions?".
  *
  * Asked only when it can help: the schedule is the rotating one, no place is set, the
- * first-run import question is already answered (one dialog at a time), the question
- * was never answered, and the recent shifts fit exactly one place in the rotation.
+ * first-run import and profile questions are already answered (one dialog at a time),
+ * the question was never answered, and the recent shifts fit exactly one place in the
+ * rotation.
  *
  * @param settings the schedule, the place and whether the question was answered.
  * @param shifts recent shifts, to find the place.
@@ -43,6 +44,7 @@ class RotationPromptViewModel @Inject constructor(
         shifts.observeShifts(today.minusDays(RotationSchedule.PERIOD_DAYS.toLong()), today),
     ) { saved, recent ->
         val ask = saved.legacyImportAsked &&
+            saved.workerPromptAsked &&
             !saved.rotationPromptAnswered &&
             saved.workSchedule.predicts &&
             saved.rotationAnchor == null

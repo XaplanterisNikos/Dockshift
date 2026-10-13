@@ -42,7 +42,7 @@ class RotationPromptViewModelTest {
     )
 
     /** Settings after the first-run import question, as on any phone past the first start. */
-    private val afterFirstRun = AppSettings(legacyImportAsked = true)
+    private val afterFirstRun = AppSettings(legacyImportAsked = true, workerPromptAsked = true)
 
     /** Collects the suggestion like the screen does, so WhileSubscribed runs. */
     private fun TestScope.observe(viewModel: RotationPromptViewModel) {
@@ -83,9 +83,11 @@ class RotationPromptViewModelTest {
     }
 
     @Test
-    fun `not asked before the first-run question, with a place, or with a limited schedule`() = runTest {
+    fun `not asked before the first-run questions, with a place, or with a limited schedule`() = runTest {
         listOf(
             AppSettings(),
+            // The profile question comes first
+            AppSettings(legacyImportAsked = true),
             afterFirstRun.copy(rotationAnchor = sample),
             afterFirstRun.copy(workSchedule = WorkSchedule.MORNING_ONLY),
             afterFirstRun.copy(rotationPromptAnswered = true),

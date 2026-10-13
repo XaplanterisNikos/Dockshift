@@ -344,4 +344,25 @@
         <item quantity="other">%d days since your last backup</item>
     </plurals>
     <string name="today_backup_button">Backup</string>
+
+    <!-- Worker profile (#28) -->
+    <string name="worker_title">Worker</string>
+    <string name="menu_worker_summary">Your name, email and the machines you work</string>
+    <string name="worker_intro">Nothing here is required. Your role and machines decide which categories the machine picker shows.</string>
+    <string name="worker_name">Name</string>
+    <string name="worker_name_too_long">Up to %1$d characters</string>
+    <string name="worker_email">Email</string>
+    <string name="worker_email_invalid">Not a valid email, e.g. name@gmail.com</string>
+    <string name="worker_role">Role</string>
+    <string name="worker_role_operator">Operator</string>
+    <string name="worker_role_driver">Driver</string>
+    <string name="worker_role_both">Both</string>
+    <string name="worker_categories">Machines I work</string>
+    <string name="worker_categories_hint">Untick the ones you never work. At least one.</string>
+    <string name="worker_id">ID: %1$s</string>
+    <string name="worker_prompt_title">Who are you?</string>
+    <string name="worker_prompt_text">Enter your name and the machines you work, so the app only shows what concerns you. You can change it any time from the menu.</string>
+    <string name="worker_prompt_yes">Fill in</string>
+    <string name="worker_prompt_later">Later</string>
+    <string name="picker_all_categories">All categories</string>
 </resources>

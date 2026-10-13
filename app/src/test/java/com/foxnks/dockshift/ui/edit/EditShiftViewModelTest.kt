@@ -13,6 +13,11 @@ import com.foxnks.dockshift.testing.FakeSettingsRepository
 import com.foxnks.dockshift.testing.InMemoryMachineRepository
 import com.foxnks.dockshift.testing.InMemoryShiftRepository
 import com.foxnks.dockshift.testing.MainDispatcherRule
+import com.foxnks.dockshift.domain.worker.WorkerProfile
+import com.foxnks.dockshift.domain.worker.WorkerRole
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -257,5 +262,17 @@ class EditShiftViewModelTest {
         viewModel.start(day)
 
         assertTrue(ShiftType.NIGHT in viewModel.editing.offeredTypes)
+    }
+
+    @Test
+    fun `the picker offers the user's categories, all without a profile`() = runTest {
+        val settings = FakeSettingsRepository()
+        val viewModel = EditShiftViewModel(InMemoryShiftRepository(), machines, settings, clock)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.machineCategories.collect() }
+        assertEquals(MachineCategory.entries, viewModel.machineCategories.value)
+
+        settings.setWorker(WorkerProfile(role = WorkerRole.DRIVER, categories = setOf(MachineCategory.TRUCKS)))
+
+        assertEquals(listOf(MachineCategory.TRUCKS), viewModel.machineCategories.value)
     }
 }
