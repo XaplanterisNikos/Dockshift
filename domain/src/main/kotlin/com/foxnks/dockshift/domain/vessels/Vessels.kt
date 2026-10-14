@@ -25,7 +25,7 @@ data class WorkingVessel(
  * A vessel expected at the terminal.
  *
  * @property name the vessel's name.
- * @property operator the shipping line, e.g. "COSCO"; empty when not given.
+ * @property operator the shipping line, e.g. "Maersk"; empty when not given.
  * @property callSign its radio call sign; empty when not given.
  * @property inVoyage the inbound voyage number; empty when not given.
  * @property outVoyage the outbound voyage number; empty when not given.
