@@ -392,4 +392,48 @@
     <string name="vessels_problem_site">Η σελίδα των πλοίων δεν απαντά αυτή τη στιγμή. Δοκίμασε αργότερα.</string>
     <string name="vessels_open_settings">Άνοιγμα ρυθμίσεων εφαρμογής</string>
     <string name="vessels_message_format">Η σελίδα των πλοίων άλλαξε και δεν διαβάστηκε. Χρειάζεται ενημέρωση της εφαρμογής.</string>
+
+    <!-- Βλάβες μηχανημάτων -->
+    <string name="faults_title">Βλάβες · %1$s</string>
+    <string name="faults_open">Ανοιχτές βλάβες</string>
+    <string name="faults_none_open">Καμία ανοιχτή βλάβη</string>
+    <string name="faults_report">Δήλωση βλάβης</string>
+    <string name="faults_report_hint">Πάτα τι χάλασε. Μένει ανοιχτή μέχρι να τσεκαριστεί ότι διορθώθηκε.</string>
+    <string name="faults_all_reported">Όλες οι βλάβες αυτού του μηχανήματος είναι ήδη ανοιχτές</string>
+    <string name="faults_history">Ιστορικό</string>
+    <string name="faults_history_empty">Καμία αποκατεστημένη βλάβη ακόμα</string>
+    <string name="faults_since">Από %1$s</string>
+    <string name="faults_reported_fixed">%1$s → %2$s</string>
+    <string name="faults_fixed">Διορθώθηκε</string>
+    <string name="faults_delete">Λάθος καταχώρηση</string>
+    <string name="faults_delete_title">Αφαίρεση «%1$s»;</string>
+    <string name="faults_delete_text">Μόνο για βλάβη που πατήθηκε κατά λάθος. Μια πραγματική βλάβη τσεκάρεται ως διορθωμένη, για να μείνει στο ιστορικό.</string>
+    <string name="faults_delete_button">Αφαίρεση</string>
+    <string name="faults_reported_message">Δηλώθηκε: %1$s</string>
+    <string name="faults_machine_missing">Αυτό το μηχάνημα δεν υπάρχει πια</string>
+    <string name="faults_card_none">Χωρίς βλάβες</string>
+    <string name="faults_sheet_title">Βλάβες</string>
+    <plurals name="faults_sheet_open">
+        <item quantity="one">%d ανοιχτή βλάβη</item>
+        <item quantity="other">%d ανοιχτές βλάβες</item>
+    </plurals>
+    <string name="fault_spreader">Spreader</string>
+    <string name="fault_twistlocks">Twistlocks</string>
+    <string name="fault_flippers">Flippers</string>
+    <string name="fault_hoist">Ανύψωση</string>
+    <string name="fault_trolley">Φορείο</string>
+    <string name="fault_boom">Μπούμα</string>
+    <string name="fault_gantry">Πορεία</string>
+    <string name="fault_engine_left">Κινητήρας αριστερός</string>
+    <string name="fault_engine_right">Κινητήρας δεξιός</string>
+    <string name="fault_tire">Λάστιχο</string>
+    <string name="fault_air_leak">Χάνει αέρα</string>
+    <string name="fault_crashed">Τρακαρισμένο</string>
+    <string name="fault_lights">Φώτα</string>
+    <string name="fault_glass">Τζάμια</string>
+    <string name="fault_wipers">Υαλοκαθαριστήρες</string>
+    <string name="fault_heating">Θέρμανση</string>
+    <string name="fault_controls">Χειριστήρια</string>
+    <string name="fault_radio">Ασύρματος</string>
+    <string name="fault_terminal">Τερματικό</string>
 </resources>

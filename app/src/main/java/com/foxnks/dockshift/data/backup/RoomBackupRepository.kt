@@ -5,6 +5,8 @@ import com.foxnks.dockshift.data.db.dao.BackupDao
 import com.foxnks.dockshift.data.db.toAssignmentEntities
 import com.foxnks.dockshift.data.db.toDomain
 import com.foxnks.dockshift.data.db.toEntity
+import com.foxnks.dockshift.data.faults.toDomain
+import com.foxnks.dockshift.data.faults.toEntity
 import com.foxnks.dockshift.data.leave.toDomain
 import com.foxnks.dockshift.data.leave.toEntity
 import com.foxnks.dockshift.domain.backup.BackupContents
@@ -38,6 +40,7 @@ class RoomBackupRepository @Inject constructor(
         machines = dao.allMachines().map { it.toDomain() },
         leaves = dao.allLeaves().map { it.toDomain() },
         settings = settings.settings.first(),
+        faults = dao.allFaults().mapNotNull { it.toDomain() },
     )
 
     override suspend fun restore(contents: BackupContents) {
@@ -47,6 +50,7 @@ class RoomBackupRepository @Inject constructor(
             assignments = contents.shifts.flatMap { it.toAssignmentEntities() },
             // id 0: the database gives new identities
             leaves = contents.leaves.map { it.copy(id = 0).toEntity() },
+            faults = contents.faults.map { it.copy(id = 0).toEntity() },
         )
         // A backup older than the profile has no id: keep this phone's, never lose one
         val currentId = settings.settings.first().worker.id

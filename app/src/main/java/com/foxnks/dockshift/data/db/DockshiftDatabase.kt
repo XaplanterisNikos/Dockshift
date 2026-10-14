@@ -3,11 +3,13 @@ package com.foxnks.dockshift.data.db
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import com.foxnks.dockshift.data.db.dao.BackupDao
+import com.foxnks.dockshift.data.db.dao.FaultDao
 import com.foxnks.dockshift.data.db.dao.ImportDao
 import com.foxnks.dockshift.data.db.dao.LeaveDao
 import com.foxnks.dockshift.data.db.dao.MachineDao
 import com.foxnks.dockshift.data.db.dao.ShiftDao
 import com.foxnks.dockshift.data.db.entity.LeaveEntity
+import com.foxnks.dockshift.data.db.entity.MachineFaultEntity
 import com.foxnks.dockshift.data.db.entity.MachineEntity
 import com.foxnks.dockshift.data.db.entity.ShiftEntity
 import com.foxnks.dockshift.data.db.entity.ShiftMachineEntity
@@ -23,10 +25,11 @@ import com.foxnks.dockshift.data.db.entity.ShiftMachineEntity
  * 1. machines, shifts, shift_machines.
  * 2. machines.location ([DatabaseMigrations.MIGRATION_1_2]).
  * 3. leaves ([DatabaseMigrations.MIGRATION_2_3]).
+ * 4. machine_faults ([DatabaseMigrations.MIGRATION_3_4]).
  */
 @Database(
-    entities = [MachineEntity::class, ShiftEntity::class, ShiftMachineEntity::class, LeaveEntity::class],
-    version = 3,
+    entities = [MachineEntity::class, ShiftEntity::class, ShiftMachineEntity::class, LeaveEntity::class, MachineFaultEntity::class],
+    version = 4,
     exportSchema = true,
 )
 abstract class DockshiftDatabase : RoomDatabase() {
@@ -39,6 +42,9 @@ abstract class DockshiftDatabase : RoomDatabase() {
 
     /** Planned leaves. */
     abstract fun leaveDao(): LeaveDao
+
+    /** Machine faults. */
+    abstract fun faultDao(): FaultDao
 
     /** Bulk imports (v1 migration, backups). */
     abstract fun importDao(): ImportDao

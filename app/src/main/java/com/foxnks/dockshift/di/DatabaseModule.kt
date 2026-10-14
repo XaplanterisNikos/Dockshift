@@ -7,6 +7,7 @@ import com.foxnks.dockshift.data.db.DatabaseMigrations
 import com.foxnks.dockshift.data.db.DockshiftDatabase
 import com.foxnks.dockshift.data.db.MachineSeedCallback
 import com.foxnks.dockshift.data.db.dao.BackupDao
+import com.foxnks.dockshift.data.db.dao.FaultDao
 import com.foxnks.dockshift.data.db.dao.ImportDao
 import com.foxnks.dockshift.data.db.dao.LeaveDao
 import com.foxnks.dockshift.data.db.dao.MachineDao
@@ -65,4 +66,8 @@ object DatabaseModule {
     /** Backup data access, from the single database. */
     @Provides
     fun provideBackupDao(database: DockshiftDatabase): BackupDao = database.backupDao()
+
+    /** Fault data access, from the single database. */
+    @Provides
+    fun provideFaultDao(database: DockshiftDatabase): FaultDao = database.faultDao()
 }

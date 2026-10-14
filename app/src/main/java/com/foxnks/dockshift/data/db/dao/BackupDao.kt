@@ -6,6 +6,7 @@ import androidx.room3.Query
 import androidx.room3.Transaction
 import com.foxnks.dockshift.data.db.entity.LeaveEntity
 import com.foxnks.dockshift.data.db.entity.MachineEntity
+import com.foxnks.dockshift.data.db.entity.MachineFaultEntity
 import com.foxnks.dockshift.data.db.entity.ShiftEntity
 import com.foxnks.dockshift.data.db.entity.ShiftMachineEntity
 import com.foxnks.dockshift.data.db.entity.ShiftWithMachines
@@ -29,18 +30,23 @@ abstract class BackupDao {
     @Query("SELECT * FROM shifts ORDER BY date")
     abstract suspend fun allShifts(): List<ShiftWithMachines>
 
+    /** Every machine fault. */
+    @Query("SELECT * FROM machine_faults ORDER BY id")
+    abstract suspend fun allFaults(): List<MachineFaultEntity>
+
     /** Every leave, by first day. */
     @Query("SELECT * FROM leaves ORDER BY startDate")
     abstract suspend fun allLeaves(): List<LeaveEntity>
 
     /**
-     * Replaces every shift, machine and leave, all or nothing: if any insert fails,
+     * Replaces every shift, machine, fault and leave, all or nothing: if any insert fails,
      * the transaction is rolled back and the old data stays.
      *
      * @param machines machine rows, with the identities the assignments refer to.
      * @param shifts shift rows.
      * @param assignments the machine rows of the shifts.
      * @param leaves leave rows (id 0: new identities).
+     * @param faults fault rows (id 0: new identities), on the machines above.
      */
     @Transaction
     open suspend fun replaceAll(
@@ -48,8 +54,10 @@ abstract class BackupDao {
         shifts: List<ShiftEntity>,
         assignments: List<ShiftMachineEntity>,
         leaves: List<LeaveEntity>,
+        faults: List<MachineFaultEntity>,
     ) {
         // Children first, so no foreign key is ever broken on the way
+        deleteAllFaults()
         deleteAllAssignments()
         deleteAllShifts()
         deleteAllMachines()
@@ -58,9 +66,13 @@ abstract class BackupDao {
         insertShifts(shifts)
         insertAssignments(assignments)
         insertLeaves(leaves)
+        insertFaults(faults)
     }
 
     // Building blocks of replaceAll; not meant to be called on their own.
+
+    @Query("DELETE FROM machine_faults")
+    abstract suspend fun deleteAllFaults()
 
     @Query("DELETE FROM shift_machines")
     abstract suspend fun deleteAllAssignments()
@@ -85,4 +97,7 @@ abstract class BackupDao {
 
     @Insert
     abstract suspend fun insertLeaves(leaves: List<LeaveEntity>)
+
+    @Insert
+    abstract suspend fun insertFaults(faults: List<MachineFaultEntity>)
 }

@@ -11,6 +11,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.foxnks.dockshift.ui.backup.BackupRoute
 import com.foxnks.dockshift.ui.calendar.CalendarRoute
 import com.foxnks.dockshift.ui.edit.EditShiftRoute
+import com.foxnks.dockshift.ui.faults.FaultsRoute
 import com.foxnks.dockshift.ui.leave.EditLeaveRoute
 import com.foxnks.dockshift.ui.leave.LeavesRoute
 import com.foxnks.dockshift.ui.legacy.LegacyFirstRunPrompt
@@ -31,7 +32,8 @@ import java.time.LocalDate
  *
  * - "Today" is always at the bottom of the stack, so back from any screen ends there.
  * - The bottom bar switches between "Today", "Shifts", "Calendar", "Vessels" and "Menu".
- * - Edit (shift or leave) is pushed on top of any screen; Machines, Statistics, Leave,
+ * - Edit (shift or leave) and a machine's faults are pushed on top of any screen;
+ *   Machines, Statistics, Leave,
  *   Data & backup, Worker and Settings on top of the menu (Data & backup also from Today's
  *   reminder, Worker also from the first-run question).
  *   They are popped when closed, so back from them returns to where they were opened.
@@ -59,6 +61,7 @@ fun AppNavigation() {
                     onOpenLeave = { backStack.openOnce(EditLeaveKey(it)) },
                     onOpenBackup = { backStack.openOnce(BackupKey) },
                     onOpenVessels = { backStack.selectTopLevel(TopLevel.VESSELS) },
+                    onOpenFaults = { backStack.openOnce(FaultsKey(it)) },
                     onSelectTopLevel = { backStack.selectTopLevel(it) },
                 )
             }
@@ -89,7 +92,13 @@ fun AppNavigation() {
                 )
             }
             entry<MachinesKey> {
-                MachinesRoute(onBack = { backStack.removeLastOrNull() })
+                MachinesRoute(
+                    onBack = { backStack.removeLastOrNull() },
+                    onOpenFaults = { backStack.openOnce(FaultsKey(it)) },
+                )
+            }
+            entry<FaultsKey> { key ->
+                FaultsRoute(machineId = key.machineId, onBack = { backStack.removeLastOrNull() })
             }
             entry<StatisticsKey> {
                 StatisticsRoute(onBack = { backStack.removeLastOrNull() })

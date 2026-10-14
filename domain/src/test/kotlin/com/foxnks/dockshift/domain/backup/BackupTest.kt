@@ -1,5 +1,7 @@
 package com.foxnks.dockshift.domain.backup
 
+import com.foxnks.dockshift.domain.faults.FaultType
+import com.foxnks.dockshift.domain.faults.MachineFault
 import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.machine.Machine
 import com.foxnks.dockshift.domain.machine.MachineCategory
@@ -59,6 +61,15 @@ class BackupTest {
     @Test
     fun `machines sharing an identity are refused`() {
         assertNotNull(BackupCheck.problemOf(contents(machines = listOf(rtg, qc.copy(id = 1)))))
+    }
+
+    @Test
+    fun `a fault on a machine missing from the backup is refused`() {
+        val fault = MachineFault(
+            0, 99, FaultType.LIGHTS, LocalDate.of(2026, 10, 1),
+        )
+        assertNotNull(BackupCheck.problemOf(contents().copy(faults = listOf(fault))))
+        assertNull(BackupCheck.problemOf(contents().copy(faults = listOf(fault.copy(machineId = rtg.id)))))
     }
 
     @Test
