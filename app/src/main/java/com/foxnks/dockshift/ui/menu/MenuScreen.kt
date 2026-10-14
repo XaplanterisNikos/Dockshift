@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -73,12 +74,18 @@ private val settingsEntry =
  *
  * @param onOpen open the screen of a menu row.
  * @param onSelectTopLevel switch screen from the bottom bar.
+ * @param onOpenAbout the ⓘ in the top bar: about the app and its author.
  * @param viewModel provided by Hilt.
  */
 @Composable
-fun MenuRoute(onOpen: (NavKey) -> Unit, onSelectTopLevel: (TopLevel) -> Unit, viewModel: MenuViewModel = hiltViewModel()) {
+fun MenuRoute(
+    onOpen: (NavKey) -> Unit,
+    onSelectTopLevel: (TopLevel) -> Unit,
+    onOpenAbout: () -> Unit = {},
+    viewModel: MenuViewModel = hiltViewModel(),
+) {
     val worker by viewModel.worker.collectAsStateWithLifecycle()
-    MenuScreen(onOpen = onOpen, onSelectTopLevel = onSelectTopLevel, worker = worker)
+    MenuScreen(onOpen = onOpen, onSelectTopLevel = onSelectTopLevel, worker = worker, onOpenAbout = onOpenAbout)
 }
 
 /**
@@ -88,12 +95,27 @@ fun MenuRoute(onOpen: (NavKey) -> Unit, onSelectTopLevel: (TopLevel) -> Unit, vi
  * @param onOpen open the screen of a menu row.
  * @param onSelectTopLevel switch screen from the bottom bar.
  * @param worker the user's profile, for the top row.
+ * @param onOpenAbout the ⓘ in the top bar: about the app and its author.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MenuScreen(onOpen: (NavKey) -> Unit, onSelectTopLevel: (TopLevel) -> Unit, worker: WorkerProfile = WorkerProfile()) {
+fun MenuScreen(
+    onOpen: (NavKey) -> Unit,
+    onSelectTopLevel: (TopLevel) -> Unit,
+    worker: WorkerProfile = WorkerProfile(),
+    onOpenAbout: () -> Unit = {},
+) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.nav_menu)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.nav_menu)) },
+                actions = {
+                    IconButton(onClick = onOpenAbout) {
+                        Icon(painterResource(R.drawable.ic_info), stringResource(R.string.about_title))
+                    }
+                },
+            )
+        },
         bottomBar = { AppBottomBar(selected = TopLevel.MENU, onSelect = onSelectTopLevel) },
     ) { innerPadding ->
         Column(

@@ -8,6 +8,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.foxnks.dockshift.ui.about.AboutScreen
+import com.foxnks.dockshift.ui.about.OtherAppScreen
 import com.foxnks.dockshift.ui.backup.BackupRoute
 import com.foxnks.dockshift.ui.calendar.CalendarRoute
 import com.foxnks.dockshift.ui.edit.EditShiftRoute
@@ -62,6 +64,7 @@ fun AppNavigation() {
                     onOpenBackup = { backStack.openOnce(BackupKey) },
                     onOpenVessels = { backStack.selectTopLevel(TopLevel.VESSELS) },
                     onOpenFaults = { backStack.openOnce(FaultsKey(it)) },
+                    onOpenOtherApp = { backStack.openOnce(OtherAppKey) },
                     onSelectTopLevel = { backStack.selectTopLevel(it) },
                 )
             }
@@ -88,6 +91,7 @@ fun AppNavigation() {
             entry<MenuKey> {
                 MenuRoute(
                     onOpen = { backStack.openOnce(it) },
+                    onOpenAbout = { backStack.openOnce(AboutKey) },
                     onSelectTopLevel = { backStack.selectTopLevel(it) },
                 )
             }
@@ -117,6 +121,12 @@ fun AppNavigation() {
             }
             entry<WorkerKey> {
                 WorkerRoute(onDone = { backStack.removeLastOrNull() })
+            }
+            entry<AboutKey> {
+                AboutScreen(onBack = { backStack.removeLastOrNull() })
+            }
+            entry<OtherAppKey> {
+                OtherAppScreen(onBack = { backStack.removeLastOrNull() })
             }
             entry<SettingsKey> {
                 SettingsRoute(onBack = { backStack.removeLastOrNull() })

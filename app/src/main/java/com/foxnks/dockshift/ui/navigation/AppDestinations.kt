@@ -75,6 +75,14 @@ data object BackupKey : NavKey
 @Serializable
 data object WorkerKey : NavKey
 
+/** About the app and its author. Opened from the ⓘ of the menu. */
+@Serializable
+data object AboutKey : NavKey
+
+/** The author's other app on Google Play. Opened from the ⓘ of "Today". */
+@Serializable
+data object OtherAppKey : NavKey
+
 /** Settings. Opened from the menu. */
 @Serializable
 data object SettingsKey : NavKey
