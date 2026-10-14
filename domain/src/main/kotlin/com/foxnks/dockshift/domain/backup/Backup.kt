@@ -1,5 +1,6 @@
 package com.foxnks.dockshift.domain.backup
 
+import com.foxnks.dockshift.domain.faults.MachineFault
 import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.machine.Machine
 import com.foxnks.dockshift.domain.settings.AppSettings
@@ -18,6 +19,7 @@ import java.time.temporal.ChronoUnit
  * @property machines every machine, active or not, with its identity (shifts refer to it).
  * @property leaves every planned leave.
  * @property settings every setting.
+ * @property faults every machine fault, open and fixed (none in backups made before faults existed).
  */
 data class BackupContents(
     val createdAt: LocalDateTime,
@@ -26,6 +28,7 @@ data class BackupContents(
     val machines: List<Machine>,
     val leaves: List<Leave>,
     val settings: AppSettings,
+    val faults: List<MachineFault> = emptyList(),
 )
 
 /**
@@ -83,6 +86,9 @@ object BackupCheck {
                 if (assignment.machine.id !in known) return "The shift of ${shift.date} uses a machine missing from the backup"
             }
         }
+        contents.faults.forEach { fault ->
+            if (fault.machineId !in known) return "A fault of ${fault.reportedOn} is on a machine missing from the backup"
+        }
         val days = contents.shifts.map { it.date }
         if (days.size != days.toSet().size) return "Two shifts on the same day"
         return null
@@ -132,7 +138,7 @@ interface BackupRepository {
     suspend fun read(): BackupContents
 
     /**
-     * Replaces every shift, machine, leave and setting with the backup's, all or
+     * Replaces every shift, machine, fault, leave and setting with the backup's, all or
      * nothing: if anything fails, the stored data stays as it was.
      *
      * @param contents a backup that passed [BackupCheck].

@@ -41,9 +41,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.foxnks.dockshift.R
+import com.foxnks.dockshift.domain.faults.MachineFault
 import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.shift.Shift
 import com.foxnks.dockshift.domain.shift.ShiftType
+import com.foxnks.dockshift.ui.faults.MachineFaultCard
+import com.foxnks.dockshift.ui.faults.OpenFaultsViewModel
 import com.foxnks.dockshift.ui.navigation.AppBottomBar
 import com.foxnks.dockshift.ui.navigation.TopLevel
 import com.foxnks.dockshift.ui.shift.DayCard
@@ -64,7 +67,9 @@ import java.time.LocalDate
  * @param onSelectTopLevel switch screen from the bottom bar.
  * @param onOpenBackup open Data & backup (from the backup reminder).
  * @param onOpenVessels open the Vessels tab (from the vessels card).
+ * @param onOpenFaults open a machine's fault page (from its card).
  * @param viewModel provided by Hilt, one per screen entry.
+ * @param faults the open faults of every machine, for the machine cards.
  */
 @Composable
 fun TodayRoute(
@@ -73,13 +78,25 @@ fun TodayRoute(
     onSelectTopLevel: (TopLevel) -> Unit,
     onOpenBackup: () -> Unit = {},
     onOpenVessels: () -> Unit = {},
+    onOpenFaults: (Long) -> Unit = {},
     viewModel: TodayViewModel = hiltViewModel(),
+    faults: OpenFaultsViewModel = hiltViewModel(),
 ) {
     // Back from the background (maybe after midnight or 07:00): recompute "today"
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backupDueDays by viewModel.backupDueDays.collectAsStateWithLifecycle()
-    TodayScreen(uiState, onEditDay, onSelectTopLevel, onOpenLeave, backupDueDays, onOpenBackup) {
+    val openFaults by faults.byMachine.collectAsStateWithLifecycle()
+    TodayScreen(
+        uiState = uiState,
+        onEditDay = onEditDay,
+        onSelectTopLevel = onSelectTopLevel,
+        onOpenLeave = onOpenLeave,
+        backupDueDays = backupDueDays,
+        onOpenBackup = onOpenBackup,
+        openFaults = openFaults,
+        onOpenFaults = onOpenFaults,
+    ) {
         // Its own ViewModel: reads the vessel pages when the lists are stale
         TodayVesselsCard(onOpen = onOpenVessels, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp))
     }
@@ -89,8 +106,9 @@ fun TodayRoute(
  * Today's shift in a card (type, machines with their location, overtime, comment)
  * and the next days below: small cards upright, a row of mini cards sideways.
  * Public holidays are named in red. Tapping any day opens it for editing.
- * Under today's shift: the vessels being worked now, and every 15 days (unless
- * turned off) a card reminding to back up.
+ * Under today's shift: one card per machine of the shift with its open faults, the
+ * vessels being worked now, and every 15 days (unless turned off) a card reminding to
+ * back up.
  *
  * @param uiState what to show.
  * @param onEditDay opens a day for adding or editing.
@@ -99,6 +117,8 @@ fun TodayRoute(
  * @param backupDueDays days since the last backup when the reminder is due
  * ([Int.MAX_VALUE]: never backed up), or null for no reminder.
  * @param onOpenBackup opens Data & backup.
+ * @param openFaults the open faults of every machine, by machine id.
+ * @param onOpenFaults opens a machine's fault page.
  * @param vesselsCard the card of the vessels being worked, under the shift (a slot,
  * so previews need no Hilt).
  */
@@ -111,6 +131,8 @@ fun TodayScreen(
     onOpenLeave: (Long) -> Unit = {},
     backupDueDays: Int? = null,
     onOpenBackup: () -> Unit = {},
+    openFaults: Map<Long, List<MachineFault>> = emptyMap(),
+    onOpenFaults: (Long) -> Unit = {},
     vesselsCard: @Composable () -> Unit = {},
 ) {
     /** A leave day cannot be worked: it opens its leave instead of the shift form. */
@@ -149,7 +171,17 @@ fun TodayScreen(
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
-                // The vessels being worked now, right under the shift
+                // One card per machine of the shift (each machine once), with its open faults
+                val machines = uiState.current?.machines.orEmpty().map { it.machine }.distinctBy { it.id }
+                items(machines, key = { "machine-${it.id}" }) { machine ->
+                    MachineFaultCard(
+                        machine = machine,
+                        open = openFaults[machine.id].orEmpty(),
+                        onOpen = { onOpenFaults(machine.id) },
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
+                    )
+                }
+                // The vessels being worked now
                 item { vesselsCard() }
                 if (backupDueDays != null) {
                     item {

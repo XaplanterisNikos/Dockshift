@@ -1,6 +1,8 @@
 package com.foxnks.dockshift.data.backup
 
 import com.foxnks.dockshift.domain.backup.BackupContents
+import com.foxnks.dockshift.domain.faults.FaultType
+import com.foxnks.dockshift.domain.faults.MachineFault
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.machine.Machine
@@ -67,6 +69,10 @@ class JsonBackupFormatTest {
                 categories = setOf(MachineCategory.RTG, MachineCategory.QC),
             ),
             workerPromptAsked = true,
+        ),
+        faults = listOf(
+            MachineFault(0, 3, FaultType.LIGHTS, LocalDate.of(2026, 10, 10), LocalDate.of(2026, 10, 12)),
+            MachineFault(0, 9, FaultType.SPREADER, LocalDate.of(2026, 10, 13)),
         ),
     )
 

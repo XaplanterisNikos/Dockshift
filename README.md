@@ -95,6 +95,12 @@ emulator or device with `./gradlew connectedAndroidTest`.
   transaction. A card on Today reminds every 15 days (can be turned off). The v1 import
   and "delete all" (two confirmations) live here too. The file states its format and
   version, so later versions keep reading older backups.
+- **Machine faults**: picked from a fixed list per machine category (nothing is
+  typed; the lists are in `FaultCatalog`, `:domain`). A fault stays open until checked
+  as fixed, in the same shift or a later one, and then stays in the machine's history
+  with both dates. "Today" shows a card per machine of the shift with its open faults;
+  tapping it opens the machine's fault page, also reached from the machine's edit
+  sheet. Stored in the `machine_faults` table (database version 4) and in backups.
 - **Worker**: the user's profile: name, email (checked with a regex in `WorkerForm`),
   role (operator, driver or both) and the machine categories worked. The machine
   picker of a shift offers only those categories, with "All categories" for the odd

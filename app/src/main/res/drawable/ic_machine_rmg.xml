@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Original icon: rail-mounted gantry crane (two legs on a rail, beam, trolley, hanging container); tinted by the caller -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path android:strokeColor="#FF000000" android:strokeWidth="1.8" android:strokeLineJoin="round" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M5,20V5H19V20M3,5H21M10.5,5V7.5H13.5V5M12,7.5V11M9,11H15V14H9ZM2,20.5H22" />
+</vector>

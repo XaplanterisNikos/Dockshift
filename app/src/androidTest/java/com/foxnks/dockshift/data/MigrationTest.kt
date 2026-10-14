@@ -8,9 +8,11 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.foxnks.dockshift.data.db.DatabaseMigrations
 import com.foxnks.dockshift.data.db.DockshiftDatabase
+import com.foxnks.dockshift.data.faults.RoomFaultRepository
 import com.foxnks.dockshift.data.leave.RoomLeaveRepository
 import com.foxnks.dockshift.data.machine.RoomMachineRepository
 import com.foxnks.dockshift.data.shift.RoomShiftRepository
+import com.foxnks.dockshift.domain.faults.FaultType
 import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.shift.ShiftType
 import java.time.LocalDate
@@ -140,6 +142,33 @@ class MigrationTest {
             assertEquals(listOf(saved), leaves.observeAll().first())
             // The shifts of version 1 are still there
             assertEquals(ShiftType.NIGHT, RoomShiftRepository(database.shiftDao()).observeShift(LocalDate.of(2025, 1, 6)).first()?.type)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun upgradedDatabaseCanStoreFaults() = runTest {
+        createVersion1()
+
+        val database = Room.databaseBuilder<DockshiftDatabase>(context, name)
+            .setDriver(BundledSQLiteDriver())
+            .addMigrations(*DatabaseMigrations.ALL)
+            .build()
+        try {
+            // Version 1 → … → 4: the faults table exists, starts empty and works on old machines
+            val faults = RoomFaultRepository(database.faultDao())
+            assertEquals(0, faults.observeOpen().first().size)
+
+            faults.report(machineId = 1, type = FaultType.LIGHTS, date = LocalDate.of(2026, 10, 14))
+            // The same open fault is never opened twice
+            faults.report(machineId = 1, type = FaultType.LIGHTS, date = LocalDate.of(2026, 10, 15))
+            val open = faults.observeOpen().first().single()
+            assertEquals(FaultType.LIGHTS, open.type)
+
+            faults.fix(open.id, LocalDate.of(2026, 10, 16))
+            assertEquals(LocalDate.of(2026, 10, 16), faults.observeForMachine(1).first().single().fixedOn)
+            assertEquals(0, faults.observeOpen().first().size)
         } finally {
             database.close()
         }

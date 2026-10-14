@@ -46,18 +46,28 @@ import com.foxnks.dockshift.R
 import com.foxnks.dockshift.domain.machine.Machine
 import com.foxnks.dockshift.domain.machine.MachineCategory
 import com.foxnks.dockshift.domain.machine.MachineForm
+import com.foxnks.dockshift.ui.faults.OpenFaultsViewModel
 import com.foxnks.dockshift.ui.theme.DockshiftTheme
 
 /**
  * Entry point of the machines screen.
  *
  * @param onBack back arrow tapped: returns to the menu.
+ * @param onOpenFaults opens a machine's fault page (from its edit sheet).
  * @param viewModel provided by Hilt, one per screen entry.
+ * @param faults the open faults of every machine, for the count in the edit sheet.
  */
 @Composable
-fun MachinesRoute(onBack: () -> Unit, viewModel: MachinesViewModel = hiltViewModel()) {
+fun MachinesRoute(
+    onBack: () -> Unit,
+    onOpenFaults: (Long) -> Unit = {},
+    viewModel: MachinesViewModel = hiltViewModel(),
+    faults: OpenFaultsViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val openFaults by faults.byMachine.collectAsStateWithLifecycle()
     MachinesScreen(
+        openFaults = openFaults.mapValues { it.value.size },
         uiState = uiState,
         actions = MachinesActions(
             onBack = onBack,
@@ -72,6 +82,7 @@ fun MachinesRoute(onBack: () -> Unit, viewModel: MachinesViewModel = hiltViewMod
             onDeleteCancelled = viewModel::onDeleteCancelled,
             onDeleteConfirmed = viewModel::onDeleteConfirmed,
             onMessageShown = viewModel::onMessageShown,
+            onOpenFaults = onOpenFaults,
         ),
     )
 }
@@ -90,6 +101,7 @@ data class MachinesActions(
     val onDeleteCancelled: () -> Unit,
     val onDeleteConfirmed: () -> Unit,
     val onMessageShown: () -> Unit,
+    val onOpenFaults: (Long) -> Unit = {},
 )
 
 /**
@@ -98,7 +110,7 @@ data class MachinesActions(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MachinesScreen(uiState: MachinesUiState, actions: MachinesActions) {
+fun MachinesScreen(uiState: MachinesUiState, actions: MachinesActions, openFaults: Map<Long, Int> = emptyMap()) {
     val snackbarHostState = remember { SnackbarHostState() }
     val ready = uiState as? MachinesUiState.Ready
 
@@ -168,7 +180,12 @@ fun MachinesScreen(uiState: MachinesUiState, actions: MachinesActions) {
     }
 
     ready?.sheet?.let { sheet ->
-        MachineSheet(state = sheet, locations = ready.locations, actions = actions)
+        MachineSheet(
+            state = sheet,
+            locations = ready.locations,
+            actions = actions,
+            openFaults = sheet.original?.let { openFaults[it.id] } ?: 0,
+        )
     }
 }
 

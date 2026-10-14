@@ -396,4 +396,48 @@
     <string name="vessels_problem_site">The vessel page is not answering right now. Try again later.</string>
     <string name="vessels_open_settings">Open app settings</string>
     <string name="vessels_message_format">The vessel page has changed and could not be read. An app update is needed.</string>
+
+    <!-- Machine faults -->
+    <string name="faults_title">Faults · %1$s</string>
+    <string name="faults_open">Open faults</string>
+    <string name="faults_none_open">No open faults</string>
+    <string name="faults_report">Report a fault</string>
+    <string name="faults_report_hint">Tap what is wrong. It stays open until someone checks it as fixed.</string>
+    <string name="faults_all_reported">Every fault of this machine is already open</string>
+    <string name="faults_history">History</string>
+    <string name="faults_history_empty">No repaired faults yet</string>
+    <string name="faults_since">Since %1$s</string>
+    <string name="faults_reported_fixed">%1$s → %2$s</string>
+    <string name="faults_fixed">Fixed</string>
+    <string name="faults_delete">Entered by mistake</string>
+    <string name="faults_delete_title">Remove “%1$s”?</string>
+    <string name="faults_delete_text">Only for a fault entered by mistake. A real fault is checked as fixed instead, so it stays in the history.</string>
+    <string name="faults_delete_button">Remove</string>
+    <string name="faults_reported_message">Reported: %1$s</string>
+    <string name="faults_machine_missing">This machine no longer exists</string>
+    <string name="faults_card_none">No faults</string>
+    <string name="faults_sheet_title">Faults</string>
+    <plurals name="faults_sheet_open">
+        <item quantity="one">%d open fault</item>
+        <item quantity="other">%d open faults</item>
+    </plurals>
+    <string name="fault_spreader">Spreader</string>
+    <string name="fault_twistlocks">Twistlocks</string>
+    <string name="fault_flippers">Flippers</string>
+    <string name="fault_hoist">Hoist</string>
+    <string name="fault_trolley">Trolley</string>
+    <string name="fault_boom">Boom</string>
+    <string name="fault_gantry">Gantry travel</string>
+    <string name="fault_engine_left">Left engine</string>
+    <string name="fault_engine_right">Right engine</string>
+    <string name="fault_tire">Tyre</string>
+    <string name="fault_air_leak">Losing air</string>
+    <string name="fault_crashed">Crashed</string>
+    <string name="fault_lights">Lights</string>
+    <string name="fault_glass">Glass</string>
+    <string name="fault_wipers">Wipers</string>
+    <string name="fault_heating">Heating</string>
+    <string name="fault_controls">Controls</string>
+    <string name="fault_radio">Radio</string>
+    <string name="fault_terminal">Terminal</string>
 </resources>

@@ -5,11 +5,13 @@ import com.foxnks.dockshift.data.backup.BackupFormat
 import com.foxnks.dockshift.data.backup.BackupStorage
 import com.foxnks.dockshift.data.backup.JsonBackupFormat
 import com.foxnks.dockshift.data.backup.RoomBackupRepository
+import com.foxnks.dockshift.data.faults.RoomFaultRepository
 import com.foxnks.dockshift.data.leave.RoomLeaveRepository
 import com.foxnks.dockshift.data.machine.RoomMachineRepository
 import com.foxnks.dockshift.data.settings.DataStoreSettingsRepository
 import com.foxnks.dockshift.data.shift.RoomShiftRepository
 import com.foxnks.dockshift.domain.backup.BackupRepository
+import com.foxnks.dockshift.domain.faults.FaultRepository
 import com.foxnks.dockshift.domain.leave.LeaveRepository
 import com.foxnks.dockshift.domain.machine.MachineRepository
 import com.foxnks.dockshift.domain.settings.SettingsRepository
@@ -45,6 +47,11 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindLeaveRepository(impl: RoomLeaveRepository): LeaveRepository
+
+    /** Whoever asks for [FaultRepository] gets the Room-backed instance. */
+    @Binds
+    @Singleton
+    abstract fun bindFaultRepository(impl: RoomFaultRepository): FaultRepository
 
     /** Whoever asks for [MachineRepository] gets the Room-backed instance. */
     @Binds

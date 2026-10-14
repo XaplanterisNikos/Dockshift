@@ -41,6 +41,15 @@ data object MenuKey : NavKey
 @Serializable
 data object MachinesKey : NavKey
 
+/**
+ * The faults of one machine: open ones, reporting, history. Opened from a machine card
+ * on "Today" or from the machine's edit sheet.
+ *
+ * @property machineId the machine.
+ */
+@Serializable
+data class FaultsKey(val machineId: Long) : NavKey
+
 /** Statistics of shifts, overtime and machines. Opened from the menu. */
 @Serializable
 data object StatisticsKey : NavKey

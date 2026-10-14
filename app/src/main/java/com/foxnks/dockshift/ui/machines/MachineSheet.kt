@@ -15,9 +15,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Switch
@@ -27,6 +29,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -43,10 +46,11 @@ import com.foxnks.dockshift.domain.machine.MachineForm
  * @param state the open sheet.
  * @param locations every location in use, offered as suggestions.
  * @param actions the screen's actions.
+ * @param openFaults how many open faults the machine has, for its "Faults" card.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MachineSheet(state: MachineFormState, locations: List<String>, actions: MachinesActions) {
+fun MachineSheet(state: MachineFormState, locations: List<String>, actions: MachinesActions, openFaults: Int = 0) {
     val form = state.form
     val original = state.original
 
@@ -122,6 +126,7 @@ fun MachineSheet(state: MachineFormState, locations: List<String>, actions: Mach
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
+                FaultsCard(openFaults = openFaults, onOpen = { actions.onOpenFaults(original.id) })
             }
 
             Row(
@@ -153,6 +158,39 @@ fun MachineSheet(state: MachineFormState, locations: List<String>, actions: Mach
                 }
             },
             dismissButton = { TextButton(onClick = actions.onDeleteCancelled) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+}
+
+/**
+ * The machine's faults, as a card that opens its fault page: how many are open, in the
+ * error color when there are any.
+ *
+ * @param openFaults how many faults are open.
+ * @param onOpen opens the fault page.
+ */
+@Composable
+private fun FaultsCard(openFaults: Int, onOpen: () -> Unit) {
+    OutlinedCard(
+        onClick = onOpen,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+    ) {
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.faults_sheet_title)) },
+            supportingContent = {
+                if (openFaults > 0) {
+                    Text(
+                        text = pluralStringResource(R.plurals.faults_sheet_open, openFaults, openFaults),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                } else {
+                    Text(stringResource(R.string.faults_none_open))
+                }
+            },
+            leadingContent = { Icon(painterResource(R.drawable.ic_build), contentDescription = null) },
+            trailingContent = { Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null) },
         )
     }
 }

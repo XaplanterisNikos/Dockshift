@@ -2,6 +2,8 @@ package com.foxnks.dockshift.data.backup
 
 import com.foxnks.dockshift.data.db.ShiftTypeCodes
 import com.foxnks.dockshift.domain.backup.BackupContents
+import com.foxnks.dockshift.domain.faults.FaultType
+import com.foxnks.dockshift.domain.faults.MachineFault
 import com.foxnks.dockshift.domain.holidays.GreekHoliday
 import com.foxnks.dockshift.domain.leave.Leave
 import com.foxnks.dockshift.domain.machine.Machine
@@ -80,6 +82,16 @@ private data class BackupFileJson(
     val shifts: List<ShiftJson> = emptyList(),
     val leaves: List<LeaveJson> = emptyList(),
     val settings: SettingsJson = SettingsJson(),
+    val faults: List<FaultJson> = emptyList(),
+)
+
+/** One machine fault (added after the first backups: optional). */
+@Serializable
+private data class FaultJson(
+    val machineId: Long,
+    val type: String,
+    val reportedOn: String,
+    val fixedOn: String? = null,
 )
 
 /** One machine, with the identity the shifts refer to. */
@@ -161,6 +173,7 @@ private fun BackupContents.toJson() = BackupFileJson(
         )
     },
     leaves = leaves.map { LeaveJson(it.start.toString(), it.end.toString(), it.note) },
+    faults = faults.map { FaultJson(it.machineId, it.type.name, it.reportedOn.toString(), it.fixedOn?.toString()) },
     settings = with(settings) {
         SettingsJson(
             themeMode = themeMode.name,
@@ -204,6 +217,11 @@ private fun BackupFileJson.toDomain(): BackupContents {
         // New identities: leaves are referred to by nothing else
         leaves = leaves.map { Leave(0, LocalDate.parse(it.start), LocalDate.parse(it.end), it.note) },
         settings = settings.toDomain(),
+        // New identities, like leaves; a fault type unknown to this version is skipped
+        faults = faults.mapNotNull { json ->
+            val type = FaultType.entries.firstOrNull { it.name == json.type } ?: return@mapNotNull null
+            MachineFault(0, json.machineId, type, LocalDate.parse(json.reportedOn), json.fixedOn?.let { date -> LocalDate.parse(date) })
+        },
     )
 }
 

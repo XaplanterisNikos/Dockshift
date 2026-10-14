@@ -60,6 +60,25 @@ object DatabaseMigrations {
         }
     }
 
+    /**
+     * Version 3 → 4: a new `machine_faults` table for the faults of each machine.
+     *
+     * Only adds a table and its index, so no existing data is touched. The SQL is the
+     * one Room generates for `MachineFaultEntity` (see `app/schemas/.../4.json`).
+     */
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override suspend fun migrate(connection: SQLiteConnection) {
+            connection.prepare(
+                "CREATE TABLE IF NOT EXISTS `machine_faults` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`machineId` INTEGER NOT NULL, `type` TEXT NOT NULL, `reportedOn` TEXT NOT NULL, `fixedOn` TEXT, " +
+                    "FOREIGN KEY(`machineId`) REFERENCES `machines`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+            ).use { it.step() }
+            connection.prepare(
+                "CREATE INDEX IF NOT EXISTS `index_machine_faults_machineId` ON `machine_faults` (`machineId`)",
+            ).use { it.step() }
+        }
+    }
+
     /** All migrations, for the database builder. */
-    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 }
