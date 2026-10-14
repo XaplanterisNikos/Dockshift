@@ -53,6 +53,7 @@ import com.foxnks.dockshift.ui.shift.ShiftChip
 import com.foxnks.dockshift.ui.shift.ShiftFormat
 import com.foxnks.dockshift.ui.shift.label
 import com.foxnks.dockshift.ui.theme.DockshiftTheme
+import com.foxnks.dockshift.ui.vessels.TodayVesselsCard
 import java.time.LocalDate
 
 /**
@@ -61,6 +62,8 @@ import java.time.LocalDate
  * @param onEditDay open the shift of a day for adding or editing.
  * @param onOpenLeave open a planned leave (its id) for changing or deleting.
  * @param onSelectTopLevel switch screen from the bottom bar.
+ * @param onOpenBackup open Data & backup (from the backup reminder).
+ * @param onOpenVessels open the Vessels tab (from the vessels card).
  * @param viewModel provided by Hilt, one per screen entry.
  */
 @Composable
@@ -69,20 +72,25 @@ fun TodayRoute(
     onOpenLeave: (Long) -> Unit,
     onSelectTopLevel: (TopLevel) -> Unit,
     onOpenBackup: () -> Unit = {},
+    onOpenVessels: () -> Unit = {},
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
     // Back from the background (maybe after midnight or 07:00): recompute "today"
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backupDueDays by viewModel.backupDueDays.collectAsStateWithLifecycle()
-    TodayScreen(uiState, onEditDay, onSelectTopLevel, onOpenLeave, backupDueDays, onOpenBackup)
+    TodayScreen(uiState, onEditDay, onSelectTopLevel, onOpenLeave, backupDueDays, onOpenBackup) {
+        // Its own ViewModel: reads the vessel pages when the lists are stale
+        TodayVesselsCard(onOpen = onOpenVessels, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp))
+    }
 }
 
 /**
  * Today's shift in a card (type, machines with their location, overtime, comment)
  * and the next days below: small cards upright, a row of mini cards sideways.
  * Public holidays are named in red. Tapping any day opens it for editing.
- * Every 15 days (unless turned off) a card under today's shift reminds to back up.
+ * Under today's shift: the vessels being worked now, and every 15 days (unless
+ * turned off) a card reminding to back up.
  *
  * @param uiState what to show.
  * @param onEditDay opens a day for adding or editing.
@@ -91,6 +99,8 @@ fun TodayRoute(
  * @param backupDueDays days since the last backup when the reminder is due
  * ([Int.MAX_VALUE]: never backed up), or null for no reminder.
  * @param onOpenBackup opens Data & backup.
+ * @param vesselsCard the card of the vessels being worked, under the shift (a slot,
+ * so previews need no Hilt).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,6 +111,7 @@ fun TodayScreen(
     onOpenLeave: (Long) -> Unit = {},
     backupDueDays: Int? = null,
     onOpenBackup: () -> Unit = {},
+    vesselsCard: @Composable () -> Unit = {},
 ) {
     /** A leave day cannot be worked: it opens its leave instead of the shift form. */
     fun openDay(date: LocalDate, leave: Leave?) {
@@ -138,6 +149,8 @@ fun TodayScreen(
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
+                // The vessels being worked now, right under the shift
+                item { vesselsCard() }
                 if (backupDueDays != null) {
                     item {
                         BackupReminderCard(

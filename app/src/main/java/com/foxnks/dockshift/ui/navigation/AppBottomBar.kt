@@ -17,6 +17,7 @@ enum class TopLevel(val key: NavKey, @StringRes val label: Int, @DrawableRes val
     TODAY(TodayKey, R.string.nav_today, R.drawable.ic_today),
     SHIFTS(ShiftListKey, R.string.nav_shifts, R.drawable.ic_list),
     CALENDAR(CalendarKey, R.string.nav_calendar, R.drawable.ic_calendar_month),
+    VESSELS(VesselsKey, R.string.nav_vessels, R.drawable.ic_boat),
     MENU(MenuKey, R.string.nav_menu, R.drawable.ic_menu),
 }
 

@@ -44,11 +44,12 @@ class MainActivity : ComponentActivity() {
         }
         // A soft exit instead of a cut: the icon grows a little while everything fades
         splash.setOnExitAnimationListener { provider ->
-            provider.iconView.animate().scaleX(ICON_EXIT_SCALE).scaleY(ICON_EXIT_SCALE).setDuration(EXIT_MILLIS).start()
             provider.view.animate()
                 .alpha(0f)
                 .setDuration(EXIT_MILLIS)
-                .withEndAction { provider.remove() }
+                .withEndAction {
+                    provider.remove()
+                }
                 .start()
         }
         super.onCreate(savedInstanceState)

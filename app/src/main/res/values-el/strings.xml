@@ -159,7 +159,7 @@
     <string name="picker_quick_add">Προσθήκη %1$s</string>
 
     <!-- Ημερολόγιο -->
-    <string name="nav_calendar">Ημερολόγιο</string>
+    <string name="nav_calendar">Μήνας</string>
     <string name="calendar_today">Σήμερα</string>
     <string name="calendar_previous_month">Προηγούμενος μήνας</string>
     <string name="calendar_next_month">Επόμενος μήνας</string>
@@ -361,4 +361,30 @@
     <string name="worker_prompt_yes">Συμπλήρωση</string>
     <string name="worker_prompt_later">Αργότερα</string>
     <string name="picker_all_categories">Όλες οι κατηγορίες</string>
+
+    <!-- Πλοία (#18) -->
+    <string name="nav_vessels">Πλοία</string>
+    <string name="vessels_today_title">Πλοία σε εργασία</string>
+    <string name="vessels_tab_working">Σε εργασία (%1$d)</string>
+    <string name="vessels_tab_scheduled">Αναμένονται (%1$d)</string>
+    <string name="vessels_updated">Ενημέρωση %1$s</string>
+    <string name="vessels_working_times">Ήρθε %1$s · Φεύγει %2$s</string>
+    <string name="vessels_scheduled_times">Πρόσδεση %1$s → Αναχώρηση %2$s</string>
+    <string name="vessels_call_sign">Διακριτικό %1$s</string>
+    <string name="vessels_voyage">Ταξίδι %1$s</string>
+    <string name="vessels_none_working">Κανένα πλοίο σε εργασία αυτή τη στιγμή</string>
+    <string name="vessels_none_scheduled">Δεν αναμένονται πλοία</string>
+    <string name="vessels_loading">Διαβάζονται τα πλοία…</string>
+    <string name="vessels_not_read">Τα πλοία δεν έχουν διαβαστεί ακόμα. Έλεγξε τη σύνδεση.</string>
+    <string name="vessels_not_configured">Οι λίστες πλοίων δεν έχουν ρυθμιστεί σε αυτή την έκδοση της εφαρμογής.</string>
+    <string name="vessels_refresh">Ανανέωση</string>
+    <string name="vessels_refresh_locked">Ανανέωση διαθέσιμη σε %1$d λεπτά</string>
+    <string name="vessels_minutes">%1$d′</string>
+    <string name="vessels_page">%1$d / %2$d</string>
+    <string name="vessels_page_previous">Προηγούμενη σελίδα</string>
+    <string name="vessels_page_next">Επόμενη σελίδα</string>
+    <string name="vessels_message_updated">Τα πλοία ενημερώθηκαν</string>
+    <string name="vessels_message_cooling">Η ανανέωση γίνεται μία φορά την ώρα</string>
+    <string name="vessels_message_network">Χωρίς σύνδεση: δείχνονται τα τελευταία πλοία που διαβάστηκαν</string>
+    <string name="vessels_message_format">Η σελίδα των πλοίων άλλαξε και δεν διαβάστηκε. Χρειάζεται ενημέρωση της εφαρμογής.</string>
 </resources>

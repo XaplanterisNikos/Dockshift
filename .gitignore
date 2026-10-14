@@ -20,6 +20,9 @@ replay_pid*.log
 *.keystore
 keystore.properties
 
+# The vessel pages' addresses name the terminal: never committed
+vessels.properties
+
 # Signed release builds are published as GitHub Releases, not committed
 /app/release/
 *.apk

@@ -365,4 +365,30 @@
     <string name="worker_prompt_yes">Fill in</string>
     <string name="worker_prompt_later">Later</string>
     <string name="picker_all_categories">All categories</string>
+
+    <!-- Vessels (#18) -->
+    <string name="nav_vessels">Vessels</string>
+    <string name="vessels_today_title">Vessels being worked</string>
+    <string name="vessels_tab_working">Working (%1$d)</string>
+    <string name="vessels_tab_scheduled">Scheduled (%1$d)</string>
+    <string name="vessels_updated">Updated %1$s</string>
+    <string name="vessels_working_times">Arrived %1$s · Departs %2$s</string>
+    <string name="vessels_scheduled_times">Berths %1$s → Departs %2$s</string>
+    <string name="vessels_call_sign">Call sign %1$s</string>
+    <string name="vessels_voyage">Voyage %1$s</string>
+    <string name="vessels_none_working">No vessel is being worked right now</string>
+    <string name="vessels_none_scheduled">No vessels expected</string>
+    <string name="vessels_loading">Reading the vessels…</string>
+    <string name="vessels_not_read">The vessels have not been read yet. Check your connection.</string>
+    <string name="vessels_not_configured">The vessel lists are not set up in this version of the app.</string>
+    <string name="vessels_refresh">Refresh</string>
+    <string name="vessels_refresh_locked">Refresh available in %1$d minutes</string>
+    <string name="vessels_minutes">%1$d′</string>
+    <string name="vessels_page">%1$d / %2$d</string>
+    <string name="vessels_page_previous">Previous page</string>
+    <string name="vessels_page_next">Next page</string>
+    <string name="vessels_message_updated">Vessels updated</string>
+    <string name="vessels_message_cooling">Refresh is available once an hour</string>
+    <string name="vessels_message_network">No connection: showing the last vessels read</string>
+    <string name="vessels_message_format">The vessel page has changed and could not be read. An app update is needed.</string>
 </resources>

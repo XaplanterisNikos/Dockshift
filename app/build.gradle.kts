@@ -29,6 +29,22 @@ val keystoreProperties = Properties().apply {
     }
 }
 
+/**
+ * Addresses of the terminal's public vessel pages, read from `vessels.properties` in the
+ * project root. The public repository must not name the terminal, so that file is
+ * git-ignored (see `vessels.properties.example`). Without it the addresses are empty
+ * and the app says the vessel lists are not set up.
+ */
+val vesselsPropertiesFile: File = rootProject.file("vessels.properties")
+val vesselsProperties = Properties().apply {
+    if (vesselsPropertiesFile.exists()) {
+        vesselsPropertiesFile.inputStream().use { load(it) }
+    }
+}
+
+/** A Java string literal of [value], for buildConfigField. */
+fun quoted(value: String): String = "\"" + value.trim().replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
 android {
     // Code package; it no longer has to match the applicationId
     namespace = "com.foxnks.dockshift"
@@ -44,6 +60,10 @@ android {
         // v1.11 is versionCode 2, so every v2 build must be higher
         versionCode = 3
         versionName = "2.0.0-alpha01"
+
+        // The vessel pages' addresses, as BuildConfig constants (quotes escaped for Java)
+        buildConfigField("String", "VESSELS_WORKING_URL", quoted(vesselsProperties.getProperty("workingUrl", "")))
+        buildConfigField("String", "VESSELS_SCHEDULED_URL", quoted(vesselsProperties.getProperty("scheduledUrl", "")))
 
         // Runs instrumented tests (src/androidTest) on an emulator or device
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -91,6 +111,8 @@ android {
     buildFeatures {
         // Enables Compose tooling (previews, layout inspector)
         compose = true
+        // BuildConfig carries the vessel pages' addresses
+        buildConfig = true
     }
 }
 

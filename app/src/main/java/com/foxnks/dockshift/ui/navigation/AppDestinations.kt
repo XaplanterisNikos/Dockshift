@@ -29,6 +29,10 @@ data class EditShiftKey(val date: String) : NavKey
 @Serializable
 data object CalendarKey : NavKey
 
+/** The terminal's vessels: being worked now, and expected. */
+@Serializable
+data object VesselsKey : NavKey
+
 /** The central menu: the app's other sections, and Settings. */
 @Serializable
 data object MenuKey : NavKey

@@ -21,6 +21,7 @@ import com.foxnks.dockshift.ui.rotation.RotationPrompt
 import com.foxnks.dockshift.ui.settings.SettingsRoute
 import com.foxnks.dockshift.ui.statistics.StatisticsRoute
 import com.foxnks.dockshift.ui.today.TodayRoute
+import com.foxnks.dockshift.ui.vessels.VesselsRoute
 import com.foxnks.dockshift.ui.worker.WorkerPrompt
 import com.foxnks.dockshift.ui.worker.WorkerRoute
 import java.time.LocalDate
@@ -29,7 +30,7 @@ import java.time.LocalDate
  * The app's navigation: one back stack of screen keys, shown by Navigation 3.
  *
  * - "Today" is always at the bottom of the stack, so back from any screen ends there.
- * - The bottom bar switches between "Today", "Shifts", "Calendar" and "Menu".
+ * - The bottom bar switches between "Today", "Shifts", "Calendar", "Vessels" and "Menu".
  * - Edit (shift or leave) is pushed on top of any screen; Machines, Statistics, Leave,
  *   Data & backup, Worker and Settings on top of the menu (Data & backup also from Today's
  *   reminder, Worker also from the first-run question).
@@ -57,6 +58,7 @@ fun AppNavigation() {
                     onEditDay = { backStack.openEdit(it) },
                     onOpenLeave = { backStack.openOnce(EditLeaveKey(it)) },
                     onOpenBackup = { backStack.openOnce(BackupKey) },
+                    onOpenVessels = { backStack.selectTopLevel(TopLevel.VESSELS) },
                     onSelectTopLevel = { backStack.selectTopLevel(it) },
                 )
             }
@@ -76,6 +78,9 @@ fun AppNavigation() {
             }
             entry<EditShiftKey> { key ->
                 EditShiftRoute(date = LocalDate.parse(key.date), onDone = { backStack.removeLastOrNull() })
+            }
+            entry<VesselsKey> {
+                VesselsRoute(onSelectTopLevel = { backStack.selectTopLevel(it) })
             }
             entry<MenuKey> {
                 MenuRoute(

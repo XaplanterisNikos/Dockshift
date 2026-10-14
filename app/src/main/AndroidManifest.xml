@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Dockshift v2 manifest.
-    No storage permissions: CSV import/export will use the system file picker
-    (Storage Access Framework), which needs none.
+    No storage permissions: backups and the v1 import use MediaStore and the system
+    file picker (Storage Access Framework), which need none.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Reads the terminal's public vessel pages; a normal permission, never asked -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- android:name: the Hilt application class that owns the dependency container -->
     <application
