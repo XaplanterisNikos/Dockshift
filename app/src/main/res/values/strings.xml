@@ -440,4 +440,20 @@
     <string name="fault_controls">Controls</string>
     <string name="fault_radio">Radio</string>
     <string name="fault_terminal">Terminal</string>
+
+    <!-- About and the author's other app -->
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_text">Shift tracker for container terminal operators: shifts, rotating schedule, leave, machines and their faults, vessels and statistics.</string>
+    <string name="about_author">Made by Nick Xaplanteris</string>
+    <string name="about_github">GitHub</string>
+    <string name="about_email">Email</string>
+    <string name="about_linkedin">LinkedIn</string>
+    <string name="about_source">Source code</string>
+    <string name="about_license">Open source, MIT license</string>
+    <string name="other_app_title">My other app</string>
+    <string name="other_app_name">Operator Exam Quiz</string>
+    <string name="other_app_subtitle">Free on Google Play</string>
+    <string name="other_app_text">Getting ready for the machine operator exams? Practice with the exam questions, from the maker of Dockshift.</string>
+    <string name="other_app_button">Open in Google Play</string>
 </resources>

@@ -22,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -68,6 +69,7 @@ import java.time.LocalDate
  * @param onOpenBackup open Data & backup (from the backup reminder).
  * @param onOpenVessels open the Vessels tab (from the vessels card).
  * @param onOpenFaults open a machine's fault page (from its card).
+ * @param onOpenOtherApp open the page of the author's other app (the ⓘ in the top bar).
  * @param viewModel provided by Hilt, one per screen entry.
  * @param faults the open faults of every machine, for the machine cards.
  */
@@ -79,6 +81,7 @@ fun TodayRoute(
     onOpenBackup: () -> Unit = {},
     onOpenVessels: () -> Unit = {},
     onOpenFaults: (Long) -> Unit = {},
+    onOpenOtherApp: () -> Unit = {},
     viewModel: TodayViewModel = hiltViewModel(),
     faults: OpenFaultsViewModel = hiltViewModel(),
 ) {
@@ -96,6 +99,7 @@ fun TodayRoute(
         onOpenBackup = onOpenBackup,
         openFaults = openFaults,
         onOpenFaults = onOpenFaults,
+        onOpenOtherApp = onOpenOtherApp,
     ) {
         // Its own ViewModel: reads the vessel pages when the lists are stale
         TodayVesselsCard(onOpen = onOpenVessels, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp))
@@ -119,6 +123,7 @@ fun TodayRoute(
  * @param onOpenBackup opens Data & backup.
  * @param openFaults the open faults of every machine, by machine id.
  * @param onOpenFaults opens a machine's fault page.
+ * @param onOpenOtherApp the ⓘ in the top bar: the author's other app.
  * @param vesselsCard the card of the vessels being worked, under the shift (a slot,
  * so previews need no Hilt).
  */
@@ -133,6 +138,7 @@ fun TodayScreen(
     onOpenBackup: () -> Unit = {},
     openFaults: Map<Long, List<MachineFault>> = emptyMap(),
     onOpenFaults: (Long) -> Unit = {},
+    onOpenOtherApp: () -> Unit = {},
     vesselsCard: @Composable () -> Unit = {},
 ) {
     /** A leave day cannot be worked: it opens its leave instead of the shift form. */
@@ -140,8 +146,17 @@ fun TodayScreen(
         if (leave != null) onOpenLeave(leave.id) else onEditDay(date)
     }
     Scaffold(
-        // Settings live in the menu (bottom bar), so the top bar has no actions
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) },
+        // Settings live in the menu (bottom bar); the only action is the ⓘ
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                actions = {
+                    IconButton(onClick = onOpenOtherApp) {
+                        Icon(painterResource(R.drawable.ic_info), stringResource(R.string.other_app_title))
+                    }
+                },
+            )
+        },
         bottomBar = { AppBottomBar(selected = TopLevel.TODAY, onSelect = onSelectTopLevel) },
         floatingActionButton = {
             if (uiState is TodayUiState.Ready) {

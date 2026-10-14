@@ -436,4 +436,20 @@
     <string name="fault_controls">Χειριστήρια</string>
     <string name="fault_radio">Ασύρματος</string>
     <string name="fault_terminal">Τερματικό</string>
+
+    <!-- Σχετικά και η άλλη εφαρμογή του δημιουργού -->
+    <string name="about_title">Σχετικά</string>
+    <string name="about_version">Έκδοση %1$s</string>
+    <string name="about_text">Εφαρμογή βαρδιών για χειριστές σε τερματικό σταθμό εμπορευματοκιβωτίων: βάρδιες, κυλιόμενο πρόγραμμα, άδειες, μηχανήματα και βλάβες, πλοία και στατιστικά.</string>
+    <string name="about_author">Δημιουργός: Νίκος Ξαπλαντέρης</string>
+    <string name="about_github">GitHub</string>
+    <string name="about_email">Email</string>
+    <string name="about_linkedin">LinkedIn</string>
+    <string name="about_source">Κώδικας</string>
+    <string name="about_license">Ανοιχτός κώδικας, άδεια MIT</string>
+    <string name="other_app_title">Η άλλη μου εφαρμογή</string>
+    <string name="other_app_name">Operator Exam Quiz</string>
+    <string name="other_app_subtitle">Δωρεάν στο Google Play</string>
+    <string name="other_app_text">Ετοιμάζεσαι για τις εξετάσεις χειριστή μηχανημάτων; Κάνε εξάσκηση με τις ερωτήσεις των εξετάσεων, από τον δημιουργό του Dockshift.</string>
+    <string name="other_app_button">Άνοιγμα στο Google Play</string>
 </resources>
