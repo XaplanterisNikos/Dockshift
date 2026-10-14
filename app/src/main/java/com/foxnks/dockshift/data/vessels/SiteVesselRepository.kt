@@ -8,6 +8,7 @@ import com.foxnks.dockshift.domain.vessels.VesselRefresh
 import com.foxnks.dockshift.domain.vessels.VesselRepository
 import com.foxnks.dockshift.domain.vessels.VesselSnapshot
 import java.io.IOException
+import java.net.UnknownHostException
 import java.time.Clock
 import java.time.Duration
 import java.time.LocalDateTime
@@ -34,6 +35,7 @@ import kotlinx.coroutines.sync.withLock
  * @param fetcher downloads a page.
  * @param store keeps the lists between app starts.
  * @param clock the current time.
+ * @param network tells, after a failed download, whether the phone or the app is offline.
  */
 @Singleton
 class SiteVesselRepository @Inject constructor(
@@ -41,6 +43,7 @@ class SiteVesselRepository @Inject constructor(
     private val fetcher: PageFetcher,
     private val store: VesselCacheStore,
     private val clock: Clock,
+    private val network: NetworkStatus,
 ) : VesselRepository {
 
     /** The cache in memory; null until read from the store. */
@@ -49,7 +52,7 @@ class SiteVesselRepository @Inject constructor(
     /** One refresh (or first read) at a time. */
     private val mutex = Mutex()
 
-    /** The last automatic attempt that failed, so a broken site is not asked on every screen open. */
+    /** The last automatic attempt the site failed, so a broken site is not asked on every screen open. */
     private var lastFailedAutoAttempt: LocalDateTime? = null
 
     override val isConfigured: Boolean get() = sources.isConfigured
@@ -58,7 +61,7 @@ class SiteVesselRepository @Inject constructor(
 
     override val lastManualRefresh: Flow<LocalDateTime?> = cacheFlow().map { it.lastManualRefresh }.distinctUntilChanged()
 
-    override suspend fun refresh(manual: Boolean): RefreshResult {
+    override suspend fun refresh(manual: Boolean, retry: Boolean): RefreshResult {
         if (!sources.isConfigured) return RefreshResult.NOT_CONFIGURED
         return mutex.withLock {
             val current = loadLocked()
@@ -66,7 +69,7 @@ class SiteVesselRepository @Inject constructor(
             when {
                 manual && VesselRefresh.manualAvailableAt(current.lastManualRefresh, now) != null ->
                     return@withLock RefreshResult.COOLING_DOWN
-                !manual && !VesselRefresh.isStale(current.snapshot, now) ->
+                !manual && !retry && !VesselRefresh.isStale(current.snapshot, now) ->
                     return@withLock RefreshResult.NOT_NEEDED
                 !manual && lastFailedAutoAttempt?.let { now.isBefore(it.plus(AUTO_RETRY_AFTER)) } == true ->
                     return@withLock RefreshResult.NOT_NEEDED
@@ -83,16 +86,18 @@ class SiteVesselRepository @Inject constructor(
                 lastFailedAutoAttempt = null
                 RefreshResult.UPDATED
             } catch (e: IOException) {
-                android.util.Log.e("VesselDebug", "Network error", e)
-
-                if (!manual) lastFailedAutoAttempt = now
-                RefreshResult.NETWORK_ERROR
+                // No lock: the user may try again once fixed
+                val failure = failureOf(e)
+                // Only a site that failed to answer is left alone for a while; offline or
+                // blocked never reached it, so coming back after fixing a setting retries at once
+                if (!manual && failure == RefreshResult.SITE_UNAVAILABLE) lastFailedAutoAttempt = now
+                failure
+            } catch (e: SecurityException) {
+                // Android refused the connection to this app (a permission is missing or revoked)
+                RefreshResult.APP_BLOCKED
             } catch (e: VesselPageException) {
-                android.util.Log.e("VesselDebug", "Page parsing error", e)
-
-                if (manual) save(current.copy(lastManualRefresh = now))
-                else lastFailedAutoAttempt = now
-
+                // The site answered but changed: a press still counts, so it is not asked again and again
+                if (manual) save(current.copy(lastManualRefresh = now)) else lastFailedAutoAttempt = now
                 RefreshResult.FORMAT_ERROR
             }
         }
@@ -114,6 +119,21 @@ class SiteVesselRepository @Inject constructor(
             previous = vessels
         }
         return all
+    }
+
+    /**
+     * Why a download failed, in words the user can act on: the phone is offline; the
+     * phone is online but this app is kept off the connection (a phone setting); or
+     * both are online and the site did not answer.
+     *
+     * @param error the download's error.
+     */
+    private fun failureOf(error: IOException): RefreshResult = when (network.check()) {
+        Connectivity.OFFLINE -> RefreshResult.NO_CONNECTION
+        Connectivity.APP_BLOCKED -> RefreshResult.APP_BLOCKED
+        // Online by Android's account, yet the name could not be looked up or the socket
+        // was refused: that is a block on this app, not the site being down
+        Connectivity.ONLINE -> if (error.looksBlocked()) RefreshResult.APP_BLOCKED else RefreshResult.SITE_UNAVAILABLE
     }
 
     /** The cache, read from the store on first use, then every change. */
@@ -142,6 +162,24 @@ class SiteVesselRepository @Inject constructor(
 
         /** After a failed automatic refresh, the next automatic one waits this long. */
         val AUTO_RETRY_AFTER: Duration = Duration.ofMinutes(15)
+
+        /**
+         * True for the errors a blocked app gets: the site's name cannot be looked up, or
+         * the system refuses the socket ("EPERM", "EACCES", "Permission denied").
+         */
+        fun IOException.looksBlocked(): Boolean {
+            if (this is UnknownHostException) return true
+            return generateSequence<Throwable>(this) { it.cause }.take(MAX_CAUSES).any { error ->
+                val message = error.message.orEmpty()
+                BLOCKED_MARKS.any { message.contains(it, ignoreCase = true) }
+            }
+        }
+
+        /** Words in the system's errors when it refuses a connection to this app. */
+        private val BLOCKED_MARKS = listOf("EPERM", "EACCES", "Permission denied", "Operation not permitted")
+
+        /** How deep to look into an error's causes. */
+        private const val MAX_CAUSES = 5
 
         /** [url] with [query] added after "?" or "&", as the url needs. */
         fun withQuery(url: String, query: String): String = if ('?' in url) "$url&$query" else "$url?$query"

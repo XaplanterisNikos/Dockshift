@@ -53,17 +53,49 @@ class VesselsViewModelTest {
     }
 
     @Test
-    fun `an automatic failure is told only when there is nothing to show`() = runTest {
-        val repository = FakeVesselRepository().apply { result = RefreshResult.NETWORK_ERROR }
+    fun `a failure stays on screen until a refresh works, and coming back retries`() = runTest {
+        val repository = FakeVesselRepository().apply { result = RefreshResult.APP_BLOCKED }
         val viewModel = VesselsViewModel(repository, clock)
         observe(viewModel)
 
         viewModel.onShown()
-        assertEquals(RefreshResult.NETWORK_ERROR, viewModel.uiState.value.message)
-        viewModel.onMessageShown()
+        assertEquals(RefreshResult.APP_BLOCKED, viewModel.uiState.value.problem)
+        // Shown in place, not as a passing message
+        assertNull(viewModel.uiState.value.message)
 
-        repository.stored.value = sample
+        // Back from the phone's settings: the next opening retries even fresh lists
+        repository.result = RefreshResult.UPDATED
+        repository.next = sample
         viewModel.onShown()
+        assertEquals(listOf(false, true), repository.retries)
+        assertNull(viewModel.uiState.value.problem)
+        assertEquals(sample, viewModel.uiState.value.snapshot)
+    }
+
+    @Test
+    fun `lists read later by the other screen settle the problem`() = runTest {
+        val repository = FakeVesselRepository().apply { result = RefreshResult.SITE_UNAVAILABLE }
+        repository.stored.value = sample.copy(fetchedAt = now.minusHours(5))
+        val viewModel = VesselsViewModel(repository, clock)
+        observe(viewModel)
+
+        viewModel.onShown()
+        assertEquals(RefreshResult.SITE_UNAVAILABLE, viewModel.uiState.value.problem)
+
+        // The Vessels tab (its own ViewModel) read the lists: this screen's problem goes
+        repository.stored.value = sample
+        assertNull(viewModel.uiState.value.problem)
+    }
+
+    @Test
+    fun `a pressed refresh that fails shows the problem, not a message`() = runTest {
+        val repository = FakeVesselRepository().apply { result = RefreshResult.NO_CONNECTION }
+        val viewModel = VesselsViewModel(repository, clock)
+        observe(viewModel)
+
+        viewModel.onRefresh()
+
+        assertEquals(RefreshResult.NO_CONNECTION, viewModel.uiState.value.problem)
         assertNull(viewModel.uiState.value.message)
     }
 

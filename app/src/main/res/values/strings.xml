@@ -379,6 +379,7 @@
     <string name="vessels_none_working">No vessel is being worked right now</string>
     <string name="vessels_none_scheduled">No vessels expected</string>
     <string name="vessels_loading">Reading the vessels…</string>
+    <string name="vessels_today_not_read">Vessels not read yet. Open the Vessels tab for details.</string>
     <string name="vessels_not_read">The vessels have not been read yet. Check your connection.</string>
     <string name="vessels_not_configured">The vessel lists are not set up in this version of the app.</string>
     <string name="vessels_refresh">Refresh</string>
@@ -389,6 +390,10 @@
     <string name="vessels_page_next">Next page</string>
     <string name="vessels_message_updated">Vessels updated</string>
     <string name="vessels_message_cooling">Refresh is available once an hour</string>
-    <string name="vessels_message_network">No connection: showing the last vessels read</string>
+    <string name="vessels_problem_offline">Your phone has no internet connection.</string>
+    <string name="vessels_problem_blocked">Dockshift is not allowed to use the internet on this phone.</string>
+    <string name="vessels_problem_blocked_how">In the page that opens, tap “Mobile data” (or “Data usage”) and turn on everything for Dockshift. Then come back to the app.</string>
+    <string name="vessels_problem_site">The vessel page is not answering right now. Try again later.</string>
+    <string name="vessels_open_settings">Open app settings</string>
     <string name="vessels_message_format">The vessel page has changed and could not be read. An app update is needed.</string>
 </resources>

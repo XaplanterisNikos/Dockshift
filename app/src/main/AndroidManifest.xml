@@ -8,6 +8,11 @@
 
     <!-- Reads the terminal's public vessel pages; a normal permission, never asked -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--
+        Tells "the phone is offline" from "a phone setting keeps this app off the
+        internet", so the message says what to fix; also a normal permission
+    -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- android:name: the Hilt application class that owns the dependency container -->
     <application

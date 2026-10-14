@@ -375,6 +375,7 @@
     <string name="vessels_none_working">Κανένα πλοίο σε εργασία αυτή τη στιγμή</string>
     <string name="vessels_none_scheduled">Δεν αναμένονται πλοία</string>
     <string name="vessels_loading">Διαβάζονται τα πλοία…</string>
+    <string name="vessels_today_not_read">Τα πλοία δεν έχουν διαβαστεί ακόμα. Δες την καρτέλα Πλοία.</string>
     <string name="vessels_not_read">Τα πλοία δεν έχουν διαβαστεί ακόμα. Έλεγξε τη σύνδεση.</string>
     <string name="vessels_not_configured">Οι λίστες πλοίων δεν έχουν ρυθμιστεί σε αυτή την έκδοση της εφαρμογής.</string>
     <string name="vessels_refresh">Ανανέωση</string>
@@ -385,6 +386,10 @@
     <string name="vessels_page_next">Επόμενη σελίδα</string>
     <string name="vessels_message_updated">Τα πλοία ενημερώθηκαν</string>
     <string name="vessels_message_cooling">Η ανανέωση γίνεται μία φορά την ώρα</string>
-    <string name="vessels_message_network">Χωρίς σύνδεση: δείχνονται τα τελευταία πλοία που διαβάστηκαν</string>
+    <string name="vessels_problem_offline">Το κινητό δεν έχει σύνδεση στο internet.</string>
+    <string name="vessels_problem_blocked">Το Dockshift δεν έχει άδεια να χρησιμοποιεί το internet σε αυτό το κινητό.</string>
+    <string name="vessels_problem_blocked_how">Στη σελίδα που θα ανοίξει, πάτα «Κινητά δεδομένα» (ή «Χρήση δεδομένων») και άνοιξε όλους τους διακόπτες για το Dockshift. Μετά γύρνα πίσω στην εφαρμογή.</string>
+    <string name="vessels_problem_site">Η σελίδα των πλοίων δεν απαντά αυτή τη στιγμή. Δοκίμασε αργότερα.</string>
+    <string name="vessels_open_settings">Άνοιγμα ρυθμίσεων εφαρμογής</string>
     <string name="vessels_message_format">Η σελίδα των πλοίων άλλαξε και δεν διαβάστηκε. Χρειάζεται ενημέρωση της εφαρμογής.</string>
 </resources>

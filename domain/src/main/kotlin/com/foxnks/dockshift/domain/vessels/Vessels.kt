@@ -71,11 +71,25 @@ enum class RefreshResult {
     /** The site's addresses are not set in this build. */
     NOT_CONFIGURED,
 
-    /** No connection, or the site did not answer. The old lists stay. */
-    NETWORK_ERROR,
+    /** The phone has no internet connection. The old lists stay. */
+    NO_CONNECTION,
+
+    /**
+     * The phone is online but this app may not use the connection: a phone setting
+     * limits its data (e.g. mobile data or Wi-Fi turned off for the app). The user can
+     * fix it in the app's settings. The old lists stay.
+     */
+    APP_BLOCKED,
+
+    /** The phone and the app are online, but the site did not answer (down or slow). The old lists stay. */
+    SITE_UNAVAILABLE,
 
     /** The site answered, but its pages could not be read: their layout changed. The old lists stay. */
     FORMAT_ERROR,
+    ;
+
+    /** True for the results that mean the lists could not be read. */
+    val isFailure: Boolean get() = this in setOf(NO_CONNECTION, APP_BLOCKED, SITE_UNAVAILABLE, FORMAT_ERROR)
 }
 
 /**
@@ -131,6 +145,8 @@ interface VesselRepository {
      *
      * @param manual true for the refresh button (locked for an hour afterwards),
      * false for the automatic refresh (only when the lists are stale).
+     * @param retry for an automatic refresh: read even fresh lists, because the last
+     * attempt failed (e.g. the user comes back after allowing the app's data).
      */
-    suspend fun refresh(manual: Boolean): RefreshResult
+    suspend fun refresh(manual: Boolean, retry: Boolean = false): RefreshResult
 }

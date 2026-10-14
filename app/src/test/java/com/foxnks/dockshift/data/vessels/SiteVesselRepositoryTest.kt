@@ -38,6 +38,13 @@ class SiteVesselRepositoryTest {
         }
     }
 
+    /** A connection state the test sets. */
+    private class FakeNetwork(var state: Connectivity = Connectivity.ONLINE) : NetworkStatus {
+        override fun check(): Connectivity = state
+    }
+
+    private val network = FakeNetwork()
+
     /** Keeps the cache in memory. */
     private class MemoryStore(var stored: VesselCache? = null) : VesselCacheStore {
         override suspend fun read(): VesselCache? = stored
@@ -74,7 +81,7 @@ class SiteVesselRepositoryTest {
     fun `first refresh reads both pages, page by page, and stores them`() = runBlocking {
         val fetcher = fetcher()
         val store = MemoryStore()
-        val repository = SiteVesselRepository(sources, fetcher, store, clock)
+        val repository = SiteVesselRepository(sources, fetcher, store, clock, network)
 
         assertEquals(RefreshResult.UPDATED, repository.refresh(manual = false))
 
@@ -92,7 +99,7 @@ class SiteVesselRepositoryTest {
     @Test
     fun `fresh lists are not read again until four hours pass`() = runBlocking {
         val fetcher = fetcher()
-        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock)
+        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock, network)
         repository.refresh(manual = false)
         fetcher.requested.clear()
 
@@ -107,7 +114,7 @@ class SiteVesselRepositoryTest {
     @Test
     fun `the button locks for an hour after use, also after an app restart`() = runBlocking {
         val store = MemoryStore()
-        val repository = SiteVesselRepository(sources, fetcher(), store, clock)
+        val repository = SiteVesselRepository(sources, fetcher(), store, clock, network)
 
         assertEquals(RefreshResult.UPDATED, repository.refresh(manual = true))
         assertEquals(clock.now, repository.lastManualRefresh.first())
@@ -115,7 +122,7 @@ class SiteVesselRepositoryTest {
         clock.now = clock.now.plusMinutes(59)
         assertEquals(RefreshResult.COOLING_DOWN, repository.refresh(manual = true))
         // A new start reads the lock from the store
-        val restarted = SiteVesselRepository(sources, fetcher(), store, clock)
+        val restarted = SiteVesselRepository(sources, fetcher(), store, clock, network)
         assertEquals(RefreshResult.COOLING_DOWN, restarted.refresh(manual = true))
 
         clock.now = clock.now.plusMinutes(1)
@@ -125,23 +132,25 @@ class SiteVesselRepositoryTest {
     @Test
     fun `offline keeps the old lists and does not lock the button`() = runBlocking {
         val fetcher = fetcher()
-        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock)
+        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock, network)
         repository.refresh(manual = false)
         val before = repository.snapshot.first()
 
         fetcher.offline = true
+        network.state = Connectivity.OFFLINE
         clock.now = clock.now.plusHours(5)
-        assertEquals(RefreshResult.NETWORK_ERROR, repository.refresh(manual = true))
+        assertEquals(RefreshResult.NO_CONNECTION, repository.refresh(manual = true))
 
         assertEquals(before, repository.snapshot.first())
         assertNull(repository.lastManualRefresh.first())
     }
 
     @Test
-    fun `a failed automatic refresh waits before asking the site again`() = runBlocking {
+    fun `a site that did not answer is left alone for a while`() = runBlocking {
+        // Phone online, yet the site fails: it is down or slow
         val fetcher = fetcher().apply { offline = true }
-        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock)
-        assertEquals(RefreshResult.NETWORK_ERROR, repository.refresh(manual = false))
+        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock, network)
+        assertEquals(RefreshResult.SITE_UNAVAILABLE, repository.refresh(manual = false))
 
         clock.now = clock.now.plusMinutes(10)
         assertEquals(RefreshResult.NOT_NEEDED, repository.refresh(manual = false))
@@ -154,7 +163,7 @@ class SiteVesselRepositoryTest {
     @Test
     fun `a changed page is reported and the old lists stay`() = runBlocking {
         val fetcher = fetcher()
-        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock)
+        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock, network)
         repository.refresh(manual = false)
         val before = repository.snapshot.first()
 
@@ -171,7 +180,7 @@ class SiteVesselRepositoryTest {
     fun `a site that ignores the page number is read once`() = runBlocking {
         val fetcher = fetcher()
         fetcher.pages[scheduledUrl(1)] = scheduledPage("A", "B")
-        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock)
+        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock, network)
 
         repository.refresh(manual = false)
 
@@ -182,10 +191,54 @@ class SiteVesselRepositoryTest {
     @Test
     fun `without addresses nothing is read`() = runBlocking {
         val fetcher = fetcher()
-        val repository = SiteVesselRepository(VesselSources("", ""), fetcher, MemoryStore(), clock)
+        val repository = SiteVesselRepository(VesselSources("", ""), fetcher, MemoryStore(), clock, network)
 
         assertEquals(RefreshResult.NOT_CONFIGURED, repository.refresh(manual = true))
         assertTrue(fetcher.requested.isEmpty())
         assertNull(repository.snapshot.first())
+    }
+
+    @Test
+    fun `a phone setting that keeps the app offline is told apart`() = runBlocking {
+        val fetcher = fetcher().apply { offline = true }
+        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock, network)
+
+        network.state = Connectivity.APP_BLOCKED
+        assertEquals(RefreshResult.APP_BLOCKED, repository.refresh(manual = false))
+
+        // Fixed in the settings: coming back retries at once, no waiting
+        network.state = Connectivity.ONLINE
+        fetcher.offline = false
+        assertEquals(RefreshResult.UPDATED, repository.refresh(manual = false))
+    }
+
+    @Test
+    fun `errors only a blocked app gets count as blocked`() = runBlocking {
+        val blocked = object : PageFetcher {
+            override suspend fun fetch(url: String): String =
+                throw IOException("connect failed", Exception("socket failed: EPERM (Operation not permitted)"))
+        }
+        assertEquals(RefreshResult.APP_BLOCKED, SiteVesselRepository(sources, blocked, MemoryStore(), clock, network).refresh(manual = true))
+
+        val noName = object : PageFetcher {
+            override suspend fun fetch(url: String): String = throw java.net.UnknownHostException("Unable to resolve host")
+        }
+        assertEquals(RefreshResult.APP_BLOCKED, SiteVesselRepository(sources, noName, MemoryStore(), clock, network).refresh(manual = true))
+
+        val refused = object : PageFetcher {
+            override suspend fun fetch(url: String): String = throw SecurityException("Permission denied (missing INTERNET permission?)")
+        }
+        assertEquals(RefreshResult.APP_BLOCKED, SiteVesselRepository(sources, refused, MemoryStore(), clock, network).refresh(manual = true))
+    }
+
+    @Test
+    fun `after a failure a retry reads even fresh lists`() = runBlocking {
+        val fetcher = fetcher()
+        val repository = SiteVesselRepository(sources, fetcher, MemoryStore(), clock, network)
+        repository.refresh(manual = false)
+        fetcher.requested.clear()
+
+        assertEquals(RefreshResult.NOT_NEEDED, repository.refresh(manual = false))
+        assertEquals(RefreshResult.UPDATED, repository.refresh(manual = false, retry = true))
     }
 }

@@ -108,7 +108,9 @@ emulator or device with `./gradlew connectedAndroidTest`.
   the refresh button then locks for an hour. A small table reader in `:domain`
   (`HtmlTable`, `VesselPages`) finds columns by their titles, so a reordered table
   still reads, and a changed layout is reported instead of misread. Old lists stay on
-  any failure. The pages' addresses come from `vessels.properties` (see below).
+  any failure, and the failure is told apart: phone offline, the app kept off the
+  internet by a phone setting (with a button to the app's settings page), or the site
+  not answering. The pages' addresses come from `vessels.properties` (see below).
 - **Settings**: appearance, work schedule and place in the rotation, public holidays.
 - **Splash screen**: the launcher icon on the harbour blue while the app starts, until the
   settings are read (no flash in the wrong theme), then a short fade.

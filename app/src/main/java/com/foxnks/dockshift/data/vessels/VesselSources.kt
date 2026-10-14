@@ -56,3 +56,25 @@ interface VesselCacheStore {
      */
     suspend fun write(cache: VesselCache)
 }
+
+/** What the phone's connection looks like to this app. */
+enum class Connectivity {
+    /** Online, and this app may use the connection. */
+    ONLINE,
+
+    /** The phone has no working internet connection. */
+    OFFLINE,
+
+    /** The phone is online, but a phone setting keeps this app off the connection. */
+    APP_BLOCKED,
+}
+
+/**
+ * Tells why a page could not be downloaded. An interface, so the refresh logic is
+ * tested without a phone.
+ */
+interface NetworkStatus {
+
+    /** @return the connection as this app sees it, right now. */
+    fun check(): Connectivity
+}

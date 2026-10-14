@@ -29,6 +29,15 @@ object HtmlTable {
     private val SPACES = Regex("\\s+")
     private val NUMERIC_ENTITY = Regex("&#(x[0-9a-fA-F]+|[0-9]+);")
 
+    /** Text only screen readers get ("visually-hidden", "sr-only"): not part of what is shown. */
+    private val HIDDEN = Regex(
+        "<(span|div)\\b[^>]*class=\"[^\"]*\\b(visually-hidden|sr-only|element-invisible)\\b[^\"]*\"[^>]*>.*?</\\1\\s*>",
+        setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
+    )
+
+    /** A sort note at the end of a normalized title, e.g. "atasortdescending" → "ata". */
+    private val SORT_NOTE = Regex("sort(ed)?(ascending|descending|asc|desc)?$")
+
     /**
      * @param html a whole page.
      * @return null when the page has no table (e.g. "no vessels" shown as text);
@@ -61,26 +70,19 @@ object HtmlTable {
      */
     data class Table(val columns: List<String>, val rows: List<Map<String, String>>)
 
-    /** "Completion(%)" → "completion", "Vessel Name" → "vesselname". */
-    //fun normalize(title: String): String = title.lowercase().filter { it.isLetterOrDigit() }
-
-    fun normalize(title: String): String {
-
-        val normalized = title.lowercase()
-            .filter { it.isLetterOrDigit() }
-
-        return when {
-            normalized.startsWith("atasort") -> "ata"
-            normalized.startsWith("etbsort") -> "etb"
-            normalized.startsWith("etdsort") -> "etd"
-            else -> normalized
-        }
-
-    }
+    /**
+     * "Completion(%)" → "completion", "Vessel Name" → "vesselname".
+     *
+     * The column the table is sorted by carries a sort note for screen readers
+     * ("Ata Sort descending"); it is not part of the title, so it is dropped whatever
+     * column is sorted (found on the device: the sorted column could not be read).
+     */
+    fun normalize(title: String): String =
+        title.lowercase().filter { it.isLetterOrDigit() }.replace(SORT_NOTE, "")
 
     /** The visible text of a cell: tags removed, entities decoded, spaces collapsed. */
     private fun text(html: String): String =
-        decode(TAG.replace(html, " ")).replace(SPACES, " ").trim()
+        decode(TAG.replace(HIDDEN.replace(html, " "), " ")).replace(SPACES, " ").trim()
 
     /** Decodes the HTML entities a cell may contain. */
     private fun decode(text: String): String {
@@ -114,7 +116,6 @@ object VesselPages {
      */
     fun parseWorking(html: String): List<WorkingVessel> {
         val table = HtmlTable.parse(html) ?: return emptyList()
-        println("VesselDebug - Working table columns: ${table.columns}")
         table.require("vesselname", "ata", "etd", "completion")
         return table.rows.mapNotNull { row ->
             val name = row["vesselname"].orEmpty()

@@ -30,12 +30,16 @@ class FakeVesselRepository(override val isConfigured: Boolean = true) : VesselRe
     /** Every refresh asked for: true for manual. */
     val calls = mutableListOf<Boolean>()
 
+    /** The retry flag of every refresh asked for. */
+    val retries = mutableListOf<Boolean>()
+
     override val snapshot: Flow<VesselSnapshot?> = stored
 
     override val lastManualRefresh: Flow<LocalDateTime?> = lastManual
 
-    override suspend fun refresh(manual: Boolean): RefreshResult {
+    override suspend fun refresh(manual: Boolean, retry: Boolean): RefreshResult {
         calls += manual
+        retries += retry
         if (result == RefreshResult.UPDATED) stored.value = next
         return result
     }

@@ -1,8 +1,10 @@
 package com.foxnks.dockshift.di
 
 import com.foxnks.dockshift.BuildConfig
+import com.foxnks.dockshift.data.vessels.AndroidNetworkStatus
 import com.foxnks.dockshift.data.vessels.FileVesselCacheStore
 import com.foxnks.dockshift.data.vessels.HttpPageFetcher
+import com.foxnks.dockshift.data.vessels.NetworkStatus
 import com.foxnks.dockshift.data.vessels.PageFetcher
 import com.foxnks.dockshift.data.vessels.SiteVesselRepository
 import com.foxnks.dockshift.data.vessels.VesselCacheStore
@@ -28,6 +30,10 @@ abstract class VesselModule {
     /** Pages are downloaded with the built-in HTTP client. */
     @Binds
     abstract fun bindPageFetcher(impl: HttpPageFetcher): PageFetcher
+
+    /** Why a download failed: phone offline or app blocked, from Android. */
+    @Binds
+    abstract fun bindNetworkStatus(impl: AndroidNetworkStatus): NetworkStatus
 
     /** The lists are kept in a JSON file. */
     @Binds

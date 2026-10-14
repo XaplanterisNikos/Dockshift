@@ -82,6 +82,30 @@ class VesselPagesTest {
     }
 
     @Test
+    fun `the sorted column's screen-reader note is not part of its title`() {
+        // As the site marks the column it is sorted by (found on the device)
+        val html = page(
+            """
+            <table><thead><tr>
+              <th>Vessel Name</th>
+              <th class="is-active"><a href="?order=ata&amp;sort=asc">Ata<span class="tablesort tablesort--desc"><span class="visually-hidden">Sort descending</span></span></a></th>
+              <th>Etd</th><th>Completion(%)</th>
+            </tr></thead>
+            <tbody><tr><td>GAMMA</td><td class="is-active">13/10/2026 08:00</td><td></td><td>5</td></tr></tbody></table>
+            """,
+        )
+        assertEquals(LocalDateTime.of(2026, 10, 13, 8, 0), VesselPages.parseWorking(html).single().arrived)
+    }
+
+    @Test
+    fun `a sort note left in any title is dropped`() {
+        assertEquals("ata", HtmlTable.normalize("Ata Sort descending"))
+        assertEquals("vesselname", HtmlTable.normalize("Vessel Name sort ascending"))
+        assertEquals("completion", HtmlTable.normalize("Completion(%) Sort"))
+        assertEquals("etb", HtmlTable.normalize("etb"))
+    }
+
+    @Test
     fun `no table means no vessels`() {
         assertTrue(VesselPages.parseWorking(page("<div class=\"view-empty\">No vessels.</div>")).isEmpty())
     }

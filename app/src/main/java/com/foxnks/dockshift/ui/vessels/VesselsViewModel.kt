@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -26,8 +25,11 @@ import kotlinx.coroutines.launch
  * @property refreshing true while the site is being read.
  * @property lastManualRefresh the time of the last manual refresh, or null; the
  * screen counts the button's lock down from it (see [VesselRefresh.manualAvailableAt]).
- * @property message how the last refresh went, when the user should hear about it;
- * null once shown.
+ * @property message the answer to a press of the refresh button ("updated", "locked"),
+ * shown once; null once shown.
+ * @property problem why the lists could not be read last time (no connection, app
+ * blocked, site down, page changed), shown in place until a refresh succeeds; null
+ * when the last refresh went fine.
  */
 data class VesselsUiState(
     val configured: Boolean = true,
@@ -35,6 +37,7 @@ data class VesselsUiState(
     val refreshing: Boolean = false,
     val lastManualRefresh: LocalDateTime? = null,
     val message: RefreshResult? = null,
+    val problem: RefreshResult? = null,
 )
 
 /**
@@ -53,6 +56,7 @@ class VesselsViewModel @Inject constructor(
 
     private val refreshing = MutableStateFlow(false)
     private val message = MutableStateFlow<RefreshResult?>(null)
+    private val problem = MutableStateFlow<Failure?>(null)
 
     /** The screen state. */
     val uiState: StateFlow<VesselsUiState> = combine(
@@ -60,23 +64,29 @@ class VesselsViewModel @Inject constructor(
         vessels.lastManualRefresh,
         refreshing,
         message,
-    ) { snapshot, lastManual, busy, shown ->
+        problem,
+    ) { snapshot, lastManual, busy, shown, failure ->
+        // Lists read after the failure (e.g. by the other screen's refresh) settle it
+        val stillFailing = failure?.takeIf { snapshot == null || snapshot.fetchedAt.isBefore(it.at) }
         VesselsUiState(
             configured = vessels.isConfigured,
             snapshot = snapshot,
             refreshing = busy,
             lastManualRefresh = lastManual,
             message = shown,
+            problem = stillFailing?.result,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), VesselsUiState(configured = vessels.isConfigured))
 
     /**
-     * A screen showing the lists opened (or came back to the front): reads the site
-     * if the lists are stale. Quiet: only a failure with nothing to show is reported.
+     * A screen showing the lists opened (or came back to the front, e.g. from the
+     * phone's settings): reads the site if the lists are stale. Quiet: a failure only
+     * shows as [VesselsUiState.problem].
      */
     fun onShown() {
         if (!vessels.isConfigured) return
-        run(manual = false)
+        // After a failure, try again even if the lists are fresh: the cause may be fixed
+        run(manual = false, retry = uiState.value.problem != null)
     }
 
     /** The refresh button. Ignored while locked (the button is disabled then anyway). */
@@ -92,25 +102,32 @@ class VesselsViewModel @Inject constructor(
     }
 
     /** Reads the site once at a time, and keeps the result for a message. */
-    private fun run(manual: Boolean) {
+    private fun run(manual: Boolean, retry: Boolean = false) {
         if (refreshing.value) return
         refreshing.value = true
         viewModelScope.launch {
             try {
-                val result = vessels.refresh(manual)
-                message.value = when {
-                    // A press always gets an answer
-                    manual -> result
-                    // Automatic: silent unless it failed and there is nothing to show
-                    result == RefreshResult.NETWORK_ERROR || result == RefreshResult.FORMAT_ERROR ->
-                        result.takeIf { vessels.snapshot.first() == null }
-                    else -> null
+                val result = vessels.refresh(manual, retry)
+                // A failure stays on screen until a refresh works; "not needed" changes nothing
+                when {
+                    result == RefreshResult.UPDATED -> problem.value = null
+                    result.isFailure -> problem.value = Failure(result, LocalDateTime.now(clock))
                 }
+                // A press gets an answer; failures already show as the problem
+                message.value = if (manual && !result.isFailure) result else null
             } finally {
                 refreshing.value = false
             }
         }
     }
+
+    /**
+     * A failed refresh and when it happened.
+     *
+     * @property result what went wrong.
+     * @property at when; lists read later make it obsolete.
+     */
+    private data class Failure(val result: RefreshResult, val at: LocalDateTime)
 
     private companion object {
         /** Keeps the state alive across a rotation. */

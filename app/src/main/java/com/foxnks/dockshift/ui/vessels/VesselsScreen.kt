@@ -116,10 +116,19 @@ fun VesselsScreen(
         val snapshot = uiState.snapshot
         when {
             !uiState.configured -> CenteredText(R.string.vessels_not_configured, Modifier.padding(innerPadding))
-            snapshot == null -> Box(Modifier.fillMaxSize().padding(innerPadding), Alignment.Center) {
-                if (uiState.refreshing) CircularProgressIndicator() else Text(stringResource(R.string.vessels_not_read))
+            snapshot == null -> Box(Modifier.fillMaxSize().padding(innerPadding).padding(24.dp), Alignment.Center) {
+                val problem = uiState.problem
+                when {
+                    uiState.refreshing -> CircularProgressIndicator()
+                    problem != null -> ProblemPanel(problem)
+                    else -> Text(stringResource(R.string.vessels_not_read))
+                }
             }
-            else -> VesselTabs(snapshot, Modifier.fillMaxSize().padding(innerPadding))
+            else -> Column(Modifier.fillMaxSize().padding(innerPadding)) {
+                // The last lists stay visible under the problem
+                uiState.problem?.let { ProblemPanel(it, Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
+                VesselTabs(snapshot, Modifier.fillMaxSize())
+            }
         }
     }
 }

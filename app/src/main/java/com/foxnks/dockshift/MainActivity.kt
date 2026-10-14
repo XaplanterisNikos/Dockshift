@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
         splash.setKeepOnScreenCondition {
             !viewModel.ready.value || SystemClock.uptimeMillis() < keepUntil
         }
-        // A soft exit instead of a cut: the icon grows a little while everything fades
+        // A soft exit instead of a cut: the splash fades into the app
         splash.setOnExitAnimationListener { provider ->
             provider.view.animate()
                 .alpha(0f)
@@ -86,9 +86,6 @@ class MainActivity : ComponentActivity() {
 
         /** Length of the splash screen's fade into the app. */
         const val EXIT_MILLIS = 300L
-
-        /** How much the icon grows while fading out. */
-        const val ICON_EXIT_SCALE = 1.15f
 
         /** Navigation bar scrims for 3-button navigation, as in Android's own apps. */
         val LIGHT_SCRIM = Color.argb(0xE6, 0xFF, 0xFF, 0xFF)
