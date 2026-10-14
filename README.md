@@ -3,8 +3,29 @@
 Shift tracker for container terminal crane operators: log your shifts, see your
 rotating schedule, plan leave and check your stats. Available in Greek and English.
 
-> **Status:** v2.0 is being rewritten from scratch in Kotlin and Jetpack Compose.
-> This repository currently holds the project skeleton; features land issue by issue.
+> **Status:** `2.0.0-alpha01` is being tested by colleagues on their phones.
+> Still to come for v2.0: large-screen layouts and the first public release.
+> The home-screen widget moves to a later version.
+
+## Installing (testers)
+
+Dockshift is not on Google Play. Test builds are shared privately as an APK file,
+never published here, because they carry the addresses of the terminal's vessel pages.
+
+1. **Coming from the old app?** Open it and use **Export** first. This writes your
+   shifts to `Documents/DataShift_foxnks/dataShift_foxnks.csv`.
+2. Download the APK (do not open it inside a cloud-storage app; download it, then
+   open it from Downloads) and allow "Install unknown apps" when the phone asks.
+3. On the first start Dockshift offers to import the old app's file. Check that your
+   shifts are there before you uninstall the old app.
+
+- The very first version of the app installs **next to** Dockshift, not over it, since
+  it was signed with a key that no longer exists. Version 1.11 is updated in place.
+- Each new test build has a higher version number and installs over the previous one,
+  keeping your data. Menu → About shows which version you have.
+- Found a problem or have an idea? Open an [issue](../../issues) (in Greek is fine)
+  with what you did, what you expected and what happened, plus a screenshot if you
+  can. Never attach your backup or CSV file: it holds your personal shift history.
 
 ## Background
 
@@ -74,7 +95,7 @@ emulator or device with `./gradlew connectedAndroidTest`.
 - **Public holidays**: the 13 official holidays of Greece, computed for any year (Orthodox
   Easter with Meeus' algorithm), shown in the calendar, on Today and in the lists.
 - **Menu**: the last tab of the bottom bar. The user's profile at the very top, then the app's sections (Machines,
-  Statistics, Leave, Data & backup; vessels join when built), Settings below them.
+  Statistics, Leave, Data & backup), then Settings and About.
 - **Statistics**: per year or month: working shifts and hours, overtime, shifts on
   holidays, days per type, month-by-month bars, and the machines driven.
 - **Leave**: the days you are entitled to each year (10–60), and leave planned ahead as
@@ -118,6 +139,8 @@ emulator or device with `./gradlew connectedAndroidTest`.
   internet by a phone setting (with a button to the app's settings page), or the site
   not answering. The pages' addresses come from `vessels.properties` (see below).
 - **Settings**: appearance, work schedule and place in the rotation, public holidays.
+- **About**: the app's version, the source code and its licence, and how to reach the
+  author. An info button on Today leads to the author's other app on Google Play.
 - **Splash screen**: the launcher icon on the harbour blue while the app starts, until the
   settings are read (no flash in the wrong theme), then a short fade.
 
@@ -127,7 +150,7 @@ emulator or device with `./gradlew connectedAndroidTest`.
   from Dockshift's own harbour-blue schemes (seed `#1B6A80`) on Android 10–11 or when
   turned off in Settings. Light/dark follows the phone or a choice in Settings.
 - Every shift type has a fixed color (`ShiftPalette`), the same in the calendar, lists,
-  charts and widget, never taken from the wallpaper. The palette is designed with equal
+  charts and lists, never taken from the wallpaper. The palette is designed with equal
   lightness per role, and a unit test checks the text contrast of every color (WCAG AA).
 - The phone's system font, which covers Greek fully and follows the user's font size.
 - Original vector launcher icon, with a monochrome layer for themed icons (Android 13+).
@@ -155,6 +178,11 @@ DOCKSHIFT_V1_CSV=/path/to/dataShift_foxnks.csv ./gradlew :domain:test --tests "*
 Debug builds install as a separate app (`.debug` suffix), so they never touch the
 data of an installed release.
 
+For a test APK, run `./gradlew assembleRelease` (`.\gradlew assembleRelease` on Windows).
+The file lands in `app/build/outputs/apk/release/app-release.apk`; its name ends in
+`-unsigned` when `keystore.properties` was not found. Raise `versionCode` in
+`app/build.gradle.kts` before every new build you hand out, or phones refuse it as an update.
+
 ### Vessel pages
 
 Copy `vessels.properties.example` to `vessels.properties` and fill in the addresses of
@@ -166,6 +194,10 @@ builds normally and the Vessels tab says the lists are not set up.
 Copy `keystore.properties.example` to `keystore.properties` and fill in your own
 keystore path and passwords. The file is git-ignored. Without it, release builds
 are produced unsigned.
+
+Every build that users install must be signed with the same key as the version
+before it, or Android refuses the update. Keep the keystore and its passwords backed
+up outside this computer; a lost key means users have to reinstall and move their data.
 
 ## License
 
