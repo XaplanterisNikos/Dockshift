@@ -1,0 +1,142 @@
+diff --git a/app/src/main/java/com/foxnks/dockshift/ui/vessels/VesselViews.kt b/app/src/main/java/com/foxnks/dockshift/ui/vessels/VesselViews.kt
+index dfd2efa..88b23ff 100644
+--- a/app/src/main/java/com/foxnks/dockshift/ui/vessels/VesselViews.kt
++++ b/app/src/main/java/com/foxnks/dockshift/ui/vessels/VesselViews.kt
+@@ -81,7 +81,7 @@ fun WorkingVesselRow(vessel: WorkingVessel, modifier: Modifier = Modifier, showT
+ /**
+  * On "Today", under the shift: the vessels being worked now with their completion.
+  * Reads the site when the lists are stale. Draws nothing when this build has no
+- * vessel pages set up.
++ * vessel pages set up. Shows no errors: those belong to the Vessels tab.
+  *
+  * @param onOpen opens the Vessels tab.
+  * @param modifier optional modifier from the caller.
+@@ -107,12 +107,11 @@ fun TodayVesselsCard(onOpen: () -> Unit, modifier: Modifier = Modifier, viewMode
+                 if (state.refreshing) CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+             }
+             val snapshot = state.snapshot
+-            state.problem?.let { ProblemPanel(it) }
++            // No error messages here: the Vessels tab tells what went wrong, and the
++            // "updated" date below tells how old these lists are
+             when {
+-                // Without lists, the problem above says it all
+-                snapshot == null && state.problem != null -> Unit
+                 snapshot == null -> Text(
+-                    text = stringResource(if (state.refreshing) R.string.vessels_loading else R.string.vessels_not_read),
++                    text = stringResource(if (state.refreshing) R.string.vessels_loading else R.string.vessels_today_not_read),
+                     style = MaterialTheme.typography.bodyMedium,
+                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                 )
+diff --git a/app/src/main/java/com/foxnks/dockshift/ui/vessels/VesselsViewModel.kt b/app/src/main/java/com/foxnks/dockshift/ui/vessels/VesselsViewModel.kt
+index 4873020..24b8e81 100644
+--- a/app/src/main/java/com/foxnks/dockshift/ui/vessels/VesselsViewModel.kt
++++ b/app/src/main/java/com/foxnks/dockshift/ui/vessels/VesselsViewModel.kt
+@@ -56,7 +56,7 @@ class VesselsViewModel @Inject constructor(
+ 
+     private val refreshing = MutableStateFlow(false)
+     private val message = MutableStateFlow<RefreshResult?>(null)
+-    private val problem = MutableStateFlow<RefreshResult?>(null)
++    private val problem = MutableStateFlow<Failure?>(null)
+ 
+     /** The screen state. */
+     val uiState: StateFlow<VesselsUiState> = combine(
+@@ -66,13 +66,15 @@ class VesselsViewModel @Inject constructor(
+         message,
+         problem,
+     ) { snapshot, lastManual, busy, shown, failure ->
++        // Lists read after the failure (e.g. by the other screen's refresh) settle it
++        val stillFailing = failure?.takeIf { snapshot == null || snapshot.fetchedAt.isBefore(it.at) }
+         VesselsUiState(
+             configured = vessels.isConfigured,
+             snapshot = snapshot,
+             refreshing = busy,
+             lastManualRefresh = lastManual,
+             message = shown,
+-            problem = failure,
++            problem = stillFailing?.result,
+         )
+     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), VesselsUiState(configured = vessels.isConfigured))
+ 
+@@ -84,7 +86,7 @@ class VesselsViewModel @Inject constructor(
+     fun onShown() {
+         if (!vessels.isConfigured) return
+         // After a failure, try again even if the lists are fresh: the cause may be fixed
+-        run(manual = false, retry = problem.value != null)
++        run(manual = false, retry = uiState.value.problem != null)
+     }
+ 
+     /** The refresh button. Ignored while locked (the button is disabled then anyway). */
+@@ -109,7 +111,7 @@ class VesselsViewModel @Inject constructor(
+                 // A failure stays on screen until a refresh works; "not needed" changes nothing
+                 when {
+                     result == RefreshResult.UPDATED -> problem.value = null
+-                    result.isFailure -> problem.value = result
++                    result.isFailure -> problem.value = Failure(result, LocalDateTime.now(clock))
+                 }
+                 // A press gets an answer; failures already show as the problem
+                 message.value = if (manual && !result.isFailure) result else null
+@@ -119,6 +121,14 @@ class VesselsViewModel @Inject constructor(
+         }
+     }
+ 
++    /**
++     * A failed refresh and when it happened.
++     *
++     * @property result what went wrong.
++     * @property at when; lists read later make it obsolete.
++     */
++    private data class Failure(val result: RefreshResult, val at: LocalDateTime)
++
+     private companion object {
+         /** Keeps the state alive across a rotation. */
+         const val STOP_TIMEOUT_MILLIS = 5_000L
+diff --git a/app/src/main/res/values-el/strings.xml b/app/src/main/res/values-el/strings.xml
+index be05b27..5ff619e 100644
+--- a/app/src/main/res/values-el/strings.xml
++++ b/app/src/main/res/values-el/strings.xml
+@@ -375,6 +375,7 @@
+     <string name="vessels_none_working">Κανένα πλοίο σε εργασία αυτή τη στιγμή</string>
+     <string name="vessels_none_scheduled">Δεν αναμένονται πλοία</string>
+     <string name="vessels_loading">Διαβάζονται τα πλοία…</string>
++    <string name="vessels_today_not_read">Τα πλοία δεν έχουν διαβαστεί ακόμα. Δες την καρτέλα Πλοία.</string>
+     <string name="vessels_not_read">Τα πλοία δεν έχουν διαβαστεί ακόμα. Έλεγξε τη σύνδεση.</string>
+     <string name="vessels_not_configured">Οι λίστες πλοίων δεν έχουν ρυθμιστεί σε αυτή την έκδοση της εφαρμογής.</string>
+     <string name="vessels_refresh">Ανανέωση</string>
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index f9859d7..f79fff2 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -379,6 +379,7 @@
+     <string name="vessels_none_working">No vessel is being worked right now</string>
+     <string name="vessels_none_scheduled">No vessels expected</string>
+     <string name="vessels_loading">Reading the vessels…</string>
++    <string name="vessels_today_not_read">Vessels not read yet. Open the Vessels tab for details.</string>
+     <string name="vessels_not_read">The vessels have not been read yet. Check your connection.</string>
+     <string name="vessels_not_configured">The vessel lists are not set up in this version of the app.</string>
+     <string name="vessels_refresh">Refresh</string>
+diff --git a/app/src/test/java/com/foxnks/dockshift/ui/vessels/VesselsViewModelTest.kt b/app/src/test/java/com/foxnks/dockshift/ui/vessels/VesselsViewModelTest.kt
+index cdb4f34..8b5206a 100644
+--- a/app/src/test/java/com/foxnks/dockshift/ui/vessels/VesselsViewModelTest.kt
++++ b/app/src/test/java/com/foxnks/dockshift/ui/vessels/VesselsViewModelTest.kt
+@@ -72,6 +72,21 @@ class VesselsViewModelTest {
+         assertEquals(sample, viewModel.uiState.value.snapshot)
+     }
+ 
++    @Test
++    fun `lists read later by the other screen settle the problem`() = runTest {
++        val repository = FakeVesselRepository().apply { result = RefreshResult.SITE_UNAVAILABLE }
++        repository.stored.value = sample.copy(fetchedAt = now.minusHours(5))
++        val viewModel = VesselsViewModel(repository, clock)
++        observe(viewModel)
++
++        viewModel.onShown()
++        assertEquals(RefreshResult.SITE_UNAVAILABLE, viewModel.uiState.value.problem)
++
++        // The Vessels tab (its own ViewModel) read the lists: this screen's problem goes
++        repository.stored.value = sample
++        assertNull(viewModel.uiState.value.problem)
++    }
++
+     @Test
+     fun `a pressed refresh that fails shows the problem, not a message`() = runTest {
+         val repository = FakeVesselRepository().apply { result = RefreshResult.NO_CONNECTION }

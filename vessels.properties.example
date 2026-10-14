@@ -1,0 +1,9 @@
+# Copy to vessels.properties (git-ignored) and fill in the addresses of the
+# terminal's public vessel pages. Without this file the app builds normally and
+# the Vessels tab says the lists are not set up.
+
+# Page with the table of vessels being worked (Vessel Name, Ata, Etd, Completion(%))
+workingUrl=https://example.com/vessels/working
+
+# Page with the long-term schedule (Vessel Name, Vessel Operator, ..., etb, etd)
+scheduledUrl=https://example.com/vessels/longtermscheduled

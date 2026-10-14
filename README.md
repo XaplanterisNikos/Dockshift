@@ -101,6 +101,16 @@ emulator or device with `./gradlew connectedAndroidTest`.
   shift. Nothing is required yet. A permanent random id (UUID) is made on the first
   start for the future online account, and backups carry it to a new phone. Asked
   once on the first start, then from the menu.
+- **Vessels**: a bottom-bar tab with the vessels being worked now (arrival, departure,
+  completion bar) and the ones expected (berthing and departure, 10 per page), read
+  from the terminal's public pages. "Today" shows the vessels being worked under the
+  shift. The lists are read again when a screen opens and they are over 4 hours old;
+  the refresh button then locks for an hour. A small table reader in `:domain`
+  (`HtmlTable`, `VesselPages`) finds columns by their titles, so a reordered table
+  still reads, and a changed layout is reported instead of misread. Old lists stay on
+  any failure, and the failure is told apart: phone offline, the app kept off the
+  internet by a phone setting (with a button to the app's settings page), or the site
+  not answering. The pages' addresses come from `vessels.properties` (see below).
 - **Settings**: appearance, work schedule and place in the rotation, public holidays.
 - **Splash screen**: the launcher icon on the harbour blue while the app starts, until the
   settings are read (no flash in the wrong theme), then a short fade.
@@ -138,6 +148,12 @@ DOCKSHIFT_V1_CSV=/path/to/dataShift_foxnks.csv ./gradlew :domain:test --tests "*
 
 Debug builds install as a separate app (`.debug` suffix), so they never touch the
 data of an installed release.
+
+### Vessel pages
+
+Copy `vessels.properties.example` to `vessels.properties` and fill in the addresses of
+the terminal's two public vessel pages. The file is git-ignored; without it the app
+builds normally and the Vessels tab says the lists are not set up.
 
 ### Release signing
 
